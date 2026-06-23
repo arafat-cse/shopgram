@@ -21,14 +21,28 @@ class CustomerController extends Controller
 
         if ($request->status) $query->where('status', $request->status);
 
-        $customers = $query->latest()->paginate(20)->withQueryString();
+        $customers = $query->withCount('orders')->latest()->paginate(20)->withQueryString();
         return view('admin.customers.index', compact('customers'));
     }
 
     public function show(User $customer)
     {
-        $customer->load(['orders', 'addresses', 'tickets']);
-        return view('admin.customers.show', compact('customer'));
+        $customer->load([
+            'orders' => fn($query) => $query->with(['items', 'payment'])->latest(),
+            'addresses',
+            'tickets' => fn($query) => $query->latest(),
+        ]);
+        $customer->loadCount([
+            'orders',
+            'orders as delivered_orders_count' => fn($query) => $query->where('status', 'delivered'),
+            'orders as pending_orders_count' => fn($query) => $query->where('status', 'pending'),
+        ]);
+
+        $totalSpent = $customer->orders
+            ->where('status', 'delivered')
+            ->sum('total');
+
+        return view('admin.customers.show', compact('customer', 'totalSpent'));
     }
 
     public function update(Request $request, User $customer)

@@ -13,8 +13,8 @@ class AdminUserController extends Controller
     public function index()
     {
         $adminRoles = ['Super Admin', 'Admin', 'Manager', 'Sales Executive', 'Inventory Manager', 'Order Manager', 'Customer Support'];
-        $users = User::role($adminRoles)->with('roles')->paginate(20);
-        return view('admin.admin-users.index', compact('users'));
+        $adminUsers = User::role($adminRoles)->with('roles')->paginate(20);
+        return view('admin.admin-users.index', compact('adminUsers'));
     }
 
     public function create()
@@ -29,7 +29,7 @@ class AdminUserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'phone'    => 'nullable|string|max:20',
-            'password' => ['required', Password::defaults()],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'role'     => 'required|exists:roles,name',
         ]);
 
@@ -58,7 +58,7 @@ class AdminUserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,' . $adminUser->id,
             'phone'    => 'nullable|string|max:20',
-            'password' => ['nullable', Password::defaults()],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
 
         $updateData = ['name' => $data['name'], 'email' => $data['email'], 'phone' => $data['phone'] ?? null];

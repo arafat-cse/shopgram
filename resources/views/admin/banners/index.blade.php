@@ -8,13 +8,13 @@
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead class="table-light"><tr><th>Image</th><th>Title</th><th>Position</th><th>Sort</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead class="table-light"><tr><th>Image</th><th>Title</th><th>Type</th><th>Sort</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
                 @forelse($banners as $banner)
                 <tr>
                     <td><img src="{{ asset('storage/'.$banner->image) }}" height="50" style="object-fit:cover;border-radius:4px"></td>
                     <td class="small">{{ $banner->title ?? '-' }}</td>
-                    <td class="small text-muted">{{ $banner->position }}</td>
+                    <td class="small text-muted">{{ ucwords(str_replace('_', ' ', $banner->type)) }}</td>
                     <td class="small">{{ $banner->sort_order }}</td>
                     <td><span class="badge bg-{{ $banner->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($banner->status) }}</span></td>
                     <td>

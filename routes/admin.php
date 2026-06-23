@@ -87,6 +87,8 @@ Route::middleware(['auth', 'admin.access'])
 
     // Reviews
     Route::middleware('permission:review.manage')->group(function () {
+        Route::post('reviews/{review}/approve', [ReviewController::class, 'approve'])->name('reviews.approve');
+        Route::post('reviews/{review}/reject', [ReviewController::class, 'reject'])->name('reviews.reject');
         Route::resource('reviews', ReviewController::class)->only(['index', 'update', 'destroy']);
     });
 

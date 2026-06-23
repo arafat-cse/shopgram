@@ -18,8 +18,14 @@ class InventoryController extends Controller
             $query->where('name', 'like', "%{$request->search}%");
         }
 
-        if ($request->filter === 'low_stock') {
+        $filter = $request->filter ?: $request->stock_status;
+
+        if ($filter === 'low_stock') {
             $query->whereRaw('stock_quantity <= low_stock_threshold');
+        } elseif ($filter === 'in_stock') {
+            $query->where('stock_quantity', '>', 0)->whereRaw('stock_quantity > low_stock_threshold');
+        } elseif ($filter === 'out_of_stock') {
+            $query->where('stock_quantity', '<=', 0);
         }
 
         $products = $query->paginate(20);

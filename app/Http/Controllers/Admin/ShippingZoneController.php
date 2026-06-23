@@ -25,7 +25,7 @@ class ShippingZoneController extends Controller
         ]);
 
         ShippingZone::create($data);
-        return redirect()->route('admin.shipping.index')->with('success', 'Shipping zone created.');
+        return redirect()->route('admin.shipping-zones.index')->with('success', 'Shipping zone created.');
     }
 
     public function edit(ShippingZone $shippingZone) { return view('admin.shipping-zones.edit', compact('shippingZone')); }
@@ -40,7 +40,7 @@ class ShippingZoneController extends Controller
         ]);
 
         $shippingZone->update($data);
-        return redirect()->route('admin.shipping.index')->with('success', 'Shipping zone updated.');
+        return redirect()->route('admin.shipping-zones.index')->with('success', 'Shipping zone updated.');
     }
 
     public function destroy(ShippingZone $shippingZone)

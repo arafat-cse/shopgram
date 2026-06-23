@@ -32,5 +32,6 @@
             </tbody>
         </table>
     </div>
+    <div class="card-footer bg-white">{{ $adminUsers->links() }}</div>
 </div>
 @endsection

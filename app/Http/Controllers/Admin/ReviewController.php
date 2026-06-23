@@ -22,6 +22,18 @@ class ReviewController extends Controller
         return back()->with('success', 'Review ' . $request->status . '.');
     }
 
+    public function approve(Review $review)
+    {
+        $review->update(['status' => 'approved']);
+        return back()->with('success', 'Review approved.');
+    }
+
+    public function reject(Review $review)
+    {
+        $review->update(['status' => 'rejected']);
+        return back()->with('success', 'Review rejected.');
+    }
+
     public function destroy(Review $review)
     {
         $review->delete();
