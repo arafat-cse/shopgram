@@ -13,12 +13,24 @@
                     @if(isset($categories))
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Category</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="category" id="cat_all"
+                                   value="" {{ request('category') ? '' : 'checked' }}>
+                            <label class="form-check-label small" for="cat_all">All Categories</label>
+                        </div>
                         @foreach($categories as $cat)
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="category" id="cat{{ $cat->id }}"
                                    value="{{ $cat->slug }}" {{ request('category') == $cat->slug ? 'checked' : '' }}>
                             <label class="form-check-label small" for="cat{{ $cat->id }}">{{ $cat->name }}</label>
                         </div>
+                            @foreach($cat->children as $child)
+                            <div class="form-check ms-3">
+                                <input class="form-check-input" type="radio" name="category" id="cat{{ $child->id }}"
+                                       value="{{ $child->slug }}" {{ request('category') == $child->slug ? 'checked' : '' }}>
+                                <label class="form-check-label small text-muted" for="cat{{ $child->id }}">{{ $child->name }}</label>
+                            </div>
+                            @endforeach
                         @endforeach
                     </div>
                     @endif

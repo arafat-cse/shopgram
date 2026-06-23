@@ -14,7 +14,18 @@ class ProductController extends Controller
         $query = Product::active()->with(['category', 'brand']);
 
         if ($request->category) {
-            $query->whereHas('category', fn($q) => $q->where('slug', $request->category));
+            $selectedCategory = Category::active()
+                ->with('children')
+                ->where('slug', $request->category)
+                ->first();
+
+            if ($selectedCategory) {
+                $categoryIds = collect([$selectedCategory->id])
+                    ->merge($selectedCategory->children->pluck('id'))
+                    ->all();
+
+                $query->whereIn('category_id', $categoryIds);
+            }
         }
 
         if ($request->brand) {
@@ -38,7 +49,11 @@ class ProductController extends Controller
         };
 
         $products   = $query->paginate(12)->withQueryString();
-        $categories = Category::active()->parent()->with('children')->get();
+        $categories = Category::active()
+            ->parent()
+            ->with(['children' => fn($query) => $query->active()->orderBy('name')])
+            ->orderBy('name')
+            ->get();
         $brands     = Brand::active()->get();
 
         return view('frontend.products.index', compact('products', 'categories', 'brands'));
