@@ -11,11 +11,11 @@
                 <input type="text" name="search" class="form-control form-control-sm" placeholder="Search products..." value="{{ request('search') }}">
             </div>
             <div class="col-md-3">
-                <select name="stock_status" class="form-select form-select-sm">
+                <select name="filter" class="form-select form-select-sm">
                     <option value="">All Stock</option>
-                    <option value="in_stock" {{ request('stock_status') === 'in_stock' ? 'selected' : '' }}>In Stock</option>
-                    <option value="low_stock" {{ request('stock_status') === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
-                    <option value="out_of_stock" {{ request('stock_status') === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                    <option value="in_stock" {{ request('filter', request('stock_status')) === 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                    <option value="low_stock" {{ request('filter', request('stock_status')) === 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                    <option value="out_of_stock" {{ request('filter', request('stock_status')) === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -28,7 +28,7 @@
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead class="table-light"><tr><th>Product</th><th>SKU</th><th>Stock</th><th>Low Stock Threshold</th><th>Update Stock</th></tr></thead>
+            <thead class="table-light"><tr><th>Product</th><th>SKU</th><th>Stock</th><th>Low Stock Threshold</th><th>Update Stock</th><th>History</th></tr></thead>
             <tbody>
                 @forelse($products as $product)
                 <tr>
@@ -46,15 +46,18 @@
                     </td>
                     <td class="small">{{ $product->low_stock_threshold ?? 5 }}</td>
                     <td>
-                        <form action="{{ route('admin.inventory.update', $product) }}" method="POST" class="d-flex gap-2">
-                            @csrf @method('PATCH')
-                            <input type="number" name="stock_quantity" class="form-control form-control-sm" style="width:90px" value="{{ $product->stock_quantity }}" min="0">
+                        <form action="{{ route('admin.inventory.adjust') }}" method="POST" class="d-flex gap-2">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <input type="hidden" name="note" value="Manual inventory update">
+                            <input type="number" name="quantity" class="form-control form-control-sm" style="width:90px" value="{{ $product->stock_quantity }}" min="0">
                             <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
                         </form>
                     </td>
+                    <td><a href="{{ route('admin.inventory.history', $product) }}" class="btn btn-sm btn-outline-secondary">History</a></td>
                 </tr>
                 @empty
-                <tr><td colspan="5" class="text-center py-4 text-muted">No products found.</td></tr>
+                <tr><td colspan="6" class="text-center py-4 text-muted">No products found.</td></tr>
                 @endforelse
             </tbody>
         </table>

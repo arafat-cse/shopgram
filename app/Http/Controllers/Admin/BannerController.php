@@ -23,7 +23,7 @@ class BannerController extends Controller
             'button_text' => 'nullable|string|max:100',
             'button_url'  => 'nullable|string|max:500',
             'image'       => 'required|image|max:5120',
-            'type'        => 'required|in:hero,promo,category',
+            'type'        => 'required|in:hero,promo',
             'sort_order'  => 'nullable|integer',
             'status'      => 'required|in:active,inactive',
         ]);
@@ -44,7 +44,7 @@ class BannerController extends Controller
             'button_text' => 'nullable|string|max:100',
             'button_url'  => 'nullable|string|max:500',
             'image'       => 'nullable|image|max:5120',
-            'type'        => 'required|in:hero,promo,category',
+            'type'        => 'required|in:hero,promo',
             'sort_order'  => 'nullable|integer',
             'status'      => 'required|in:active,inactive',
         ]);
