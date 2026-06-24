@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\TicketReply;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
 
 class TicketController extends Controller
 {
@@ -35,6 +36,7 @@ class TicketController extends Controller
 
         $ticket->update(['status' => 'pending']);
 
+        ActivityLogService::log('created', "Replied to ticket #{$ticket->id}: \"{$ticket->subject}\"", 'SupportTicket', $ticket->id);
         return back()->with('success', 'Reply sent.');
     }
 
@@ -42,6 +44,7 @@ class TicketController extends Controller
     {
         $request->validate(['status' => 'required|in:open,pending,closed']);
         $ticket->update(['status' => $request->status]);
+        ActivityLogService::statusChanged('SupportTicket', $ticket->id, "Ticket #{$ticket->id} status changed to {$request->status}");
         return back()->with('success', 'Ticket status updated.');
     }
 }

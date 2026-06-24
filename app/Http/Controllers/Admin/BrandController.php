@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\ActivityLogService;
 
 class BrandController extends Controller
 {
@@ -30,8 +31,9 @@ class BrandController extends Controller
             $data['logo'] = $request->file('logo')->store('brands', 'public');
         }
 
-        Brand::create($data);
+        $brand = Brand::create($data);
 
+        ActivityLogService::created('Brand', $brand->id, "Created brand \"{$brand->name}\"");
         return redirect()->route('admin.brands.index')->with('success', 'Brand created.');
     }
 
@@ -51,11 +53,13 @@ class BrandController extends Controller
 
         $brand->update($data);
 
+        ActivityLogService::updated('Brand', $brand->id, "Updated brand \"{$brand->name}\"");
         return redirect()->route('admin.brands.index')->with('success', 'Brand updated.');
     }
 
     public function destroy(Brand $brand)
     {
+        ActivityLogService::deleted('Brand', $brand->id, "Deleted brand \"{$brand->name}\"");
         $brand->delete();
         return back()->with('success', 'Brand deleted.');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
 use Illuminate\Support\Str;
 
 class PageController extends Controller
@@ -28,7 +29,8 @@ class PageController extends Controller
         ]);
 
         $data['slug'] = Str::slug($data['title']);
-        Page::create($data);
+        $page = Page::create($data);
+        ActivityLogService::created('Page', $page->id, "Created page \"{$page->title}\"");
 
         return redirect()->route('admin.pages.index')->with('success', 'Page created.');
     }
@@ -47,11 +49,13 @@ class PageController extends Controller
         ]);
 
         $page->update($data);
+        ActivityLogService::updated('Page', $page->id, "Updated page \"{$page->title}\"");
         return redirect()->route('admin.pages.index')->with('success', 'Page updated.');
     }
 
     public function destroy(Page $page)
     {
+        ActivityLogService::deleted('Page', $page->id, "Deleted page \"{$page->title}\"");
         $page->delete();
         return back()->with('success', 'Page deleted.');
     }

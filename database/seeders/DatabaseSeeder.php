@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             SettingSeeder::class,
             ShippingZoneSeeder::class,
+            BrandSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
         ]);

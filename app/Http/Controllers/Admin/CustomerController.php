@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -53,9 +54,14 @@ class CustomerController extends Controller
 
     public function toggleStatus(User $customer)
     {
-        $customer->update([
-            'status' => $customer->status === 'active' ? 'blocked' : 'active',
-        ]);
+        $newStatus = $customer->status === 'active' ? 'blocked' : 'active';
+        $customer->update(['status' => $newStatus]);
+
+        ActivityLogService::log(
+            $newStatus === 'blocked' ? 'blocked' : 'unblocked',
+            ($newStatus === 'blocked' ? 'Blocked' : 'Unblocked') . " customer \"{$customer->name}\"",
+            'User', $customer->id
+        );
 
         return back()->with('success', 'Customer status updated.');
     }

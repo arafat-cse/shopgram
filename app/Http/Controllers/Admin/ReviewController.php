@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
 
 class ReviewController extends Controller
 {
@@ -19,6 +20,7 @@ class ReviewController extends Controller
     {
         $request->validate(['status' => 'required|in:pending,approved,rejected']);
         $review->update(['status' => $request->status]);
+        ActivityLogService::statusChanged('Review', $review->id, "Review status changed to {$request->status}");
         return back()->with('success', 'Review ' . $request->status . '.');
     }
 
@@ -36,6 +38,7 @@ class ReviewController extends Controller
 
     public function destroy(Review $review)
     {
+        ActivityLogService::deleted('Review', $review->id, "Deleted review #{$review->id}");
         $review->delete();
         return back()->with('success', 'Review deleted.');
     }

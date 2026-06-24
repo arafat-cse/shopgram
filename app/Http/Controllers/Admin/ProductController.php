@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
+use App\Services\ActivityLogService;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -79,6 +80,8 @@ class ProductController extends Controller
 
         $this->storeGalleryImages($request, $product);
 
+        ActivityLogService::created('Product', $product->id, "Created product \"{$product->name}\"");
+
         return redirect()->route('admin.products.index')->with('success', 'Product created.');
     }
 
@@ -128,11 +131,14 @@ class ProductController extends Controller
         $product->update($data);
         $this->storeGalleryImages($request, $product);
 
+        ActivityLogService::updated('Product', $product->id, "Updated product \"{$product->name}\"");
+
         return redirect()->route('admin.products.index')->with('success', 'Product updated.');
     }
 
     public function destroy(Product $product)
     {
+        ActivityLogService::deleted('Product', $product->id, "Deleted product \"{$product->name}\"");
         $product->delete();
         return back()->with('success', 'Product deleted.');
     }

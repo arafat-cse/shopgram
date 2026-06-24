@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
 
 class BannerController extends Controller
 {
@@ -29,8 +30,9 @@ class BannerController extends Controller
         ]);
 
         $data['image'] = $request->file('image')->store('banners', 'public');
-        Banner::create($data);
+        $banner = Banner::create($data);
 
+        ActivityLogService::created('Banner', $banner->id, "Created banner \"{$banner->title}\"");
         return redirect()->route('admin.banners.index')->with('success', 'Banner created.');
     }
 
@@ -54,11 +56,13 @@ class BannerController extends Controller
         }
 
         $banner->update($data);
+        ActivityLogService::updated('Banner', $banner->id, "Updated banner \"{$banner->title}\"");
         return redirect()->route('admin.banners.index')->with('success', 'Banner updated.');
     }
 
     public function destroy(Banner $banner)
     {
+        ActivityLogService::deleted('Banner', $banner->id, "Deleted banner \"{$banner->title}\"");
         $banner->delete();
         return back()->with('success', 'Banner deleted.');
     }

@@ -138,6 +138,9 @@
         <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
             <i class="bi bi-gear"></i> <span>Settings</span>
         </a>
+        <a href="{{ route('admin.activity-logs.index') }}" class="nav-link {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}">
+            <i class="bi bi-clock-history"></i> <span>Activity Log</span>
+        </a>
         <a href="{{ route('home') }}" class="nav-link" target="_blank">
             <i class="bi bi-box-arrow-up-right"></i> <span>View Site</span>
         </a>
@@ -158,7 +161,44 @@
                 </ol>
             </nav>
         </div>
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
+
+            {{-- Chat / Messages Icon --}}
+            <div class="dropdown">
+                <button class="btn btn-light btn-sm position-relative px-2" id="chatDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false" title="Messages">
+                    <i class="bi bi-chat-dots fs-5"></i>
+                    <span id="msgBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size:11px;min-width:18px;padding:3px 5px;line-height:1"></span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow p-0" style="width:320px;max-height:420px;overflow-y:auto" id="chatDropdownMenu">
+                    <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold small">Unread Messages</span>
+                        <a href="{{ route('admin.contact-messages.index') }}" class="small text-primary">View all</a>
+                    </div>
+                    <div id="chatItems"><div class="text-center text-muted py-4 small">Loading...</div></div>
+                </div>
+            </div>
+
+            {{-- Notification Bell --}}
+            <div class="dropdown">
+                <button class="btn btn-light btn-sm position-relative px-2" id="bellDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                    <i class="bi bi-bell fs-5"></i>
+                    <span id="bellBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size:11px;min-width:18px;padding:3px 5px;line-height:1"></span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow p-0" style="width:340px;max-height:460px;overflow-y:auto" id="bellDropdownMenu">
+                    <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold small">Notifications</span>
+                        <span id="bellTotal" class="badge bg-primary rounded-pill small">0</span>
+                    </div>
+                    <div id="bellItems"><div class="text-center text-muted py-4 small">Loading...</div></div>
+                    <div class="border-top text-center py-2">
+                        <a href="{{ route('admin.orders.index') }}" class="small text-muted">View all orders</a>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Admin Avatar --}}
             <div class="dropdown">
                 <a href="#" class="dropdown-toggle text-dark text-decoration-none d-flex align-items-center gap-2" data-bs-toggle="dropdown">
                     <i class="bi bi-person-circle fs-5"></i>
@@ -225,6 +265,116 @@ window.addEventListener('resize', function () {
         closeMobileSidebar();
     }
 });
+</script>
+<script>
+// ── Notification Bell + Chat Polling ──────────────────────────
+const NOTIF_URL     = '{{ route("admin.notifications.counts") }}';
+const RECENT_URL    = '{{ route("admin.notifications.recent") }}';
+const MESSAGES_URL  = '{{ route("admin.notifications.messages") }}';
+const MARK_READ_URL = '{{ route("admin.notifications.mark-read") }}';
+const CSRF          = document.querySelector('meta[name="csrf-token"]').content;
+
+function updateBadge(el, count) {
+    if (count > 0) {
+        el.textContent = count > 99 ? '99+' : count;
+        el.classList.remove('d-none');
+    } else {
+        el.classList.add('d-none');
+    }
+}
+
+function applyCountsToUI(data) {
+    updateBadge(document.getElementById('bellBadge'), data.total);
+    updateBadge(document.getElementById('msgBadge'),  data.messages);
+    const totalEl = document.getElementById('bellTotal');
+    if (totalEl) totalEl.textContent = data.total;
+}
+
+async function fetchCounts() {
+    try {
+        const res  = await fetch(NOTIF_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const data = await res.json();
+        applyCountsToUI(data);
+    } catch {}
+}
+
+async function markRead(type, modelId, url) {
+    try {
+        const res  = await fetch(MARK_READ_URL, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF,
+            },
+            body: JSON.stringify({ type, model_id: modelId }),
+        });
+        const data = await res.json();
+        applyCountsToUI(data);
+    } catch {}
+    window.location.href = url;
+}
+
+async function fetchBellItems() {
+    const el = document.getElementById('bellItems');
+    try {
+        const res   = await fetch(RECENT_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const items = await res.json();
+        if (!items.length) {
+            el.innerHTML = '<div class="text-center text-muted py-4 small">No new notifications.</div>';
+            return;
+        }
+        el.innerHTML = items.map(n => `
+            <a href="#" onclick="event.preventDefault();markRead('${n.type}',${n.model_id},'${n.url}')"
+               class="d-flex align-items-start gap-2 px-3 py-2 text-decoration-none text-dark border-bottom notif-item"
+               style="cursor:pointer;transition:background .15s" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
+                <div class="rounded-circle bg-${n.color} bg-opacity-10 text-${n.color} d-flex align-items-center justify-content-center flex-shrink-0 mt-1" style="width:32px;height:32px;font-size:14px">
+                    <i class="bi ${n.icon}"></i>
+                </div>
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="small fw-semibold text-truncate">${n.text}</div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span class="text-muted" style="font-size:11px">${n.sub}</span>
+                        <span class="text-muted" style="font-size:11px">${n.time}</span>
+                    </div>
+                </div>
+            </a>`).join('');
+    } catch { el.innerHTML = '<div class="text-center text-muted py-3 small">Failed to load.</div>'; }
+}
+
+async function fetchMessages() {
+    const el = document.getElementById('chatItems');
+    try {
+        const res   = await fetch(MESSAGES_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const items = await res.json();
+        if (!items.length) {
+            el.innerHTML = '<div class="text-center text-muted py-4 small">No unread messages.</div>';
+            return;
+        }
+        el.innerHTML = items.map(m => `
+            <a href="${m.url}" class="d-flex align-items-start gap-2 px-3 py-2 text-decoration-none text-dark border-bottom"
+               style="transition:background .15s" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
+                <div class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center flex-shrink-0 mt-1" style="width:32px;height:32px;font-size:14px">
+                    <i class="bi bi-person"></i>
+                </div>
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="d-flex justify-content-between">
+                        <span class="small fw-semibold">${m.name}</span>
+                        <span class="text-muted" style="font-size:11px">${m.time}</span>
+                    </div>
+                    <div class="small text-muted text-truncate">${m.subject}</div>
+                </div>
+            </a>`).join('');
+    } catch { el.innerHTML = '<div class="text-center text-muted py-3 small">Failed to load.</div>'; }
+}
+
+// Reload bell list after returning to page (back button)
+document.getElementById('bellDropdown').addEventListener('show.bs.dropdown', fetchBellItems);
+document.getElementById('chatDropdown').addEventListener('show.bs.dropdown', fetchMessages);
+
+// Initial + poll every 60s
+fetchCounts();
+setInterval(fetchCounts, 60000);
 </script>
 @stack('scripts')
 </body>

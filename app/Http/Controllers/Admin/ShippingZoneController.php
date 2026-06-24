@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ShippingZone;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 
 class ShippingZoneController extends Controller
@@ -24,7 +25,8 @@ class ShippingZoneController extends Controller
             'status'      => 'required|in:active,inactive',
         ]);
 
-        ShippingZone::create($data);
+        $zone = ShippingZone::create($data);
+        ActivityLogService::created('ShippingZone', $zone->id, "Created shipping zone \"{$zone->name}\"");
         return redirect()->route('admin.shipping-zones.index')->with('success', 'Shipping zone created.');
     }
 
@@ -40,11 +42,13 @@ class ShippingZoneController extends Controller
         ]);
 
         $shippingZone->update($data);
+        ActivityLogService::updated('ShippingZone', $shippingZone->id, "Updated shipping zone \"{$shippingZone->name}\"");
         return redirect()->route('admin.shipping-zones.index')->with('success', 'Shipping zone updated.');
     }
 
     public function destroy(ShippingZone $shippingZone)
     {
+        ActivityLogService::deleted('ShippingZone', $shippingZone->id, "Deleted shipping zone \"{$shippingZone->name}\"");
         $shippingZone->delete();
         return back()->with('success', 'Shipping zone deleted.');
     }

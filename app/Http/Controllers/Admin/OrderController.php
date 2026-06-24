@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Courier;
+use App\Services\ActivityLogService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -50,7 +51,13 @@ class OrderController extends Controller
             'note'   => 'nullable|string',
         ]);
 
-        $this->orderService->updateStatus($order, $request->status, $request->note ?? '', auth()->id());
+        $oldStatus = $order->status;
+        $this->orderService->updateStatus($order, $request->status, $request->note ?? '', auth()->user()?->id);
+
+        ActivityLogService::statusChanged('Order', $order->id,
+            "Changed order {$order->order_number} status from {$oldStatus} to {$request->status}",
+            ['old_status' => $oldStatus, 'new_status' => $request->status]
+        );
 
         return back()->with('success', 'Order status updated.');
     }
@@ -66,6 +73,11 @@ class OrderController extends Controller
             'courier_id'              => $request->courier_id,
             'courier_tracking_number' => $request->courier_tracking_number,
         ]);
+
+        ActivityLogService::updated('Order', $order->id,
+            "Assigned courier to order {$order->order_number}",
+            ['tracking_number' => $request->courier_tracking_number]
+        );
 
         return back()->with('success', 'Courier assigned.');
     }

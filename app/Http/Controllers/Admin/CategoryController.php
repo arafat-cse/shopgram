@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\ActivityLogService;
 
 class CategoryController extends Controller
 {
@@ -39,8 +40,9 @@ class CategoryController extends Controller
             $data['image'] = $request->file('image')->store('categories', 'public');
         }
 
-        Category::create($data);
+        $category = Category::create($data);
 
+        ActivityLogService::created('Category', $category->id, "Created category \"{$category->name}\"");
         return redirect()->route('admin.categories.index')->with('success', 'Category created.');
     }
 
@@ -69,11 +71,13 @@ class CategoryController extends Controller
 
         $category->update($data);
 
+        ActivityLogService::updated('Category', $category->id, "Updated category \"{$category->name}\"");
         return redirect()->route('admin.categories.index')->with('success', 'Category updated.');
     }
 
     public function destroy(Category $category)
     {
+        ActivityLogService::deleted('Category', $category->id, "Deleted category \"{$category->name}\"");
         $category->delete();
         return back()->with('success', 'Category deleted.');
     }

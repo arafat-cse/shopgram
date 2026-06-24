@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
 use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
@@ -38,6 +39,8 @@ class SettingController extends Controller
         if ($request->hasFile('site_favicon')) {
             Setting::set('site_favicon', $request->file('site_favicon')->store('settings', 'public'));
         }
+
+        ActivityLogService::log('updated', 'Updated site settings', 'Setting', null);
 
         return back()->with('success', 'Settings saved.');
     }
