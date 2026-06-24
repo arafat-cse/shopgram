@@ -7,23 +7,23 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\Coupon;
+use App\Services\ReportService;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
+    public function __construct(private ReportService $reportService) {}
+
     public function sales(Request $request)
     {
         $from = $request->from_date ?? now()->startOfMonth()->toDateString();
         $to   = $request->to_date ?? now()->toDateString();
 
+        $data = $this->reportService->salesReport($from, $to);
         $orders = Order::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
-            ->where('status', 'delivered')->get();
-
-        $data = [
-            'total_sales'       => $orders->sum('total'),
-            'order_count'       => $orders->count(),
-            'avg_order_value'   => $orders->count() > 0 ? $orders->avg('total') : 0,
-        ];
+            ->where('status', 'delivered')
+            ->latest()
+            ->get();
 
         return view('admin.reports.sales', compact('data', 'orders', 'from', 'to'));
     }
@@ -73,7 +73,28 @@ class ReportController extends Controller
 
     public function export(Request $request, string $type)
     {
-        // Basic CSV export
-        return response()->json(['message' => 'Export feature - implement with Maatwebsite Excel']);
+        if ($type !== 'sales') {
+            return response()->json(['message' => 'Export is available for sales report.'], 422);
+        }
+
+        $from = $request->from_date ?? now()->startOfMonth()->toDateString();
+        $to = $request->to_date ?? now()->toDateString();
+        $data = $this->reportService->salesReport($from, $to);
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="sales-report.csv"',
+        ];
+
+        return response()->stream(function () use ($data) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Date', 'Orders', 'Revenue']);
+
+            foreach ($data['by_day'] as $row) {
+                fputcsv($handle, [$row->date, $row->orders, $row->revenue]);
+            }
+
+            fclose($handle);
+        }, 200, $headers);
     }
 }

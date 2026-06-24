@@ -62,6 +62,11 @@
         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
         </a>
+        @can('analytics.view')
+            <a href="{{ route('admin.analytics.index') }}" class="nav-link {{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}">
+                <i class="bi bi-graph-up-arrow"></i> <span>Analytics</span>
+            </a>
+        @endcan
 
         <div class="nav-section">Catalog</div>
         <a href="{{ route('admin.products.index') }}" class="nav-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
@@ -104,7 +109,7 @@
             <i class="bi bi-person-badge"></i> <span>Admin Users</span>
         </a>
         <a href="{{ route('admin.roles.index') }}" class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-            <i class="bi bi-shield-check"></i> <span>Roles</span>
+            <i class="bi bi-shield-check"></i> <span>Role & Permission</span>
         </a>
 
         <div class="nav-section">Content</div>
@@ -379,4 +384,3 @@ setInterval(fetchCounts, 60000);
 @stack('scripts')
 </body>
 </html>
-

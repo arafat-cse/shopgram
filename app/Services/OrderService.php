@@ -85,6 +85,8 @@ class OrderService
                         'weight' => $item->variant->weight,
                     ] : null,
                     'quantity'   => $item->quantity,
+                    'purchase_price' => $item->product->purchase_price ?? 0,
+                    'selling_price' => $item->price,
                     'unit_price' => $item->price,
                     'total_price'=> $item->price * $item->quantity,
                 ]);
