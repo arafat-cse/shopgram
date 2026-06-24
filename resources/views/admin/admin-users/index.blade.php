@@ -20,9 +20,7 @@
                     <td>
                         <a href="{{ route('admin.admin-users.edit', $user) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                         @if($user->id !== auth()->id())
-                        <form action="{{ route('admin.admin-users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete admin user?')">
-                            @csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                        <x-delete-button :action="route('admin.admin-users.destroy', $user)" message="Delete this admin user?" />
                         @endif
                     </td>
                 </tr>

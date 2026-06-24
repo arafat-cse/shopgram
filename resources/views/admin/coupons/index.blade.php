@@ -33,11 +33,7 @@
                         <td><span class="badge bg-{{ $coupon->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($coupon->status) }}</span></td>
                         <td>
                             <a href="{{ route('admin.coupons.edit', $coupon) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete coupon?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
+                            <x-delete-button :action="route('admin.coupons.destroy', $coupon)" message="Delete this coupon?" />
                         </td>
                     </tr>
                 @empty

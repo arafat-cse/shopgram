@@ -6,7 +6,7 @@
     <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary btn-sm">Back</a>
 </div>
 
-<form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="product-upload-form">
     @csrf
     <div class="row g-4">
         <div class="col-lg-8">
@@ -111,7 +111,7 @@
                         <label class="form-check-label">New Arrival</label>
                     </div>
                     <div class="form-check">
-                        <input type="checkbox" class="form-check-input" name="is_best_seller" value="1" {{ old('is_best_seller') ? 'checked' : '' }}>
+                        <input type="checkbox" class="form-check-input" name="is_best_selling" value="1" {{ old('is_best_selling') ? 'checked' : '' }}>
                         <label class="form-check-label">Best Seller</label>
                     </div>
                 </div>
@@ -120,8 +120,17 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white fw-bold">Thumbnail</div>
                 <div class="card-body">
-                    <input type="file" name="thumbnail" class="form-control" accept="image/jpeg,image/png,image/webp">
-                    <small class="text-muted">JPEG/PNG/WebP, max 2MB</small>
+                    <input type="file" name="thumbnail" class="form-control product-image-input" accept="image/jpeg,image/png,image/webp">
+                    <small class="text-muted">JPEG/PNG/WebP, max 16MB</small>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white fw-bold">Product Gallery</div>
+                <div class="card-body">
+                    <input type="file" name="gallery[]" class="form-control product-image-input @error('gallery.*') is-invalid @enderror" accept="image/jpeg,image/png,image/webp" multiple>
+                    @error('gallery.*')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <small class="text-muted d-block mt-2">Upload 1-8 extra images. Each image max 16MB, total form upload max 64MB.</small>
                 </div>
             </div>
         </div>
@@ -131,4 +140,31 @@
         <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
     </div>
 </form>
+@push('scripts')
+<script>
+document.querySelectorAll('.product-upload-form').forEach((form) => {
+    form.addEventListener('submit', function (event) {
+        const maxFileSize = 16 * 1024 * 1024;
+        const maxTotalSize = 60 * 1024 * 1024;
+        let totalSize = 0;
+
+        for (const input of form.querySelectorAll('.product-image-input')) {
+            for (const file of input.files) {
+                totalSize += file.size;
+                if (file.size > maxFileSize) {
+                    event.preventDefault();
+                    alert(`${file.name} is larger than 16MB. Please upload a smaller image.`);
+                    return;
+                }
+            }
+        }
+
+        if (totalSize > maxTotalSize) {
+            event.preventDefault();
+            alert('Total image upload is too large. Please keep all selected images under 60MB.');
+        }
+    });
+});
+</script>
+@endpush
 @endsection

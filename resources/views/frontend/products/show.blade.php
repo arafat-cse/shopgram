@@ -1,5 +1,87 @@
 @extends('layouts.app')
 @section('title', $product->name)
+@push('styles')
+<style>
+    .product-gallery-shell {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 10px;
+        padding: 14px;
+        box-shadow: 0 12px 34px rgba(15, 23, 42, .06);
+    }
+
+    .product-main-image-wrap {
+        position: relative;
+        background: #fafafa;
+        border-radius: 8px;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: zoom-in;
+    }
+
+    .product-main-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 14px;
+        transform-origin: center;
+        transition: opacity .18s ease, transform .22s ease;
+        will-change: transform;
+        pointer-events: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .product-main-image-wrap:hover img {
+            transform: scale(1.85);
+        }
+    }
+
+    .product-main-image-wrap img.is-changing {
+        opacity: .45;
+        transform: scale(.985);
+    }
+
+    .product-thumb-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .product-thumb-btn {
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        border-radius: 8px;
+        padding: 4px;
+        height: 78px;
+        cursor: pointer;
+        transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    .product-thumb-btn:hover,
+    .product-thumb-btn.active {
+        border-color: #e91e63;
+        box-shadow: 0 8px 20px rgba(233, 30, 99, .12);
+        transform: translateY(-1px);
+    }
+
+    .product-thumb-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    @media (max-width: 575px) {
+        .product-gallery-shell { padding: 10px; }
+        .product-thumb-strip { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
+        .product-thumb-btn { height: 64px; }
+    }
+</style>
+@endpush
 @section('content')
 <div class="container py-4">
     <x-breadcrumb :items="[$product->category->name => route('category.show', $product->category->slug), $product->name => '#']" />
@@ -7,20 +89,48 @@
     <div class="row g-4">
         {{-- Product Images --}}
         <div class="col-md-5">
-            <div class="card border-0">
-                <img id="mainImage"
-                     src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
-                     class="img-fluid rounded" alt="{{ $product->name }}" style="max-height:400px;object-fit:contain;width:100%">
+            @php
+                $galleryImages = collect();
+                if ($product->thumbnail) {
+                    $galleryImages->push([
+                        'url' => asset('storage/'.$product->thumbnail),
+                        'alt' => $product->name,
+                    ]);
+                }
+
+                foreach ($product->images as $image) {
+                    $galleryImages->push([
+                        'url' => asset('storage/'.$image->image_path),
+                        'alt' => $product->name,
+                    ]);
+                }
+
+                if ($galleryImages->isEmpty()) {
+                    $galleryImages->push([
+                        'url' => asset('images/no-image.png'),
+                        'alt' => $product->name,
+                    ]);
+                }
+            @endphp
+
+            <div class="product-gallery-shell">
+                <div class="product-main-image-wrap">
+                    <img id="mainImage" src="{{ $galleryImages->first()['url'] }}" alt="{{ $product->name }}">
+                </div>
+
+                @if($galleryImages->count() > 1)
+                    <div class="product-thumb-strip" aria-label="Product image gallery">
+                        @foreach($galleryImages as $galleryImage)
+                            <button type="button"
+                                    class="product-thumb-btn {{ $loop->first ? 'active' : '' }}"
+                                    data-image="{{ $galleryImage['url'] }}"
+                                    aria-label="View image {{ $loop->iteration }}">
+                                <img src="{{ $galleryImage['url'] }}" alt="{{ $galleryImage['alt'] }}">
+                            </button>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            @if($product->images->count())
-            <div class="d-flex gap-2 mt-2 flex-wrap">
-                @foreach($product->images as $img)
-                <img src="{{ asset('storage/'.$img->image_path) }}"
-                     class="img-thumbnail cursor-pointer" style="width:70px;height:70px;object-fit:cover;cursor:pointer"
-                     onclick="document.getElementById('mainImage').src=this.src">
-                @endforeach
-            </div>
-            @endif
         </div>
 
         {{-- Product Info --}}
@@ -183,6 +293,41 @@ const qtyInput = document.getElementById('qtyInput');
 document.getElementById('qtyMinus').addEventListener('click', () => { if (qtyInput.value > 1) { qtyInput.value--; syncQty(); } });
 document.getElementById('qtyPlus').addEventListener('click', () => { qtyInput.value++; syncQty(); });
 qtyInput.addEventListener('change', syncQty);
+
+const mainImage = document.getElementById('mainImage');
+const mainImageWrap = document.querySelector('.product-main-image-wrap');
+
+if (mainImage && mainImageWrap && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    mainImageWrap.addEventListener('mousemove', (event) => {
+        const rect = mainImageWrap.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / rect.width) * 100;
+        const y = ((event.clientY - rect.top) / rect.height) * 100;
+        mainImage.style.transformOrigin = `${x}% ${y}%`;
+    });
+
+    mainImageWrap.addEventListener('mouseleave', () => {
+        mainImage.style.transformOrigin = 'center';
+    });
+}
+
+document.querySelectorAll('.product-thumb-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+        const nextImage = button.dataset.image;
+        if (!mainImage || mainImage.src === nextImage) {
+            return;
+        }
+
+        document.querySelectorAll('.product-thumb-btn').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        mainImage.classList.add('is-changing');
+
+        window.setTimeout(() => {
+            mainImage.src = nextImage;
+            mainImage.style.transformOrigin = 'center';
+            mainImage.classList.remove('is-changing');
+        }, 120);
+    });
+});
 
 const variantSelect = document.getElementById('variantSelect');
 function syncQty() {

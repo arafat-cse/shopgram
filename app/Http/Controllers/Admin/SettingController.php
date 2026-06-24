@@ -18,7 +18,8 @@ class SettingController extends Controller
     {
         $allowed = [
             'site_name', 'site_logo', 'site_favicon', 'contact_email', 'contact_phone',
-            'address', 'facebook', 'youtube', 'instagram', 'whatsapp',
+            'address', 'contact_intro', 'support_hours', 'mission', 'vision',
+            'facebook', 'youtube', 'instagram', 'whatsapp',
             'meta_title', 'meta_description', 'currency_symbol', 'currency_position',
             'tax_percentage', 'inside_city_charge', 'outside_city_charge',
             'maintenance_mode', 'maintenance_message',

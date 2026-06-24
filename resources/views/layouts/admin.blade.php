@@ -125,6 +125,9 @@
         <a href="{{ route('admin.tickets.index') }}" class="nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
             <i class="bi bi-headset"></i> <span>Tickets</span>
         </a>
+        <a href="{{ route('admin.contact-messages.index') }}" class="nav-link {{ request()->routeIs('admin.contact-messages.*') ? 'active' : '' }}">
+            <i class="bi bi-chat-left-text"></i> <span>Contact Messages</span>
+        </a>
 
         <div class="nav-section">Reports</div>
         <a href="{{ route('admin.reports.sales') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
@@ -178,12 +181,7 @@
     {{-- Flash Messages --}}
     <div class="px-4 pt-3">
         <x-alert />
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}<button class="btn-close" data-bs-dismiss="alert"></button></div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">{{ session('error') }}<button class="btn-close" data-bs-dismiss="alert"></button></div>
-        @endif
+        <x-toast />
     </div>
 
     <div class="page-content">
@@ -193,6 +191,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<x-confirm-delete />
 <script>
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');

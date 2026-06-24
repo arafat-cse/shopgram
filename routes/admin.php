@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\ContactMessageController;
 
 Route::middleware(['auth', 'admin.access'])
     ->prefix('admin')
@@ -97,6 +98,7 @@ Route::middleware(['auth', 'admin.access'])
         Route::resource('tickets', TicketController::class)->only(['index', 'show']);
         Route::post('tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
         Route::post('tickets/{ticket}/status', [TicketController::class, 'updateStatus'])->name('tickets.status');
+        Route::resource('contact-messages', ContactMessageController::class)->only(['index', 'show', 'destroy']);
     });
 
     // Banners

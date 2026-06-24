@@ -18,9 +18,7 @@
                     <td class="text-muted small">{{ $page->updated_at->format('d M Y') }}</td>
                     <td>
                         <a href="{{ route('admin.pages.edit', $page) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form action="{{ route('admin.pages.destroy', $page) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">
-                            @csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                        <x-delete-button :action="route('admin.pages.destroy', $page)" message="Delete this page?" />
                     </td>
                 </tr>
                 @empty

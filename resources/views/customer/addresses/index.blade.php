@@ -22,10 +22,7 @@
                     <form action="{{ route('customer.addresses.default', $addr) }}" method="POST">
                         @csrf<button class="btn btn-sm btn-outline-primary">Set Default</button>
                     </form>
-                    <form action="{{ route('customer.addresses.destroy', $addr) }}" method="POST">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
+                    <x-delete-button :action="route('customer.addresses.destroy', $addr)" message="Delete this address?" form-class="d-inline" />
                     @endif
                 </div>
             </div>

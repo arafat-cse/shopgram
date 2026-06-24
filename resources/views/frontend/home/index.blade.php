@@ -12,10 +12,7 @@
     }
 
     body { background: var(--sg-soft); }
-    .navbar, footer { background: #fff !important; }
-    footer { color: var(--sg-ink) !important; border-top: 1px solid #ebe5dd; }
-    footer .text-muted, footer a.text-muted { color: #6b7280 !important; }
-    footer .border-secondary { border-color: #e7ded4 !important; }
+    .navbar { background: #fff !important; }
 
     .home-shell {
         background: var(--sg-soft);
@@ -604,9 +601,9 @@
 
                             <div class="hero-overlay">
                                 <div class="hero-copy">
-                                    <div class="eyebrow">{{ $banner->subtitle ?? 'সরাসরি প্রকৃতি থেকে' }}</div>
-                                    <h1>{{ $banner->title ?? 'আপনার ঘরে' }}</h1>
-                                    <span class="hero-cta">{{ $banner->button_text ?? 'অর্ডার চলছে' }}</span>
+                                    <div class="eyebrow">{{ $banner->subtitle ?? 'First Impression' }}</div>
+                                    <h1>{{ $banner->title ?? 'ShopGram offer' }}</h1>
+                                    <span class="hero-cta">{{ $banner->button_text ?? 'Learn More' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -629,9 +626,9 @@
                 @endif
                 <div class="hero-overlay">
                     <div class="promo-copy">
-                        <div class="eyebrow">{{ $promoBanner->subtitle ?? 'মিষ্টি-রসালো স্বাদে অনন্য' }}</div>
-                        <h2>{{ $promoBanner->title ?? 'বাগানের সেরা আম্রপালি' }}</h2>
-                        <span class="hero-cta">{{ $promoBanner->button_text ?? 'প্রি-অর্ডার চলছে' }}</span>
+                        <div class="eyebrow">{{ $promoBanner->subtitle ?? 'First Impression' }}</div>
+                        <h2>{{ $promoBanner->title ?? 'ShopGram offer' }}</h2>
+                        <span class="hero-cta">{{ $promoBanner->button_text ?? 'Learn More' }}</span>
                     </div>
                 </div>
             </a>
@@ -673,7 +670,7 @@
     </div>
 
     @if($bestSelling->count())
-        <section class="products-section">
+        <section class="products-section" id="best-sellers">
             <div class="home-wrap">
                 <h2 class="section-heading">Top Selling Products</h2>
                 <div class="products-grid">
@@ -729,7 +726,7 @@
     @endif
 
     @if($brands->count())
-        <section class="brands-section">
+        <section class="brands-section" id="brands">
             <div class="home-wrap">
                 <div class="brand-head">
                     <h2 class="brand-title">Our Brands</h2>
@@ -779,7 +776,7 @@
             @endif
 
             @if($newArrivals->count())
-                <section class="mb-5">
+                <section class="mb-5" id="new-arrivals">
                     <div class="legacy-head">
                         <h2 class="legacy-title">New Arrivals</h2>
                         <a class="see-all" href="{{ route('products.index') }}">SEE ALL <i class="bi bi-arrow-right"></i></a>
@@ -811,7 +808,7 @@
             @endif
 
             @if($discounts->count())
-                <section class="mb-5">
+                <section class="mb-5" id="offers">
                     <div class="legacy-head">
                         <h2 class="legacy-title">Special Offers</h2>
                         <a class="see-all" href="{{ route('products.index') }}">SEE ALL <i class="bi bi-arrow-right"></i></a>
