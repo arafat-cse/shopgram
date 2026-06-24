@@ -7,6 +7,7 @@ use App\Models\SupportTicket;
 use App\Policies\OrderPolicy;
 use App\Policies\TicketPolicy;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Setting;
@@ -28,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         // Super Admin bypasses all permission checks
         Gate::before(function ($user, $ability) {
             if ($user->hasRole('Super Admin')) {
