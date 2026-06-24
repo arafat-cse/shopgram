@@ -7,6 +7,7 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use App\Services\ActivityLogService;
 
 class AdminUserController extends Controller
 {
@@ -43,6 +44,7 @@ class AdminUserController extends Controller
 
         $user->assignRole($data['role']);
 
+        ActivityLogService::created('User', $user->id, "Created admin user \"{$user->name}\" ({$data['role']})");
         return redirect()->route('admin.admin-users.index')->with('success', 'Admin user created.');
     }
 
@@ -68,6 +70,7 @@ class AdminUserController extends Controller
 
         $adminUser->update($updateData);
 
+        ActivityLogService::updated('User', $adminUser->id, "Updated admin user \"{$adminUser->name}\"");
         return redirect()->route('admin.admin-users.index')->with('success', 'Admin user updated.');
     }
 
@@ -76,6 +79,7 @@ class AdminUserController extends Controller
         if ($adminUser->id === auth()->id()) {
             return back()->withErrors(['error' => 'Cannot delete yourself.']);
         }
+        ActivityLogService::deleted('User', $adminUser->id, "Deleted admin user \"{$adminUser->name}\"");
         $adminUser->delete();
         return back()->with('success', 'Admin user deleted.');
     }
@@ -86,6 +90,7 @@ class AdminUserController extends Controller
     {
         $request->validate(['role' => 'required|exists:roles,name']);
         $user->syncRoles([$request->role]);
+        ActivityLogService::log('status_changed', "Assigned role \"{$request->role}\" to \"{$user->name}\"", 'User', $user->id);
         return back()->with('success', 'Role assigned.');
     }
 }

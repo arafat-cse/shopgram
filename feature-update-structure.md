@@ -1,0 +1,210 @@
+# ShopGram — Feature Update Roadmap
+
+**Goal:** Smarter UX, higher conversion, better admin control  
+**Last updated:** 2026-06-24
+
+---
+
+## Priority Legend
+- 🔴 High impact — implement first
+- 🟡 Medium impact — implement next
+- 🟢 Nice to have — when time allows
+
+---
+
+## FRONTEND / CUSTOMER UX
+
+### 🔴 Conversion Boosters
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Mini cart drawer** | Slide-in cart from right when "Add to Cart" clicked — no page reload | JS + Blade partial + AJAX |
+| **Product quick view modal** | Click product card → modal with image, price, variant, add-to-cart — stays on listing page | Bootstrap modal + AJAX route `/products/{slug}/quick-view` |
+| **Stock urgency badge** | "Only 3 left!" badge when stock ≤ 5 | Already have `stock_quantity`, show conditionally |
+| **Flash sale countdown timer** | Countdown on sale products with end time | JS `setInterval` + `sale_ends_at` column in products |
+| **"Notify me when in stock"** | Guest/customer subscribes to out-of-stock product — email when restocked | `stock_notifications` table → trigger in InventoryService |
+
+### 🔴 Product Discovery
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Recently viewed products** | Show last 6 viewed products on product/home page | Store `product_id[]` in session or `recently_viewed` DB table per user |
+| **"Customers also bought"** | Related products based on order co-occurrence | Query: other products in orders that contain current product |
+| **Product image zoom** | Hover zoom on product detail gallery | JS library: `drift-zoom` or CSS transform |
+| **Color/size swatch selector** | Visual buttons for variants instead of dropdown | Render variants as clickable swatches, update price/stock via JS |
+| **Compare products** | Select up to 3 products, compare specs side by side | `compare_ids[]` session + `/compare` page |
+
+### 🟡 Search & Filter
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Price range slider** | Drag slider to filter price — replaces min/max inputs | noUiSlider JS + query params |
+| **AJAX filter (no page reload)** | Filter/sort products without full page reload | fetch() → replace product grid HTML partial |
+| **Search history** | Show last searches in search dropdown | localStorage |
+| **Voice search** | Mic icon → browser speech API → fill search | Web Speech API (browser native, no backend needed) |
+
+### 🟡 Trust & Social Proof
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **"X people viewing this"** | Fake-but-effective social proof on product page | Random number seeded by product_id (no tracking needed) |
+| **"Y sold in last 24h"** | Show recent sales count | Query `order_items` where `created_at >= now()-24h` |
+| **Review photos** | Customers upload images with reviews | Add `review_images` table, image upload in ReviewController |
+| **Verified purchase badge** | Badge on reviews from confirmed buyers | Check if reviewer has delivered order containing product |
+| **Q&A section on product page** | Customer asks question, admin answers | `product_questions` + `product_answers` tables |
+
+### 🟡 Customer Dashboard Enhancements
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Order invoice download** | Customer downloads own order invoice PDF | DomPDF already installed — expose customer route |
+| **Reorder button** | One click re-adds all items from past order to cart | `POST /customer/orders/{order}/reorder` → CartService |
+| **Wishlist → share link** | Share wishlist URL with others | Generate token, public route `/wishlist/{token}` |
+| **Loyalty points display** | Show earned points in dashboard | `loyalty_points` column on users table |
+
+### 🟢 Mobile UX
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **PWA support** | Add to home screen, offline page | `manifest.json` + service worker + `offline.blade.php` |
+| **Sticky add-to-cart bar** | Bar appears when product's ATC button scrolls out of view | IntersectionObserver JS |
+| **Swipe gestures on product gallery** | Swipe left/right between images on mobile | Swiper.js (already likely in project) |
+| **Bottom sheet filters** | Mobile filter as bottom drawer (spec mentions this) | Bootstrap offcanvas bottom |
+
+---
+
+## BACKEND / ADMIN
+
+### 🔴 Productivity
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Product clone/duplicate** | Copy product with one click — new SKU, "Copy of" name | `POST /admin/products/{product}/duplicate` → replicate model |
+| **Bulk order status update** | Check multiple orders → change status all at once | Checkbox datatable + `POST /admin/orders/bulk-status` |
+| **CSV product import** | Upload CSV to create/update products in bulk | `maatwebsite/excel` already installed |
+| **CSV/Excel export for all modules** | Export orders, customers, products, stock to Excel | `maatwebsite/excel` — implement in each controller |
+| **Scheduled product publish** | Set `published_at` date — product goes live automatically | `published_at` column + `where('published_at', '<=', now())` scope |
+
+### 🔴 Smart Inventory
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Auto low-stock email to admin** | Send `LowStockAlertNotification` when stock hits threshold during order | Trigger in `InventoryService::deductStock()` — notification already built |
+| **Inventory forecast** | Show "At current sell rate, stock runs out in X days" | Avg daily sales from `order_items` ÷ current stock |
+| **Restock purchase order** | Admin creates purchase order (PO) to track incoming stock | `purchase_orders` + `purchase_order_items` tables |
+
+### 🟡 Order Intelligence
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Abandoned cart list** | Admin sees carts not converted to order in 24h+ | Query `cart_items` grouped by user, older than 24h, no corresponding order |
+| **Abandoned cart email** | Auto-email customer after 1h of abandonment | Laravel scheduled job + queued mail |
+| **Order fraud flag** | Flag orders with multiple failed payments or rapid duplicate orders | Simple rule engine in OrderService |
+| **Bulk invoice print** | Select orders → print all invoices at once | JS `window.print()` on multi-invoice page |
+
+### 🟡 Customer Intelligence
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Customer segments** | Tag customers: VIP (spent > X), New, At Risk (no order in 60d) | Computed from order history, show in customer list |
+| **Customer lifetime value** | Show total spent, avg order, first/last order date on customer detail | Aggregate from `orders` table |
+| **Block/unblock with reason** | Store reason when blocking customer | `blocked_reason` + `blocked_at` columns on users |
+
+### 🟡 Marketing Tools
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Flash sale manager** | Create sale with % off, start/end time, specific products/categories | `flash_sales` + `flash_sale_products` tables |
+| **Loyalty points system** | Earn points per ৳ spent, redeem as discount | `loyalty_points` on users, `point_transactions` table, redeem at checkout |
+| **Referral system** | Customer gets unique link, earns credit when referral buys | `referral_code` on users, `referral_conversions` table |
+| **Newsletter campaigns** | Admin composes email, sends to all subscribers | Queue-based bulk mail using `Newsletter` model |
+| **Pop-up / exit-intent offer** | Show coupon popup when user is about to leave | JS `mouseleave` on document + session flag |
+
+### 🟢 Admin UX
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Admin activity log** | Track who did what: created product, updated order status, etc. | `admin_activity_logs` table, log in each admin controller |
+| **Dashboard notifications bell** | Real-time count of new orders, tickets, low stock | Polling AJAX every 60s → `/admin/notifications/count` |
+| **Dark mode for admin** | Toggle dark/light in admin panel | CSS variables + `localStorage` preference |
+| **Admin quick search** | Press `/` anywhere in admin → search orders, products, customers | JS modal + AJAX |
+| **Keyboard shortcuts** | `N` = new product, `O` = orders, `ESC` = close modal | JS `keydown` listener |
+
+---
+
+## SMART / AI FEATURES
+
+| Feature | What it does | Notes |
+|---------|-------------|-------|
+| **Smart search (typo-tolerant)** | "samsubng" finds Samsung products | Laravel Scout + Meilisearch (self-hosted, free) |
+| **Auto SEO generator** | Fill SEO title/description from product name + category automatically | Simple template: `"{name} — Buy Online in Bangladesh"` |
+| **Smart product tagging** | Auto-suggest tags based on product name | Keyword extraction from name/description |
+| **Related products (ML-style)** | "Bought together" based on real order co-occurrence | SQL: products co-purchased in same orders, weighted by frequency |
+
+---
+
+## PERFORMANCE & TECHNICAL
+
+| Feature | What it does | Notes |
+|---------|-------------|-------|
+| **Redis cache for product listing** | Cache product queries for 5 min — huge speed boost | `CACHE_DRIVER=redis`, wrap queries in `Cache::remember()` |
+| **Image WebP conversion on upload** | Auto-convert uploaded images to WebP | `spatie/image` package |
+| **Image CDN / lazy loading** | Defer off-screen images | `loading="lazy"` attr on all `<img>` (3-line change) |
+| **Rate limiting on cart/checkout** | Prevent checkout spam/bots | Laravel `RateLimiter` in `RouteServiceProvider` |
+| **2FA for admin login** | Extra security for admin panel | `pragmarx/google2fa-laravel` |
+| **Sitemap auto-generation** | SEO: auto sitemap.xml for all products/categories | `spatie/laravel-sitemap` |
+| **robots.txt management** | Control crawler access from admin settings | Setting key + served via route |
+
+---
+
+## DATABASE ADDITIONS NEEDED
+
+For above features, new tables required:
+
+```
+flash_sales          — id, name, discount_percent, starts_at, ends_at, status
+flash_sale_products  — flash_sale_id, product_id
+stock_notifications  — id, user_id, product_id, notified_at (nullable)
+recently_viewed      — id, user_id, product_id, viewed_at
+product_questions    — id, product_id, user_id, question, status
+product_answers      — id, question_id, user_id, answer
+loyalty_points       — column on users table: points INT default 0
+point_transactions   — id, user_id, type(earn/redeem), points, note, order_id, created_at
+referral_codes       — column on users: referral_code (unique)
+referral_conversions — id, referrer_id, referee_id, order_id, credit_amount
+admin_activity_logs  — id, user_id, action, model_type, model_id, meta(json), created_at
+purchase_orders      — id, supplier_name, status, expected_at, note, created_by
+purchase_order_items — id, po_id, product_id, variant_id, qty, unit_cost
+```
+
+---
+
+## RECOMMENDED IMPLEMENTATION ORDER
+
+```
+Phase A (Quick wins — 1-2 days each):
+  1. Product clone button
+  2. Reorder button (customer)
+  3. Recently viewed products
+  4. Stock urgency badge ("Only X left")
+  5. Auto low-stock email (trigger already built)
+  6. Customer invoice download
+  7. Image lazy loading (3 min change)
+  8. CSV export for orders + customers
+
+Phase B (Medium effort — 3-5 days each):
+  9. Mini cart drawer (AJAX)
+  10. Product quick view modal
+  11. Bulk order status update
+  12. Abandoned cart list + email
+  13. Flash sale manager
+  14. AJAX product filters
+  15. CSV product import
+
+Phase C (Bigger features — 1 week+):
+  16. Loyalty points system
+  17. Smart search (Meilisearch)
+  18. Referral system
+  19. Q&A on product page
+  20. PWA support
+```

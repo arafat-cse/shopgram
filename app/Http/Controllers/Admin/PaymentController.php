@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -34,6 +35,8 @@ class PaymentController extends Controller
         } elseif ($request->status === 'refunded') {
             $payment->order->update(['payment_status' => 'refunded']);
         }
+
+        ActivityLogService::statusChanged('Payment', $payment->id, "Payment #{$payment->id} status → {$request->status} (Order: {$payment->order->order_number})");
 
         return back()->with('success', 'Payment status updated.');
     }

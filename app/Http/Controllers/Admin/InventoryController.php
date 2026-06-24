@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\InventoryService;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 
 class InventoryController extends Controller
@@ -46,6 +47,9 @@ class InventoryController extends Controller
             $request->quantity, $request->note, auth()->id()
         );
 
+        $product = \App\Models\Product::find($request->product_id);
+        ActivityLogService::log('created', "Stock IN: +{$request->quantity} for \"{$product->name}\"", 'Product', $request->product_id, ['qty' => $request->quantity, 'note' => $request->note]);
+
         return back()->with('success', 'Stock added.');
     }
 
@@ -63,6 +67,9 @@ class InventoryController extends Controller
             $request->quantity, $request->note, auth()->id()
         );
 
+        $product = \App\Models\Product::find($request->product_id);
+        ActivityLogService::log('created', "Stock OUT: -{$request->quantity} for \"{$product->name}\"", 'Product', $request->product_id, ['qty' => $request->quantity, 'note' => $request->note]);
+
         return back()->with('success', 'Stock deducted.');
     }
 
@@ -79,6 +86,9 @@ class InventoryController extends Controller
             $request->product_id, $request->variant_id,
             $request->quantity, $request->note, auth()->id()
         );
+
+        $product = \App\Models\Product::find($request->product_id);
+        ActivityLogService::log('created', "Stock ADJUSTED: set {$request->quantity} for \"{$product->name}\"", 'Product', $request->product_id, ['qty' => $request->quantity, 'note' => $request->note]);
 
         return back()->with('success', 'Stock adjusted.');
     }

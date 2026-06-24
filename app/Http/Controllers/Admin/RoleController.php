@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
 
 class RoleController extends Controller
 {
@@ -29,6 +30,7 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
+        ActivityLogService::created('Role', $role->id, "Created role \"{$role->name}\"");
         return redirect()->route('admin.roles.index')->with('success', 'Role created.');
     }
 
@@ -50,11 +52,13 @@ class RoleController extends Controller
             $role->syncPermissions([]);
         }
 
+        ActivityLogService::updated('Role', $role->id, "Updated role \"{$role->name}\"");
         return redirect()->route('admin.roles.index')->with('success', 'Role updated.');
     }
 
     public function destroy(Role $role)
     {
+        ActivityLogService::deleted('Role', $role->id, "Deleted role \"{$role->name}\"");
         $role->delete();
         return back()->with('success', 'Role deleted.');
     }
@@ -64,6 +68,7 @@ class RoleController extends Controller
     public function updatePermissions(Request $request, Role $role)
     {
         $role->syncPermissions($request->permissions ?? []);
+        ActivityLogService::updated('Role', $role->id, "Updated permissions for role \"{$role->name}\"");
         return back()->with('success', 'Permissions updated.');
     }
 }

@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Courier;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 
 class CourierController extends Controller
@@ -24,7 +25,8 @@ class CourierController extends Controller
             'status'       => 'required|in:active,inactive',
         ]);
 
-        Courier::create($data);
+        $courier = Courier::create($data);
+        ActivityLogService::created('Courier', $courier->id, "Created courier \"{$courier->name}\"");
         return redirect()->route('admin.couriers.index')->with('success', 'Courier created.');
     }
 
@@ -40,11 +42,13 @@ class CourierController extends Controller
         ]);
 
         $courier->update($data);
+        ActivityLogService::updated('Courier', $courier->id, "Updated courier \"{$courier->name}\"");
         return redirect()->route('admin.couriers.index')->with('success', 'Courier updated.');
     }
 
     public function destroy(Courier $courier)
     {
+        ActivityLogService::deleted('Courier', $courier->id, "Deleted courier \"{$courier->name}\"");
         $courier->delete();
         return back()->with('success', 'Courier deleted.');
     }

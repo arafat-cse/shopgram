@@ -22,7 +22,9 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\NotificationController;
 
 Route::middleware(['auth', 'admin.access'])
     ->prefix('admin')
@@ -143,4 +145,13 @@ Route::middleware(['auth', 'admin.access'])
         Route::resource('admin-users', AdminUserController::class);
         Route::post('admin-users/{user}/role', [AdminUserController::class, 'assignRole'])->name('admin-users.role.assign');
     });
+
+    // Notifications (AJAX)
+    Route::get('notifications/counts',   [NotificationController::class, 'counts'])->name('notifications.counts');
+    Route::get('notifications/recent',   [NotificationController::class, 'recent'])->name('notifications.recent');
+    Route::get('notifications/messages', [NotificationController::class, 'messages'])->name('notifications.messages');
+    Route::post('notifications/mark-read',[NotificationController::class, 'markRead'])->name('notifications.mark-read');
+
+    // Activity Log
+    Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });

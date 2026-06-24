@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
+use App\Services\ActivityLogService;
 
 class CouponController extends Controller
 {
@@ -31,8 +32,9 @@ class CouponController extends Controller
         ]);
 
         $data['code'] = strtoupper($data['code']);
-        Coupon::create($data);
+        $coupon = Coupon::create($data);
 
+        ActivityLogService::created('Coupon', $coupon->id, "Created coupon \"{$coupon->code}\"");
         return redirect()->route('admin.coupons.index')->with('success', 'Coupon created.');
     }
 
@@ -56,11 +58,13 @@ class CouponController extends Controller
         $data['code'] = strtoupper($data['code']);
         $coupon->update($data);
 
+        ActivityLogService::updated('Coupon', $coupon->id, "Updated coupon \"{$coupon->code}\"");
         return redirect()->route('admin.coupons.index')->with('success', 'Coupon updated.');
     }
 
     public function destroy(Coupon $coupon)
     {
+        ActivityLogService::deleted('Coupon', $coupon->id, "Deleted coupon \"{$coupon->code}\"");
         $coupon->delete();
         return back()->with('success', 'Coupon deleted.');
     }
