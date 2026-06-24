@@ -1,7 +1,7 @@
 # ShopGram — Project Structure
 
 **Stack:** Laravel 12, Blade, MySQL, Bootstrap 5, jQuery  
-**Last updated:** 2026-06-24 (notifications + activity log added)
+**Last updated:** 2026-06-25 (product duplicate documented)
 
 ---
 
@@ -123,6 +123,7 @@
 - `InventoryService.php`
 - `OrderService.php`
 - `PendingActionService.php`
+- `RecentlyViewedProductService.php`
 - `WishlistService.php`
 - `ReportService.php`
 
@@ -307,10 +308,14 @@
 
 All spec files implemented. No known gaps.
 
-## Recent Additions (2026-06-24)
+## Recent Additions (2026-06-25)
 
 | Item | Type | Purpose |
 |------|------|---------|
+| Product clone/duplicate | Admin productivity | Admin product list has a Duplicate action that opens a prefilled create form; Save Product creates the copy with unique slug/SKU and copied media/variants |
+| Recently viewed products | Frontend UX | Stores the last 6 viewed product IDs in session and shows them on home/product detail pages |
+| Stock urgency badge | Frontend UX | Product cards, home top-selling cards, and product detail show "Only X left!" when stock is at or below the product low-stock threshold |
+| Product image hover zoom | Frontend UX | Product detail gallery zooms on desktop hover and follows cursor position |
 | `ActivityLogController.php` | Controller | Admin activity log page |
 | `NotificationController.php` | Controller | Bell + chat AJAX endpoints |
 | `AdminActivityLog.php` | Model | Activity log entries |

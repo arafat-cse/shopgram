@@ -363,6 +363,20 @@
         font-weight: 600;
     }
 
+    .stock-urgency-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        width: fit-content;
+        margin-bottom: 18px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #fff3cd;
+        color: #8a4b00;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
     .selling-actions {
         display: flex;
         flex-wrap: wrap;
@@ -693,6 +707,13 @@
 
                                 @if($product->sale_price && $product->regular_price > $product->sale_price)
                                     <span class="save-badge">Save &#2547;{{ number_format($product->regular_price - $product->sale_price, 0) }}</span>
+                                @endif
+
+                                @if($product->isLowStock())
+                                    <span class="stock-urgency-badge">
+                                        <i class="bi bi-lightning-charge-fill"></i>
+                                        Only {{ $product->stock_quantity }} left!
+                                    </span>
                                 @else
                                     <span class="d-block mb-4"></span>
                                 @endif
@@ -767,6 +788,22 @@
                     </div>
                     <div class="row g-3">
                         @foreach($featured as $product)
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <x-product-card :product="$product" />
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            @if($recentProducts->count())
+                <section class="mb-5">
+                    <div class="legacy-head">
+                        <h2 class="legacy-title">Recently Viewed Products</h2>
+                        <a class="see-all" href="{{ route('products.index') }}">SEE ALL <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="row g-3">
+                        @foreach($recentProducts as $product)
                             <div class="col-6 col-md-4 col-lg-3">
                                 <x-product-card :product="$product" />
                             </div>

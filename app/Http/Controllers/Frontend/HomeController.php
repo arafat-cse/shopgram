@@ -7,10 +7,11 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\CartService;
+use App\Services\RecentlyViewedProductService;
 
 class HomeController extends Controller
 {
-    public function index(CartService $cartService)
+    public function index(CartService $cartService, RecentlyViewedProductService $recentlyViewed)
     {
         $banners      = Banner::active()->hero()->orderBy('sort_order')->get();
         $promoBanners = Banner::active()->promo()->orderBy('sort_order')->take(2)->get();
@@ -44,6 +45,7 @@ class HomeController extends Controller
         $bestSelling  = Product::active()->bestSelling()->with(['category', 'brand'])->take(4)->get();
         $discounts    = Product::active()->whereNotNull('sale_price')->with('category')->take(8)->get();
         $allProducts  = Product::active()->with('category')->latest()->take(12)->get();
+        $recentProducts = $recentlyViewed->get();
         $cartSubtotal = auth()->check() ? $cartService->getSubtotal(auth()->user()) : 0;
 
         return view('frontend.home.index', compact(
@@ -56,6 +58,7 @@ class HomeController extends Controller
             'bestSelling',
             'discounts',
             'allProducts',
+            'recentProducts',
             'cartSubtotal'
         ));
     }

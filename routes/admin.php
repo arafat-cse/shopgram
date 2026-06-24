@@ -42,6 +42,7 @@ Route::middleware(['auth', 'admin.access'])
 
     // Products
     Route::middleware('permission:product.view')->group(function () {
+        Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
         Route::resource('products', ProductController::class);
         Route::post('products/{product}/images', [ProductController::class, 'uploadImages'])->name('products.images.upload');
         Route::delete('products/images/{image}', [ProductController::class, 'deleteImage'])->name('products.images.delete');

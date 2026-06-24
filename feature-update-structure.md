@@ -1,7 +1,7 @@
 # ShopGram — Feature Update Roadmap
 
 **Goal:** Smarter UX, higher conversion, better admin control  
-**Last updated:** 2026-06-24
+**Last updated:** 2026-06-25
 
 ---
 
@@ -20,7 +20,6 @@
 |---------|-------------|---------------------|
 | **Mini cart drawer** | Slide-in cart from right when "Add to Cart" clicked — no page reload | JS + Blade partial + AJAX |
 | **Product quick view modal** | Click product card → modal with image, price, variant, add-to-cart — stays on listing page | Bootstrap modal + AJAX route `/products/{slug}/quick-view` |
-| **Stock urgency badge** | "Only 3 left!" badge when stock ≤ 5 | Already have `stock_quantity`, show conditionally |
 | **Flash sale countdown timer** | Countdown on sale products with end time | JS `setInterval` + `sale_ends_at` column in products |
 | **"Notify me when in stock"** | Guest/customer subscribes to out-of-stock product — email when restocked | `stock_notifications` table → trigger in InventoryService |
 
@@ -28,9 +27,7 @@
 
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
-| **Recently viewed products** | Show last 6 viewed products on product/home page | Store `product_id[]` in session or `recently_viewed` DB table per user |
 | **"Customers also bought"** | Related products based on order co-occurrence | Query: other products in orders that contain current product |
-| **Product image zoom** | Hover zoom on product detail gallery | JS library: `drift-zoom` or CSS transform |
 | **Color/size swatch selector** | Visual buttons for variants instead of dropdown | Render variants as clickable swatches, update price/stock via JS |
 | **Compare products** | Select up to 3 products, compare specs side by side | `compare_ids[]` session + `/compare` page |
 
@@ -79,7 +76,6 @@
 
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
-| **Product clone/duplicate** | Copy product with one click — new SKU, "Copy of" name | `POST /admin/products/{product}/duplicate` → replicate model |
 | **Bulk order status update** | Check multiple orders → change status all at once | Checkbox datatable + `POST /admin/orders/bulk-status` |
 | **CSV product import** | Upload CSV to create/update products in bulk | `maatwebsite/excel` already installed |
 | **CSV/Excel export for all modules** | Export orders, customers, products, stock to Excel | `maatwebsite/excel` — implement in each controller |
@@ -183,28 +179,25 @@ purchase_order_items — id, po_id, product_id, variant_id, qty, unit_cost
 
 ```
 Phase A (Quick wins — 1-2 days each):
-  1. Product clone button
-  2. Reorder button (customer)
-  3. Recently viewed products
-  4. Stock urgency badge ("Only X left")
-  5. Auto low-stock email (trigger already built)
-  6. Customer invoice download
-  7. Image lazy loading (3 min change)
-  8. CSV export for orders + customers
+  1. Reorder button (customer)
+  2. Auto low-stock email (trigger already built)
+  3. Customer invoice download
+  4. Image lazy loading (3 min change)
+  5. CSV export for orders + customers
 
 Phase B (Medium effort — 3-5 days each):
-  9. Mini cart drawer (AJAX)
-  10. Product quick view modal
-  11. Bulk order status update
-  12. Abandoned cart list + email
-  13. Flash sale manager
-  14. AJAX product filters
-  15. CSV product import
+  6. Mini cart drawer (AJAX)
+  7. Product quick view modal
+  8. Bulk order status update
+  9. Abandoned cart list + email
+  10. Flash sale manager
+  11. AJAX product filters
+  12. CSV product import
 
 Phase C (Bigger features — 1 week+):
-  16. Loyalty points system
-  17. Smart search (Meilisearch)
-  18. Referral system
-  19. Q&A on product page
-  20. PWA support
+  13. Loyalty points system
+  14. Smart search (Meilisearch)
+  15. Referral system
+  16. Q&A on product page
+  17. PWA support
 ```

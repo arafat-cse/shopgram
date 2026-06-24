@@ -33,11 +33,39 @@ class ProductController extends Controller
         return view('admin.products.index', compact('products', 'categories'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $categories = Category::active()->get();
         $brands     = Brand::active()->get();
-        return view('admin.products.create', compact('categories', 'brands'));
+        $sourceProduct = null;
+        $prefill = [];
+
+        if ($request->filled('duplicate')) {
+            $sourceProduct = Product::with(['images', 'variants'])->findOrFail($request->integer('duplicate'));
+            $prefill = [
+                'duplicate_product_id' => $sourceProduct->id,
+                'name' => 'Copy of ' . $sourceProduct->name,
+                'category_id' => $sourceProduct->category_id,
+                'brand_id' => $sourceProduct->brand_id,
+                'sku' => $this->uniqueSku($sourceProduct->sku),
+                'short_description' => $sourceProduct->short_description,
+                'description' => $sourceProduct->description,
+                'regular_price' => $sourceProduct->regular_price,
+                'sale_price' => $sourceProduct->sale_price,
+                'purchase_price' => $sourceProduct->purchase_price,
+                'stock_quantity' => $sourceProduct->stock_quantity,
+                'low_stock_threshold' => $sourceProduct->low_stock_threshold,
+                'status' => 'draft',
+                'is_featured' => false,
+                'is_new_arrival' => false,
+                'is_best_selling' => false,
+                'seo_title' => $sourceProduct->seo_title,
+                'seo_description' => $sourceProduct->seo_description,
+                'seo_keywords' => $sourceProduct->seo_keywords,
+            ];
+        }
+
+        return view('admin.products.create', compact('categories', 'brands', 'sourceProduct', 'prefill'));
     }
 
     public function store(Request $request)
@@ -65,7 +93,14 @@ class ProductController extends Controller
             'seo_title'          => 'nullable|string|max:255',
             'seo_description'    => 'nullable|string',
             'seo_keywords'       => 'nullable|string',
+            'duplicate_product_id'=> 'nullable|exists:products,id',
         ]);
+
+        $sourceProduct = null;
+        if (!empty($data['duplicate_product_id'])) {
+            $sourceProduct = Product::with(['images', 'variants'])->find($data['duplicate_product_id']);
+        }
+        unset($data['duplicate_product_id']);
 
         $data['slug'] = Str::slug($data['name']) . '-' . uniqid();
         $data['is_featured']     = $request->boolean('is_featured');
@@ -74,9 +109,16 @@ class ProductController extends Controller
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
+        } elseif ($sourceProduct) {
+            $data['thumbnail'] = $this->copyPublicFile($sourceProduct->thumbnail);
         }
 
         $product = Product::create($data);
+
+        if ($sourceProduct) {
+            $this->copyGalleryImages($sourceProduct, $product);
+            $this->copyVariants($sourceProduct, $product);
+        }
 
         $this->storeGalleryImages($request, $product);
 
@@ -143,6 +185,13 @@ class ProductController extends Controller
         return back()->with('success', 'Product deleted.');
     }
 
+    public function duplicate(Product $product)
+    {
+        return redirect()
+            ->route('admin.products.create', ['duplicate' => $product->id])
+            ->with('info', 'Product details copied. Click Save Product to create the duplicate.');
+    }
+
     public function uploadImages(Request $request, Product $product)
     {
         $request->validate([
@@ -180,5 +229,86 @@ class ProductController extends Controller
                 'is_primary' => $count === 0 && $i === 0,
             ]);
         }
+    }
+
+    private function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'product-copy';
+        $slug = $base;
+        $counter = 2;
+
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = "{$base}-{$counter}";
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    private function uniqueSku(?string $sku): string
+    {
+        $base = Str::upper(Str::slug($sku ?: 'SG-COPY-' . Str::random(6), '-'));
+        $candidate = "{$base}-COPY";
+        $counter = 2;
+
+        while (Product::where('sku', $candidate)->exists()) {
+            $candidate = "{$base}-COPY-{$counter}";
+            $counter++;
+        }
+
+        return $candidate;
+    }
+
+    private function uniqueVariantSku(string $sku): string
+    {
+        $base = Str::upper(Str::slug($sku, '-'));
+        $candidate = "{$base}-COPY";
+        $counter = 2;
+
+        while (\App\Models\ProductVariant::where('sku', $candidate)->exists()) {
+            $candidate = "{$base}-COPY-{$counter}";
+            $counter++;
+        }
+
+        return $candidate;
+    }
+
+    private function copyGalleryImages(Product $sourceProduct, Product $product): void
+    {
+        foreach ($sourceProduct->images as $image) {
+            $product->images()->create([
+                'image_path' => $this->copyPublicFile($image->image_path),
+                'sort_order' => $image->sort_order,
+                'is_primary' => $image->is_primary,
+            ]);
+        }
+    }
+
+    private function copyVariants(Product $sourceProduct, Product $product): void
+    {
+        foreach ($sourceProduct->variants as $variant) {
+            $variantCopy = $variant->replicate(['sku']);
+            $variantCopy->product_id = $product->id;
+            $variantCopy->sku = $variant->sku ? $this->uniqueVariantSku($variant->sku) : null;
+            $variantCopy->save();
+        }
+    }
+
+    private function copyPublicFile(?string $path): ?string
+    {
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            return $path;
+        }
+
+        $directory = trim(pathinfo($path, PATHINFO_DIRNAME), '.');
+        $filename = pathinfo($path, PATHINFO_FILENAME);
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $suffix = 'copy-' . Str::random(8);
+        $targetName = $extension ? "{$filename}-{$suffix}.{$extension}" : "{$filename}-{$suffix}";
+        $targetPath = $directory ? "{$directory}/{$targetName}" : $targetName;
+
+        Storage::disk('public')->copy($path, $targetPath);
+
+        return $targetPath;
     }
 }
