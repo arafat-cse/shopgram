@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Brand;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -380,26 +381,45 @@ class ProductSeeder extends Seeder
             $data['slug']              = Str::slug($data['name']);
             $data['low_stock_threshold'] = 5;
 
-            // Download & store thumbnail
-            $thumbnail = $this->downloadImage($imgSeed);
-            if ($thumbnail) {
-                $data['thumbnail'] = $thumbnail;
+            $existingProduct = Product::where('sku', $data['sku'])
+                ->orWhere('slug', $data['slug'])
+                ->first();
+
+            if (!$existingProduct || !$existingProduct->thumbnail) {
+                $thumbnail = $this->downloadImage($imgSeed);
+                if ($thumbnail) {
+                    $data['thumbnail'] = $thumbnail;
+                }
+            } elseif ($existingProduct->thumbnail) {
+                $data['thumbnail'] = $existingProduct->thumbnail;
             }
 
-            $product = Product::create($data);
+            if ($existingProduct) {
+                $existingProduct->update($data);
+                $product = $existingProduct->fresh();
+            } else {
+                $product = Product::create($data);
+            }
+
+            $product->variants()->delete();
 
             // Create variants
             foreach ($variants as $v) {
                 $stock = $v['stock'];
                 unset($v['stock']);
-                $product->variants()->create([
+                $variantData = [
                     'size'          => $v['size']          ?? null,
                     'color'         => $v['color']         ?? null,
                     'custom_option' => $v['custom_option'] ?? null,
                     'price'         => $product->regular_price + ($v['extra_price'] ?? 0) ?: null,
                     'stock_quantity'=> $stock,
                     'sku'           => $product->sku . '-' . Str::slug(implode('-', array_filter([$v['size'] ?? null, $v['color'] ?? null, $v['custom_option'] ?? null]))),
-                ]);
+                ];
+
+                ProductVariant::updateOrCreate(
+                    ['product_id' => $product->id, 'sku' => $variantData['sku']],
+                    $variantData
+                );
             }
 
             $this->command->getOutput()->writeln("  <info>✓</info> {$product->name}");
