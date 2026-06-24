@@ -57,9 +57,6 @@
         {{-- Content --}}
         <div class="col-lg-9">
             <x-alert />
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}<button class="btn-close" data-bs-dismiss="alert"></button></div>
-            @endif
             @yield('customer_content')
         </div>
     </div>

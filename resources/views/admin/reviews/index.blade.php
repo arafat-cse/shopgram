@@ -43,7 +43,7 @@
                         <form action="{{ route('admin.reviews.approve', $review) }}" method="POST" class="d-inline">@csrf<button class="btn btn-sm btn-outline-success">Approve</button></form>
                         <form action="{{ route('admin.reviews.reject', $review) }}" method="POST" class="d-inline">@csrf<button class="btn btn-sm btn-outline-danger">Reject</button></form>
                         @endif
-                        <form action="{{ route('admin.reviews.destroy', $review) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-secondary">Delete</button></form>
+                        <x-delete-button :action="route('admin.reviews.destroy', $review)" message="Delete this review?" variant="outline-secondary" />
                     </td>
                 </tr>
                 @empty

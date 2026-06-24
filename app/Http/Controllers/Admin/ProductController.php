@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -57,7 +58,9 @@ class ProductController extends Controller
             'is_featured'        => 'boolean',
             'is_new_arrival'     => 'boolean',
             'is_best_selling'    => 'boolean',
-            'thumbnail'          => 'nullable|image|max:2048',
+            'thumbnail'          => 'nullable|image|max:16384',
+            'gallery'            => 'nullable|array|max:8',
+            'gallery.*'          => 'image|max:16384',
             'seo_title'          => 'nullable|string|max:255',
             'seo_description'    => 'nullable|string',
             'seo_keywords'       => 'nullable|string',
@@ -74,16 +77,7 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
-        if ($request->hasFile('gallery')) {
-            foreach ($request->file('gallery') as $i => $img) {
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $img->store('products', 'public'),
-                    'sort_order' => $i,
-                    'is_primary' => $i === 0,
-                ]);
-            }
-        }
+        $this->storeGalleryImages($request, $product);
 
         return redirect()->route('admin.products.index')->with('success', 'Product created.');
     }
@@ -115,7 +109,9 @@ class ProductController extends Controller
             'is_featured'        => 'boolean',
             'is_new_arrival'     => 'boolean',
             'is_best_selling'    => 'boolean',
-            'thumbnail'          => 'nullable|image|max:2048',
+            'thumbnail'          => 'nullable|image|max:16384',
+            'gallery'            => 'nullable|array|max:8',
+            'gallery.*'          => 'image|max:16384',
             'seo_title'          => 'nullable|string|max:255',
             'seo_description'    => 'nullable|string',
             'seo_keywords'       => 'nullable|string',
@@ -130,6 +126,7 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+        $this->storeGalleryImages($request, $product);
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated.');
     }
@@ -142,10 +139,34 @@ class ProductController extends Controller
 
     public function uploadImages(Request $request, Product $product)
     {
-        $request->validate(['images.*' => 'image|max:2048']);
+        $request->validate([
+            'images' => 'required|array|max:8',
+            'images.*' => 'image|max:16384',
+        ]);
+
+        $this->storeGalleryImages($request, $product, 'images');
+
+        return back()->with('success', 'Images uploaded.');
+    }
+
+    public function deleteImage(ProductImage $image)
+    {
+        Storage::disk('public')->delete($image->image_path);
+        $image->delete();
+        return back()->with('success', 'Image deleted.');
+    }
+
+    public function show(Product $product) { return redirect()->route('admin.products.edit', $product); }
+
+    private function storeGalleryImages(Request $request, Product $product, string $field = 'gallery'): void
+    {
+        if (!$request->hasFile($field)) {
+            return;
+        }
 
         $count = $product->images()->count();
-        foreach ($request->file('images') as $i => $img) {
+
+        foreach ($request->file($field) as $i => $img) {
             ProductImage::create([
                 'product_id' => $product->id,
                 'image_path' => $img->store('products', 'public'),
@@ -153,15 +174,5 @@ class ProductController extends Controller
                 'is_primary' => $count === 0 && $i === 0,
             ]);
         }
-
-        return back()->with('success', 'Images uploaded.');
     }
-
-    public function deleteImage(ProductImage $image)
-    {
-        $image->delete();
-        return back()->with('success', 'Image deleted.');
-    }
-
-    public function show(Product $product) { return redirect()->route('admin.products.edit', $product); }
 }

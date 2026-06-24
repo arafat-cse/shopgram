@@ -51,6 +51,19 @@
             </div>
         </div>
     </div>
+    <div class="col-6 col-md-3">
+        <a href="{{ route('admin.contact-messages.index') }}" class="text-decoration-none text-dark">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-chat-left-text"></i></div>
+                    <div>
+                        <div class="fw-bold fs-5">{{ $stats['unread_messages'] }}</div>
+                        <small class="text-muted">Unread Messages</small>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
 </div>
 
 <div class="row g-4">
@@ -83,6 +96,26 @@
     </div>
 
     <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                Contact Messages
+                <a href="{{ route('admin.contact-messages.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="list-group list-group-flush">
+                @forelse($recentMessages as $message)
+                    <a href="{{ route('admin.contact-messages.show', $message) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between gap-2">
+                            <span class="fw-semibold small">{{ Str::limit($message->subject, 32) }}</span>
+                            <span class="badge bg-{{ $message->status === 'unread' ? 'danger' : 'secondary' }}">{{ ucfirst($message->status) }}</span>
+                        </div>
+                        <div class="text-muted small">{{ $message->name }} - {{ $message->created_at->format('d M Y') }}</div>
+                    </a>
+                @empty
+                    <div class="list-group-item text-muted small text-center">No contact messages yet</div>
+                @endforelse
+            </div>
+        </div>
+
         {{-- Low Stock --}}
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white fw-bold text-warning">

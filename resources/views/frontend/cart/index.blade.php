@@ -36,10 +36,14 @@
                         </div>
                         <div class="col-5 col-md-2 text-end">
                             <div class="fw-bold">৳{{ number_format($item->subtotal, 0) }}</div>
-                            <form action="{{ route('cart.remove', $item->id) }}" method="POST" class="mt-1">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                            </form>
+                            <x-delete-button
+                                :action="route('cart.remove', $item->id)"
+                                message="Remove this item from cart?"
+                                label=""
+                                icon="bi-trash"
+                                form-class="d-inline"
+                                button-class="mt-1"
+                            />
                         </div>
                     </div>
                 </div>

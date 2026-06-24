@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContactMessage;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -20,6 +21,7 @@ class DashboardController extends Controller
             'cancelled_orders' => Order::where('status', 'cancelled')->count(),
             'total_customers'  => User::role('Customer')->count(),
             'low_stock'        => Product::where('stock_quantity', '<=', DB::raw('low_stock_threshold'))->count(),
+            'unread_messages'  => ContactMessage::unread()->count(),
         ];
 
         $monthlySales = Order::where('status', 'delivered')
@@ -33,7 +35,8 @@ class DashboardController extends Controller
         $recentOrders   = Order::with('user')->latest()->take(10)->get();
         $lowStockItems  = Product::where('stock_quantity', '<=', DB::raw('low_stock_threshold'))->take(10)->get();
         $topProducts    = Product::withCount('orderItems')->orderBy('order_items_count', 'desc')->take(5)->get();
+        $recentMessages = ContactMessage::latest()->take(5)->get();
 
-        return view('admin.dashboard.index', compact('stats', 'monthlySales', 'recentOrders', 'lowStockItems', 'topProducts'));
+        return view('admin.dashboard.index', compact('stats', 'monthlySales', 'recentOrders', 'lowStockItems', 'topProducts', 'recentMessages'));
     }
 }

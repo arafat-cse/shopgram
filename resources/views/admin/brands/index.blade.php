@@ -17,9 +17,7 @@
                     <td><span class="badge bg-{{ $brand->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($brand->status) }}</span></td>
                     <td>
                         <a href="{{ route('admin.brands.edit', $brand) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form action="{{ route('admin.brands.destroy', $brand) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">
-                            @csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                        <x-delete-button :action="route('admin.brands.destroy', $brand)" message="Delete this brand?" />
                     </td>
                 </tr>
                 @empty

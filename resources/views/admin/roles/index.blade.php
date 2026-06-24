@@ -19,9 +19,7 @@
                     <td>
                         <a href="{{ route('admin.roles.edit', $role) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                         @if(!in_array($role->name, ['super-admin','admin']))
-                        <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete role?')">
-                            @csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                        <x-delete-button :action="route('admin.roles.destroy', $role)" message="Delete this role?" />
                         @endif
                     </td>
                 </tr>

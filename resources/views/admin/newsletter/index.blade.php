@@ -16,9 +16,7 @@
                     <td><span class="badge bg-{{ $sub->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($sub->status) }}</span></td>
                     <td class="text-muted small">{{ $sub->created_at->format('d M Y') }}</td>
                     <td>
-                        <form action="{{ route('admin.newsletter.destroy', $sub) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove subscriber?')">
-                            @csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Remove</button>
-                        </form>
+                        <x-delete-button :action="route('admin.newsletter.destroy', $sub)" message="Remove this subscriber?" label="Remove" />
                     </td>
                 </tr>
                 @empty

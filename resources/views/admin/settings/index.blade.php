@@ -17,6 +17,10 @@
                         <input type="text" name="contact_phone" class="form-control" value="{{ $settings['contact_phone'] ?? '' }}"></div>
                     <div class="mb-3"><label class="form-label">Address</label>
                         <input type="text" name="address" class="form-control" value="{{ $settings['address'] ?? '' }}"></div>
+                    <div class="mb-3"><label class="form-label">Get In Touch Text</label>
+                        <textarea name="contact_intro" class="form-control" rows="2">{{ $settings['contact_intro'] ?? '' }}</textarea></div>
+                    <div class="mb-3"><label class="form-label">Support Hours</label>
+                        <input type="text" name="support_hours" class="form-control" value="{{ $settings['support_hours'] ?? '' }}"></div>
                     <div class="mb-3"><label class="form-label">Logo</label>
                         <input type="file" name="site_logo" class="form-control" accept="image/*"></div>
                 </div>
@@ -35,6 +39,16 @@
                         <input type="url" name="instagram" class="form-control" value="{{ $settings['instagram'] ?? '' }}"></div>
                     <div class="mb-3"><label class="form-label">WhatsApp</label>
                         <input type="text" name="whatsapp" class="form-control" value="{{ $settings['whatsapp'] ?? '' }}"></div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold">Mission & Vision</div>
+                <div class="card-body">
+                    <div class="mb-3"><label class="form-label">Mission</label>
+                        <textarea name="mission" class="form-control" rows="3">{{ $settings['mission'] ?? '' }}</textarea></div>
+                    <div class="mb-3"><label class="form-label">Vision</label>
+                        <textarea name="vision" class="form-control" rows="3">{{ $settings['vision'] ?? '' }}</textarea></div>
                 </div>
             </div>
 

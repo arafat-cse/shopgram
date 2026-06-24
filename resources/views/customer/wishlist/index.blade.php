@@ -7,10 +7,16 @@
     @foreach($wishlist as $item)
     <div class="col-6 col-md-4">
         <div class="card border-0 shadow-sm h-100 position-relative">
-            <form action="{{ route('customer.wishlist.destroy', $item) }}" method="POST" class="position-absolute top-0 end-0 m-2" style="z-index:1">
-                @csrf @method('DELETE')
-                <button class="btn btn-sm btn-danger rounded-circle p-1 lh-1" style="width:28px;height:28px"><i class="bi bi-x"></i></button>
-            </form>
+            <x-delete-button
+                :action="route('customer.wishlist.destroy', $item)"
+                message="Remove this product from wishlist?"
+                label=""
+                icon="bi-x"
+                variant="danger"
+                form-class="position-absolute top-0 end-0 m-2"
+                button-class="rounded-circle p-1 lh-1"
+                button-style="width:28px;height:28px"
+            />
             <a href="{{ route('products.show', $item->product->slug) }}">
                 <img src="{{ $item->product->thumbnail ? asset('storage/'.$item->product->thumbnail) : asset('images/no-image.png') }}"
                      class="card-img-top" style="height:180px;object-fit:cover" alt="{{ $item->product->name }}">

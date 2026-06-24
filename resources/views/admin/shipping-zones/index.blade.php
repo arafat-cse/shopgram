@@ -27,11 +27,7 @@
                         <td><span class="badge bg-{{ $zone->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($zone->status) }}</span></td>
                         <td>
                             <a href="{{ route('admin.shipping-zones.edit', $zone) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form action="{{ route('admin.shipping-zones.destroy', $zone) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete zone?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
+                            <x-delete-button :action="route('admin.shipping-zones.destroy', $zone)" message="Delete this shipping zone?" />
                         </td>
                     </tr>
                 @empty

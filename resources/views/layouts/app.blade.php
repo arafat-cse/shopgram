@@ -31,9 +31,38 @@
         .track-order-link { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; color: #0f172a; font-size: .72rem; line-height: 1.05; text-decoration: none; white-space: nowrap; }
         .track-order-link i { font-size: 1.25rem; line-height: 1; color: #0f172a; }
         .track-order-link:hover, .track-order-link:hover i { color: var(--primary); }
+        .shop-secondary-nav { position: sticky; top: var(--shop-header-height, 72px); z-index: 998; background: #fff; border-bottom: 1px solid #edf0f3; box-shadow: 0 4px 14px rgba(15,23,42,.04); transition: transform .28s ease, opacity .28s ease; will-change: transform; }
+        .shop-secondary-nav.nav-hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+        .shop-secondary-nav .nav-link { color: #1f2937; font-weight: 600; font-size: .92rem; padding: .82rem .8rem; transition: color .2s ease, background-color .2s ease; }
+        .shop-secondary-nav .nav-link:hover, .shop-secondary-nav .nav-link.active { color: var(--primary); }
+        .shop-secondary-nav .dropdown-menu { border: 1px solid #edf0f3; box-shadow: 0 16px 36px rgba(15,23,42,.12); }
+        .shop-category-menu { width: min(760px, calc(100vw - 32px)); max-height: 420px; overflow-y: auto; padding: 1rem; }
+        .shop-category-group { break-inside: avoid; margin-bottom: .85rem; }
+        .shop-category-parent { display: block; color: #111827; font-weight: 700; font-size: .9rem; text-decoration: none; margin-bottom: .35rem; }
+        .shop-category-child { display: block; color: #6b7280; font-size: .84rem; text-decoration: none; padding: .14rem 0; }
+        .shop-category-parent:hover, .shop-category-child:hover { color: var(--primary); }
+        .shop-mobile-menu { border-top: 1px solid #f1f3f5; }
+        .shop-mobile-menu .nav-link { padding: .65rem 0; }
+        .shop-mobile-quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; padding: .75rem 0 1rem; }
+        .shop-mobile-quick a { border: 1px solid #eef0f3; border-radius: 6px; padding: .55rem .65rem; color: #1f2937; text-decoration: none; font-size: .86rem; }
+        .shop-mobile-quick a:hover { color: var(--primary); border-color: rgba(233,30,99,.3); }
+        @media (min-width: 992px) {
+            .shop-mobile-menu { display: none !important; }
+            .shop-secondary-nav .navbar-toggler { display: none; }
+        }
         .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; }
         .section-title { font-weight: 700; position: relative; padding-bottom: .5rem; margin-bottom: 1.5rem; }
         .section-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: var(--primary); }
+        .site-footer { background: #20252a; color: #f8fafc; }
+        .site-footer h5,
+        .site-footer h6 { color: #fff; }
+        .site-footer p,
+        .site-footer .text-muted,
+        .site-footer a.text-muted { color: #d5dbe3 !important; }
+        .site-footer a { transition: color .2s ease, padding-left .2s ease; }
+        .site-footer a:hover { color: #fff !important; padding-left: 3px; }
+        .site-footer .form-control { border-color: #fff; }
+        .site-footer .border-secondary { border-color: rgba(255,255,255,.18) !important; }
     </style>
     @stack('styles')
 </head>
@@ -105,6 +134,71 @@
     </div>
 </nav>
 
+{{-- Secondary Navigation --}}
+<nav class="shop-secondary-nav" id="shopSecondaryNav">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <button class="navbar-toggler border-0 px-0 d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#shopNavMenu" aria-controls="shopNavMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+
+            <div class="d-none d-lg-flex align-items-center gap-1">
+                <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Home</a>
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle {{ request()->routeIs('category.*') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">Categories</a>
+                    <div class="dropdown-menu shop-category-menu">
+                        <div class="row g-3">
+                            @foreach(($navCategories ?? collect()) as $navCategory)
+                                <div class="col-md-4 shop-category-group">
+                                    <a class="shop-category-parent" href="{{ route('category.show', $navCategory->slug) }}">{{ $navCategory->name }}</a>
+                                    @foreach($navCategory->children as $childCategory)
+                                        <a class="shop-category-child" href="{{ route('category.show', $childCategory->slug) }}">{{ $childCategory->name }}</a>
+                                    @endforeach
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                <a class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Shop</a>
+                <a class="nav-link" href="{{ route('home') }}#offers">Offers</a>
+                <a class="nav-link" href="{{ route('home') }}#new-arrivals">New Arrivals</a>
+                <a class="nav-link" href="{{ route('home') }}#best-sellers">Best Sellers</a>
+                <a class="nav-link" href="{{ route('home') }}#brands">Brands</a>
+                <a class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}" href="{{ route('contact.index') }}">Contact</a>
+            </div>
+        </div>
+
+        <div class="collapse shop-mobile-menu" id="shopNavMenu">
+            <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Home</a>
+            <a class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Shop</a>
+            <a class="nav-link" href="{{ route('home') }}#offers">Offers</a>
+            <a class="nav-link" href="{{ route('home') }}#new-arrivals">New Arrivals</a>
+            <a class="nav-link" href="{{ route('home') }}#best-sellers">Best Sellers</a>
+            <a class="nav-link" href="{{ route('home') }}#brands">Brands</a>
+            <a class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}" href="{{ route('contact.index') }}">Contact</a>
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle {{ request()->routeIs('category.*') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">Categories</a>
+                <div class="dropdown-menu shop-category-menu">
+                    @foreach(($navCategories ?? collect()) as $navCategory)
+                        <div class="shop-category-group">
+                            <a class="shop-category-parent" href="{{ route('category.show', $navCategory->slug) }}">{{ $navCategory->name }}</a>
+                            @foreach($navCategory->children as $childCategory)
+                                <a class="shop-category-child" href="{{ route('category.show', $childCategory->slug) }}">{{ $childCategory->name }}</a>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <div class="shop-mobile-quick">
+                <a href="{{ route('order.tracking') }}"><i class="bi bi-geo-alt me-1"></i>Track Order</a>
+                <a href="{{ route('cart.index') }}"><i class="bi bi-cart3 me-1"></i>Cart</a>
+                <a href="{{ auth()->check() ? route('customer.wishlist.index') : route('login') }}"><i class="bi bi-heart me-1"></i>Wishlist</a>
+                <a href="{{ auth()->check() ? route('customer.dashboard') : route('login') }}"><i class="bi bi-person me-1"></i>Account</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
 {{-- Flash Messages --}}
 <x-toast />
 
@@ -114,7 +208,7 @@
 </main>
 
 {{-- Footer --}}
-<footer class="bg-dark text-light py-5 mt-5">
+<footer class="site-footer py-5 mt-5">
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-3">
@@ -175,6 +269,46 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<x-confirm-delete />
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const topHeader = document.querySelector('.navbar.sticky-top');
+    const secondaryNav = document.getElementById('shopSecondaryNav');
+    if (!topHeader || !secondaryNav) {
+        return;
+    }
+
+    let lastScrollY = window.scrollY;
+    const threshold = 8;
+
+    const updateHeaderOffset = function () {
+        document.documentElement.style.setProperty('--shop-header-height', topHeader.offsetHeight + 'px');
+    };
+
+    const handleScroll = function () {
+        const currentScrollY = window.scrollY;
+        const delta = currentScrollY - lastScrollY;
+
+        if (Math.abs(delta) < threshold) {
+            return;
+        }
+
+        if (currentScrollY <= topHeader.offsetHeight) {
+            secondaryNav.classList.remove('nav-hidden');
+        } else if (delta > 0) {
+            secondaryNav.classList.add('nav-hidden');
+        } else {
+            secondaryNav.classList.remove('nav-hidden');
+        }
+
+        lastScrollY = currentScrollY;
+    };
+
+    updateHeaderOffset();
+    window.addEventListener('resize', updateHeaderOffset);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+});
+</script>
 @stack('scripts')
 </body>
 </html>
