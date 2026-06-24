@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\AnalyticsController;
 
 Route::middleware(['auth', 'admin.access'])
     ->prefix('admin')
@@ -32,6 +33,12 @@ Route::middleware(['auth', 'admin.access'])
     ->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::middleware('permission:analytics.view')->group(function () {
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/analytics/export/pdf', [AnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
+        Route::get('/analytics/export/excel', [AnalyticsController::class, 'exportExcel'])->name('analytics.export.excel');
+    });
 
     // Products
     Route::middleware('permission:product.view')->group(function () {
