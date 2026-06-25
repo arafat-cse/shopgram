@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\TicketReply;
+use App\Notifications\TicketAdminReplyNotification;
 use Illuminate\Http\Request;
 use App\Services\ActivityLogService;
 
@@ -36,7 +37,10 @@ class TicketController extends Controller
 
         $ticket->update(['status' => 'pending']);
 
-        ActivityLogService::log('created', "Replied to ticket #{$ticket->id}: \"{$ticket->subject}\"", 'SupportTicket', $ticket->id);
+        // Notify the customer (ticket creator)
+        $ticket->user->notify(new TicketAdminReplyNotification($ticket, $request->message));
+
+        ActivityLogService::created('SupportTicket', $ticket->id, "Replied to ticket #{$ticket->id}: \"{$ticket->subject}\"");
         return back()->with('success', 'Reply sent.');
     }
 
