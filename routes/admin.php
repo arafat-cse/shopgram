@@ -125,8 +125,11 @@ Route::middleware(['auth', 'admin.access'])
     // Newsletter
     Route::middleware('permission:newsletter.manage')->group(function () {
         Route::get('newsletter', [NewsletterController::class, 'index'])->name('newsletter.index');
+        Route::post('newsletter/campaigns', [NewsletterController::class, 'sendCampaign'])->name('newsletter.campaigns.send');
         Route::get('newsletter/export', [NewsletterController::class, 'export'])->name('newsletter.export');
+        Route::patch('newsletter/{subscriber}/status', [NewsletterController::class, 'updateStatus'])->name('newsletter.status.update');
         Route::delete('newsletter/{subscriber}', [NewsletterController::class, 'destroy'])->name('newsletter.destroy');
+        Route::delete('newsletter/campaigns/{campaign}', [NewsletterController::class, 'destroyCampaign'])->name('newsletter.campaigns.destroy');
     });
 
     // Reports
