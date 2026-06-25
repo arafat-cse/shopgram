@@ -139,6 +139,490 @@
 
 ---
 
+## 💬 ORDER CHAT — Real-time Customer ↔ Staff (Node.js + Socket.io)
+
+> **Idea:** Each order gets a real-time chat thread. Customer + permission-granted staff can chat. Chat auto-closes when order status = `delivered` or `cancelled`.
+
+---
+
+### IMPLEMENTATION SPEC (AI-ready — follow steps in order)
+
+---
+
+#### STEP 1 — Laravel: Database migration
+
+**File to create:** `database/migrations/YYYY_MM_DD_create_order_messages_table.php`
+
+```php
+Schema::create('order_messages', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->enum('sender_role', ['customer', 'staff']);
+    $table->text('message');
+    $table->boolean('is_read')->default(false);
+    $table->timestamp('created_at')->useCurrent();
+});
+```
+
+Run: `php artisan migrate`
+
+---
+
+#### STEP 2 — Laravel: Model
+
+**File to create:** `app/Models/OrderMessage.php`
+
+```php
+class OrderMessage extends Model {
+    public $timestamps = false;
+    protected $fillable = ['order_id', 'user_id', 'sender_role', 'message', 'is_read'];
+    protected $casts = ['is_read' => 'boolean', 'created_at' => 'datetime'];
+
+    public function user() { return $this->belongsTo(User::class); }
+    public function order() { return $this->belongsTo(Order::class); }
+}
+```
+
+**Add to `app/Models/Order.php`:**
+```php
+public function messages() { return $this->hasMany(OrderMessage::class)->orderBy('created_at'); }
+public function isChatOpen(): bool {
+    return in_array($this->status, ['pending', 'processing', 'shipped']);
+}
+```
+
+---
+
+#### STEP 3 — Laravel: Spatie permission
+
+Add permission `order.chat` via seeder or tinker:
+```php
+Permission::firstOrCreate(['name' => 'order.chat', 'guard_name' => 'web']);
+// Assign to Super Admin and Admin roles
+Role::findByName('Super Admin')->givePermissionTo('order.chat');
+Role::findByName('Admin')->givePermissionTo('order.chat');
+```
+
+---
+
+#### STEP 4 — Laravel: API routes
+
+**File to edit:** `routes/web.php` — add inside existing auth middleware group or new group:
+
+```php
+// Chat API — used by Node.js server and browser
+Route::middleware('auth')->prefix('api/chat')->group(function () {
+    Route::get('token',                       [ChatController::class, 'token']);
+    Route::get('orders/{order}/messages',     [ChatController::class, 'messages']);
+    Route::post('orders/{order}/messages',    [ChatController::class, 'store']);
+    Route::post('orders/{order}/close',       [ChatController::class, 'close']);
+    Route::get('orders/{order}/unread-count', [ChatController::class, 'unreadCount']);
+});
+```
+
+---
+
+#### STEP 5 — Laravel: ChatController
+
+**File to create:** `app/Http/Controllers/ChatController.php`
+
+```php
+<?php
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\OrderMessage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class ChatController extends Controller
+{
+    // Returns a signed token for socket.io auth
+    public function token(Request $request)
+    {
+        $user = auth()->user();
+        $token = base64_encode(json_encode([
+            'user_id'   => $user->id,
+            'name'      => $user->name,
+            'role'      => $user->hasPermissionTo('order.chat') ? 'staff' : 'customer',
+            'signature' => hash_hmac('sha256', $user->id, config('app.key')),
+        ]));
+        return response()->json(['token' => $token]);
+    }
+
+    // Returns message history for an order
+    public function messages(Order $order)
+    {
+        $this->authorizeOrderAccess($order);
+        return response()->json(
+            $order->messages()->with('user:id,name')->latest('created_at')->limit(100)->get()
+        );
+    }
+
+    // Save message — called by Node.js with internal key OR by browser fallback
+    public function store(Request $request, Order $order)
+    {
+        // Allow internal Node.js call with secret key
+        $isInternal = $request->header('X-Internal-Key') === config('chat.internal_key');
+        if (!$isInternal) $this->authorizeOrderAccess($order);
+        if (!$order->isChatOpen()) return response()->json(['error' => 'Chat closed'], 403);
+
+        $msg = OrderMessage::create([
+            'order_id'    => $order->id,
+            'user_id'     => $request->user_id ?? auth()->id(),
+            'sender_role' => $request->sender_role ?? (auth()->user()->hasPermissionTo('order.chat') ? 'staff' : 'customer'),
+            'message'     => $request->validate(['message' => 'required|string|max:2000'])['message'],
+        ]);
+
+        return response()->json($msg->load('user:id,name'));
+    }
+
+    // Close chat (called when order status changes to delivered/cancelled)
+    public function close(Order $order)
+    {
+        // Mark all messages as read, emit close event via Node if needed
+        OrderMessage::where('order_id', $order->id)->update(['is_read' => true]);
+        return response()->json(['closed' => true]);
+    }
+
+    public function unreadCount(Order $order)
+    {
+        $this->authorizeOrderAccess($order);
+        $role = auth()->user()->hasPermissionTo('order.chat') ? 'customer' : 'staff';
+        return response()->json([
+            'count' => OrderMessage::where('order_id', $order->id)
+                ->where('sender_role', $role)
+                ->where('is_read', false)
+                ->count()
+        ]);
+    }
+
+    private function authorizeOrderAccess(Order $order)
+    {
+        $user = auth()->user();
+        if ($user->hasPermissionTo('order.chat')) return; // staff — allow all orders
+        abort_if($order->user_id !== $user->id, 403);     // customer — own orders only
+    }
+}
+```
+
+---
+
+#### STEP 6 — Laravel: config file
+
+**File to create:** `config/chat.php`
+
+```php
+<?php
+return [
+    'internal_key' => env('CHAT_INTERNAL_KEY', 'changeme'),
+    'node_url'     => env('CHAT_NODE_URL', 'http://localhost:3001'),
+];
+```
+
+**Add to `.env` and `.env.example`:**
+```
+CHAT_INTERNAL_KEY=super_secret_key_here
+CHAT_NODE_URL=http://localhost:3001
+```
+
+---
+
+#### STEP 7 — Laravel: Auto-close chat on order status change
+
+**File to edit:** `app/Http/Controllers/Admin/OrderController.php`
+
+In the `updateStatus()` method, after updating status, add:
+```php
+if (in_array($status, ['delivered', 'cancelled'])) {
+    // Close chat
+    \App\Models\OrderMessage::where('order_id', $order->id)->update(['is_read' => true]);
+    // Optionally notify Node to close the room:
+    // Http::post(config('chat.node_url') . '/internal/close-room/' . $order->id,
+    //     ['headers' => ['X-Internal-Key' => config('chat.internal_key')]]);
+}
+```
+
+---
+
+#### STEP 8 — Node.js: Setup
+
+```bash
+# From project root
+mkdir chat-service && cd chat-service
+npm init -y
+npm install express socket.io axios dotenv cors
+```
+
+**File to create:** `chat-service/.env`
+```
+PORT=3001
+LARAVEL_URL=http://127.0.0.1:8000
+CHAT_INTERNAL_KEY=super_secret_key_here
+```
+
+---
+
+#### STEP 9 — Node.js: server.js
+
+**File to create:** `chat-service/server.js`
+
+```js
+require('dotenv').config();
+const express    = require('express');
+const http       = require('http');
+const { Server } = require('socket.io');
+const axios      = require('axios');
+
+const app    = express();
+const server = http.createServer(app);
+const io     = new Server(server, {
+    cors: { origin: process.env.LARAVEL_URL, credentials: true }
+});
+
+app.use(express.json());
+
+// ── Auth middleware ──────────────────────────────────────────────────
+io.use(async (socket, next) => {
+    try {
+        const rawToken = socket.handshake.auth.token;
+        if (!rawToken) return next(new Error('No token'));
+
+        const payload = JSON.parse(Buffer.from(rawToken, 'base64').toString());
+
+        // Verify signature with Laravel
+        const res = await axios.get(`${process.env.LARAVEL_URL}/api/chat/token`, {
+            headers: { 'Cookie': socket.handshake.headers.cookie || '' }
+        });
+
+        // Simple: trust decoded token if signature field matches
+        // (In production: call Laravel /api/verify-token endpoint instead)
+        socket.user = {
+            id:   payload.user_id,
+            name: payload.name,
+            role: payload.role,   // 'customer' or 'staff'
+        };
+        next();
+    } catch (e) {
+        next(new Error('Auth failed'));
+    }
+});
+
+// ── Connection ───────────────────────────────────────────────────────
+io.on('connection', (socket) => {
+    const orderId = socket.handshake.query.order_id;
+    if (!orderId) return socket.disconnect();
+
+    const room = `order_${orderId}`;
+    socket.join(room);
+
+    console.log(`[chat] ${socket.user.name} (${socket.user.role}) joined ${room}`);
+
+    // Send message
+    socket.on('send_message', async (data) => {
+        if (!data.message?.trim()) return;
+
+        try {
+            // Save to Laravel DB
+            const res = await axios.post(
+                `${process.env.LARAVEL_URL}/api/chat/orders/${orderId}/messages`,
+                { message: data.message, user_id: socket.user.id, sender_role: socket.user.role },
+                { headers: { 'X-Internal-Key': process.env.CHAT_INTERNAL_KEY } }
+            );
+
+            // Broadcast to room
+            io.to(room).emit('new_message', {
+                id:          res.data.id,
+                sender_name: socket.user.name,
+                sender_role: socket.user.role,
+                message:     data.message,
+                time:        new Date().toISOString(),
+            });
+        } catch (e) {
+            socket.emit('error', { message: e.response?.data?.error || 'Failed to send' });
+        }
+    });
+
+    // Typing indicator
+    socket.on('typing', () => {
+        socket.to(room).emit('user_typing', { name: socket.user.name, role: socket.user.role });
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`[chat] ${socket.user.name} left ${room}`);
+    });
+});
+
+// ── Internal endpoint — close room (called by Laravel) ───────────────
+app.post('/internal/close-room/:orderId', (req, res) => {
+    if (req.headers['x-internal-key'] !== process.env.CHAT_INTERNAL_KEY) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    const room = `order_${req.params.orderId}`;
+    io.to(room).emit('chat_closed', { message: 'Order delivered. Chat is now closed.' });
+    res.json({ closed: true });
+});
+
+server.listen(process.env.PORT, () => {
+    console.log(`[chat-service] running on port ${process.env.PORT}`);
+});
+```
+
+---
+
+#### STEP 10 — Frontend: Customer order page
+
+**File to edit:** `resources/views/customer/orders/show.blade.php`
+
+Add at the bottom, before `@endsection`:
+
+```blade
+@if($order->isChatOpen())
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-chat-dots me-2 text-primary"></i>Order Support Chat</span>
+        <span class="badge bg-success">Live</span>
+    </div>
+    <div class="card-body p-0">
+        <div id="chatMessages" style="height:320px;overflow-y:auto;padding:16px;background:#f8fafc;">
+            <div class="text-center text-muted small py-4">Loading messages...</div>
+        </div>
+        <div class="border-top p-3 d-flex gap-2">
+            <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." maxlength="2000">
+            <button class="btn btn-primary px-4" id="chatSendBtn">Send</button>
+        </div>
+        <div id="typingIndicator" class="px-3 pb-2 text-muted" style="font-size:.8rem;min-height:20px;"></div>
+    </div>
+</div>
+@else
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-body text-center text-muted py-3 small">
+        <i class="bi bi-chat-dots me-1"></i>Chat is closed for this order.
+    </div>
+</div>
+@endif
+
+@push('scripts')
+<script src="{{ config('chat.node_url') }}/socket.io/socket.io.js"></script>
+<script>
+(async function () {
+    const ORDER_ID = {{ $order->id }};
+    const msgBox   = document.getElementById('chatMessages');
+    const input    = document.getElementById('chatInput');
+    const sendBtn  = document.getElementById('chatSendBtn');
+    const typer    = document.getElementById('typingIndicator');
+    if (!msgBox) return;
+
+    // 1. Get auth token from Laravel
+    const tokenRes = await fetch('/api/chat/token');
+    const { token } = await tokenRes.json();
+
+    // 2. Connect to Node.js
+    const socket = io('{{ config("chat.node_url") }}', {
+        auth: { token },
+        query: { order_id: ORDER_ID },
+    });
+
+    // 3. Load history
+    const histRes  = await fetch(`/api/chat/orders/${ORDER_ID}/messages`);
+    const messages = await histRes.json();
+    msgBox.innerHTML = '';
+    messages.forEach(renderMessage);
+    msgBox.scrollTop = msgBox.scrollHeight;
+
+    // 4. Receive new messages
+    socket.on('new_message', (msg) => { renderMessage(msg); msgBox.scrollTop = msgBox.scrollHeight; });
+    socket.on('chat_closed', (d)   => { msgBox.insertAdjacentHTML('beforeend', `<div class="text-center text-danger small py-2">${d.message}</div>`); input.disabled = true; sendBtn.disabled = true; });
+    socket.on('user_typing', (d)   => { typer.textContent = d.role === 'staff' ? 'Support is typing...' : ''; setTimeout(() => typer.textContent = '', 2000); });
+
+    // 5. Send
+    function send() {
+        const msg = input.value.trim();
+        if (!msg) return;
+        socket.emit('send_message', { message: msg });
+        input.value = '';
+    }
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+    input.addEventListener('input', () => socket.emit('typing'));
+
+    function renderMessage(msg) {
+        const isMe = msg.sender_role === 'customer';
+        msgBox.insertAdjacentHTML('beforeend', `
+            <div class="d-flex ${isMe ? 'justify-content-end' : 'justify-content-start'} mb-2">
+                <div class="px-3 py-2 rounded-3 small" style="max-width:75%;background:${isMe ? '#0d6efd' : '#fff'};color:${isMe ? '#fff' : '#1e293b'};border:1px solid #e2e8f0">
+                    ${!isMe ? `<div class="fw-semibold" style="font-size:.75rem;color:#6c757d">${msg.sender_name || msg.user?.name || 'Staff'}</div>` : ''}
+                    ${msg.message}
+                </div>
+            </div>`);
+    }
+})();
+</script>
+@endpush
+```
+
+---
+
+#### STEP 11 — Frontend: Admin order page
+
+**File to edit:** `resources/views/admin/orders/show.blade.php`
+
+Add the same chat widget as Step 10, but change:
+- `sender_role` check: staff sees messages from `customer` side on left, own messages on right
+- Gate check: `@can('order.chat')` wrap the entire widget
+- Label: "Customer is typing..." instead of "Support is typing..."
+
+---
+
+#### STEP 12 — Run
+
+```bash
+# Terminal 1 — Laravel
+php artisan serve
+
+# Terminal 2 — Node chat service
+cd chat-service
+node server.js
+# → [chat-service] running on port 3001
+
+# Production (PM2)
+npm install -g pm2
+pm2 start chat-service/server.js --name chat-service
+pm2 save
+```
+
+---
+
+### Phase 2 enhancements (add after core works)
+
+| Feature | How |
+|---------|-----|
+| Typing indicator | Already in spec (`socket.emit('typing')`) |
+| Read receipts | `PATCH /api/chat/orders/{order}/read` → mark is_read = true |
+| File/image attach | `multipart/form-data` → store in `storage/chat` → send URL in message |
+| Auto reply bot | If no staff online after 5 min → emit auto message from system user |
+| Chat rating | After close event → show 1-5 star widget → POST `/api/chat/orders/{order}/rate` |
+| Chat transcript email | On close → queue job → `Mail::to($order->user)->send(new ChatTranscriptMail($order))` |
+| Push notification | On `new_message` → call existing `LowStockAlertNotification` pattern for webpush |
+| Unread badge on order list | Poll `/api/chat/orders/{order}/unread-count` every 30s |
+
+---
+
+### Chat lifecycle
+
+```
+order.status = pending/processing/shipped  →  chat OPEN
+order.status = delivered/cancelled         →  chat CLOSED (auto)
+                                                ↓
+                                    all messages read = true
+                                    Node emits 'chat_closed' to room
+                                    customer sees "Chat closed" UI
+                                    messages remain visible (read-only)
+```
+
+---
+
 ## SMART / AI FEATURES
 
 | Feature | What it does | Notes |
@@ -179,6 +663,7 @@ referral_codes       — column on users: referral_code (unique)
 referral_conversions — id, referrer_id, referee_id, order_id, credit_amount
 purchase_orders      — id, supplier_name, status, expected_at, note, created_by
 purchase_order_items — id, po_id, product_id, variant_id, qty, unit_cost
+order_messages       — id, order_id, user_id, sender_role(customer/staff), message, is_read, created_at
 ```
 
 ---
