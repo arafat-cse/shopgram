@@ -23,7 +23,7 @@
         @if(!$product->isInStock())
             <span class="badge bg-secondary mb-2">Out of Stock</span>
         @elseif($product->isLowStock())
-            <span class="badge bg-warning text-dark mb-2">Low Stock</span>
+            <span class="badge bg-warning text-dark mb-2">Only {{ $product->stock_quantity }} left!</span>
         @endif
         <div class="d-flex gap-2">
             <form action="{{ route('cart.add') }}" method="POST" class="flex-grow-1">

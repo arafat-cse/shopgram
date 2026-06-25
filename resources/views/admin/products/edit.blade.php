@@ -1,6 +1,10 @@
 @extends('layouts.admin')
 @section('title', 'Edit Product')
 @section('content')
+@php
+    $isDuplicateDraft = request()->boolean('copy')
+        || ($product->status === 'draft' && Str::startsWith($product->name, 'Copy of '));
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Edit: {{ Str::limit($product->name, 40) }}</h4>
     <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary btn-sm">Back</a>
@@ -158,7 +162,7 @@
         </div>
     </div>
     <div class="mt-4">
-        <button type="submit" class="btn btn-primary px-4">Update Product</button>
+        <button type="submit" class="btn btn-primary px-4">{{ $isDuplicateDraft ? 'Save Product' : 'Update Product' }}</button>
         <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
     </div>
 </form>

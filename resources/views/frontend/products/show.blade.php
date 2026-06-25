@@ -273,6 +273,20 @@
         </div>
     </div>
 
+    {{-- Recently Viewed Products --}}
+    @if($recentProducts->count())
+    <section class="mt-5">
+        <h3 class="section-title">Recently Viewed Products</h3>
+        <div class="row g-3">
+            @foreach($recentProducts as $product)
+            <div class="col-6 col-md-4 col-lg-2">
+                <x-product-card :product="$product" />
+            </div>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
     {{-- Related Products --}}
     @if($related->count())
     <section class="mt-5">

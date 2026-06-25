@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
+use App\Services\RecentlyViewedProductService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -59,11 +60,13 @@ class ProductController extends Controller
         return view('frontend.products.index', compact('products', 'categories', 'brands'));
     }
 
-    public function show(string $slug)
+    public function show(string $slug, RecentlyViewedProductService $recentlyViewed)
     {
-        $product  = Product::active()->where('slug', $slug)->with(['category', 'brand', 'images', 'variants', 'reviews.user'])->firstOrFail();
-        $related  = Product::active()->where('category_id', $product->category_id)->where('id', '!=', $product->id)->take(6)->get();
+        $product = Product::active()->where('slug', $slug)->with(['category', 'brand', 'images', 'variants', 'reviews.user'])->firstOrFail();
+        $recentProducts = $recentlyViewed->get($product);
+        $recentlyViewed->record($product);
+        $related = Product::active()->where('category_id', $product->category_id)->where('id', '!=', $product->id)->take(6)->get();
 
-        return view('frontend.products.show', compact('product', 'related'));
+        return view('frontend.products.show', compact('product', 'related', 'recentProducts'));
     }
 }
