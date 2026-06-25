@@ -116,8 +116,11 @@
         <a href="{{ route('admin.banners.index') }}" class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
             <i class="bi bi-image"></i> <span>Banners</span>
         </a>
+        <a href="{{ route('admin.promoted.index') }}" class="nav-link {{ request()->routeIs('admin.promoted.*') ? 'active' : '' }}">
+            <i class="bi bi-megaphone"></i> <span>Promoted Products</span>
+        </a>
         <a href="{{ route('admin.pages.index') }}" class="nav-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
-            <i class="bi bi-file-text"></i> <span>Pages</span>
+            <i class="bi bi-file-text"></i> <span>Footer Pages</span>
         </a>
         <a href="{{ route('admin.newsletter.index') }}" class="nav-link {{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}">
             <i class="bi bi-envelope"></i> <span>Newsletter</span>
@@ -183,6 +186,11 @@
                     <div id="chatItems"><div class="text-center text-muted py-4 small">Loading...</div></div>
                 </div>
             </div>
+
+            {{-- Web Push Subscribe Button --}}
+            <button class="btn btn-light btn-sm px-2" id="pushToggleBtn" title="Enable desktop notifications" style="display:none">
+                <i class="bi bi-bell-slash fs-5" id="pushBtnIcon"></i>
+            </button>
 
             {{-- Notification Bell --}}
             <div class="dropdown">
@@ -380,6 +388,76 @@ document.getElementById('chatDropdown').addEventListener('show.bs.dropdown', fet
 // Initial + poll every 60s
 fetchCounts();
 setInterval(fetchCounts, 60000);
+
+// ── Web Push ──────────────────────────────────────────────
+(function () {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    const VAPID_PUBLIC = '{{ config("webpush.vapid.public_key") }}';
+    const SUBSCRIBE_URL   = '{{ route("admin.push.subscribe") }}';
+    const UNSUBSCRIBE_URL = '{{ route("admin.push.unsubscribe") }}';
+    const CSRF            = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    const btn     = document.getElementById('pushToggleBtn');
+    const btnIcon = document.getElementById('pushBtnIcon');
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const raw     = atob(base64);
+        return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+    }
+
+    function updateBtn(sub) {
+        if (sub) {
+            btnIcon.className = 'bi bi-bell-fill fs-5 text-warning';
+            btn.title = 'Desktop notifications ON — click to disable';
+        } else {
+            btnIcon.className = 'bi bi-bell-slash fs-5';
+            btn.title = 'Enable desktop notifications';
+        }
+    }
+
+    async function sendToServer(url, body) {
+        await fetch(url, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify(body),
+        });
+    }
+
+    navigator.serviceWorker.register('/sw.js').then(async reg => {
+        btn.style.display = '';
+
+        let sub = await reg.pushManager.getSubscription();
+        updateBtn(sub);
+
+        btn.addEventListener('click', async () => {
+            if (sub) {
+                await sendToServer(UNSUBSCRIBE_URL, { endpoint: sub.endpoint });
+                await sub.unsubscribe();
+                sub = null;
+            } else {
+                if (Notification.permission === 'denied') {
+                    alert('Browser blocked notifications. Allow them in site settings, then click again.');
+                    return;
+                }
+                sub = await reg.pushManager.subscribe({
+                    userVisibleOnly:      true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
+                });
+                await sendToServer(SUBSCRIBE_URL, {
+                    endpoint: sub.endpoint,
+                    keys: {
+                        p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')))),
+                        auth:   btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')))),
+                    },
+                });
+            }
+            updateBtn(sub);
+        });
+    });
+})();
 </script>
 @stack('scripts')
 </body>

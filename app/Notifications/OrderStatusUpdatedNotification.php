@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class OrderStatusUpdatedNotification extends Notification implements ShouldQueue
 {
@@ -15,7 +16,16 @@ class OrderStatusUpdatedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'webpush'];
+    }
+
+    public function toWebPush(object $notifiable, mixed $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title('📦 Order ' . $this->order->order_number . ' Updated')
+            ->body('Status: ' . $this->order->status_label . ($this->note ? ' · ' . $this->note : ''))
+            ->action('Track Order', url('/customer/order-tracking'))
+            ->icon('/images/logo.png');
     }
 
     public function toMail(object $notifiable): MailMessage

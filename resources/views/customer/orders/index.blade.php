@@ -16,7 +16,17 @@
                     <td>{{ $order->items()->count() }}</td>
                     <td>৳{{ number_format($order->total, 0) }}</td>
                     <td><x-order-status-badge :status="$order->status" /></td>
-                    <td><a href="{{ route('customer.orders.show', $order) }}" class="btn btn-sm btn-outline-primary">Details</a></td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{{ route('customer.orders.show', $order) }}" class="btn btn-sm btn-outline-primary">Details</a>
+                            <form action="{{ route('customer.orders.reorder', $order) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-success" title="Re-add all items to cart">
+                                    <i class="bi bi-arrow-repeat"></i> Reorder
+                                </button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
                 @empty
                 <tr><td colspan="6" class="text-center py-4 text-muted">No orders found.</td></tr>

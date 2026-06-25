@@ -1,59 +1,176 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ShopGram — Laravel eCommerce
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Full-featured eCommerce platform built with Laravel 12, Bootstrap 5, and MySQL.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Layer | Technology |
+|-------|-----------|
+| Backend | PHP 8.2+, Laravel 12 |
+| Frontend | Blade, Bootstrap 5, Bootstrap Icons |
+| Database | MySQL (SQLite for local dev) |
+| Auth & Roles | Spatie Laravel Permission |
+| PDF | barryvdh/laravel-dompdf |
+| Excel/CSV | maatwebsite/excel |
+| Image processing | intervention/image |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Quick Setup
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+# 1. Install dependencies
+composer install
+npm install
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# 2. Environment
+cp .env.example .env
+php artisan key:generate
 
-## Laravel Sponsors
+# 3. Database
+php artisan migrate
+php artisan db:seed
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# 4. Storage link
+php artisan storage:link
 
-### Premium Partners
+# 5. Build assets
+npm run build
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Or use the composer script (does steps 1–4+build in one go):
 
-## Contributing
+```bash
+composer run setup
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Development Server
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+composer run dev
+```
 
-## Security Vulnerabilities
+Starts Laravel + Vite + Queue worker + Pail log viewer concurrently.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Default Credentials
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Role | Email | Password |
+|------|-------|----------|
+| Super Admin | admin@shopgram.com | password |
+
+---
+
+## URL Structure
+
+| Area | URL |
+|------|-----|
+| Storefront | `/` |
+| Admin panel | `/admin/dashboard` |
+| Customer dashboard | `/customer/dashboard` |
+| Cart | `/cart` |
+| Checkout | `/checkout` |
+
+---
+
+## Roles & Permissions
+
+Managed via Spatie Laravel Permission. Roles seeded by `RolePermissionSeeder`:
+
+- **Super Admin** — full access
+- **Admin** — product/order/customer management
+- (more roles configurable from `/admin/roles`)
+
+---
+
+## Key Features
+
+### Storefront
+- Product listing with category/brand/price filters
+- Product detail — image gallery with zoom, variant selector, reviews
+- Social proof — "X viewing now" + "Y sold in 24h" badges
+- Sticky add-to-cart bar (IntersectionObserver)
+- First-visit promotional popup (promoted products from admin)
+- Animated hero banner with countdown timer + urgency design
+- Cart, checkout, order tracking
+- Wishlist, product reviews
+- Customer dashboard — orders, addresses, returns, support tickets
+- Reorder button — re-adds past order items to cart
+- Customer invoice PDF download
+- Recently viewed products
+
+### Admin Panel
+- Dashboard with stats
+- Product management — CRUD, variants, gallery, duplication
+- Promoted products flag (shown in popup)
+- Order management — status updates, invoice PDF
+- Customer management
+- Inventory management — stock in/out, low-stock alerts (auto-email to admins)
+- Coupon, shipping zone, courier management
+- Banner management
+- Analytics — charts + Excel/PDF export
+- Reports — sales, orders, products, stock, coupons, payments
+- Activity log
+- Notification bell (AJAX polling)
+- Role & permission management
+- Settings, pages, newsletter
+
+---
+
+## Seeders
+
+| Seeder | Purpose |
+|--------|---------|
+| `AdminUserSeeder` | Super Admin user |
+| `RolePermissionSeeder` | All roles + permissions |
+| `CategorySeeder` | Sample categories |
+| `BrandSeeder` | Sample brands |
+| `ProductSeeder` | Sample products |
+| `PromotedProductSeeder` | Marks products 1–3 as promoted (popup) |
+| `ShippingZoneSeeder` | Default shipping zones |
+| `SettingSeeder` | Default site settings |
+
+Run individual seeder:
+
+```bash
+php artisan db:seed --class=PromotedProductSeeder
+```
+
+---
+
+## Important Artisan Commands
+
+```bash
+# Run migrations fresh with seed
+php artisan migrate:fresh --seed
+
+# Clear all caches
+php artisan optimize:clear
+
+# Process queued jobs (notifications, etc.)
+php artisan queue:work
+
+# Run tests
+composer run test
+```
+
+---
+
+## Environment Notes
+
+- Set `APP_TIMEZONE=Asia/Dhaka` (already in `.env.example`)
+- Queue driver: set `QUEUE_CONNECTION=database` for production notifications
+- Mail: configure `MAIL_*` vars for low-stock alerts and order emails
+- Storage: run `php artisan storage:link` for product images to be served
+
+---
+
+## Project Docs
+
+- [`project-structure.md`](project-structure.md) — file map, all controllers/models/views
+- [`feature-update-structure.md`](feature-update-structure.md) — implemented features + next roadmap

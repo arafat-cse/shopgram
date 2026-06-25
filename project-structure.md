@@ -1,7 +1,7 @@
 # ShopGram — Project Structure
 
 **Stack:** Laravel 12, Blade, MySQL, Bootstrap 5, jQuery  
-**Last updated:** 2026-06-25 (product duplicate documented)
+**Last updated:** 2026-06-25 (session 3 — web push notifications)
 
 ---
 
@@ -163,12 +163,15 @@
 - `2026_06_23_..._create_return_requests_table.php`
 - `2026_06_24_..._create_contact_messages_table.php`
 - `2026_06_24_100001_create_admin_activity_logs_table.php`
+- `2026_06_25_..._add_is_promoted_to_products_table.php`
+- `2026_06_25_..._create_push_subscriptions_table.php`
 
 ### seeders/
 - `DatabaseSeeder.php`
 - `AdminUserSeeder.php`
 - `CategorySeeder.php`
 - `ProductSeeder.php`
+- `PromotedProductSeeder.php`
 - `RolePermissionSeeder.php`
 - `SettingSeeder.php`
 - `ShippingZoneSeeder.php`
@@ -308,7 +311,44 @@
 
 All spec files implemented. No known gaps.
 
-## Recent Additions (2026-06-25)
+## Recent Additions — Session 3 (2026-06-25)
+
+| Item | Type | Purpose |
+|------|------|---------|
+| `laravel-notification-channels/webpush` | Package | Browser push notification support via Web Push API + VAPID |
+| VAPID keys | Config | Auto-generated via `php artisan webpush:vapid`; stored in `.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`) |
+| `push_subscriptions` table | Migration | Stores per-user browser push endpoint + keys |
+| `HasPushSubscriptions` trait | Model | Added to `User.php` — enables `updatePushSubscription()` / `deletePushSubscription()` |
+| `webpush` channel in notifications | Notifications | Added to `LowStockAlertNotification`, `OrderPlacedNotification`, `OrderStatusUpdatedNotification` — each has `toWebPush()` |
+| `pushSubscribe()` + `pushUnsubscribe()` | Controller | Added to `Admin/NotificationController.php` |
+| `POST admin/push/subscribe` | Route | Saves browser push subscription for logged-in admin |
+| `POST admin/push/unsubscribe` | Route | Removes push subscription |
+| `public/sw.js` | Service Worker | Handles `push` event → `showNotification`; `notificationclick` → opens URL |
+| Push toggle button | Admin Layout | Bell-slash icon in top bar; click → browser permission prompt → subscribe/unsubscribe; icon turns yellow when active |
+| `AdminUserSeeder` — second admin | Seeder | `arafat.dev61@gmail.com` seeded as Super Admin (password: `password`) |
+
+---
+
+## Recent Additions — Session 2 (2026-06-25)
+
+| Item | Type | Purpose |
+|------|------|---------|
+| Password visibility toggle | Auth UX | Eye icon on login + register password fields; JS `togglePassword()` in `auth/login.blade.php` + `auth/register.blade.php` |
+| `is_promoted` column on products | Migration + Model | Boolean flag; `scopePromoted()`; admin checkbox on create/edit product forms |
+| `/api/promoted-products` route | API | Returns JSON of active promoted products (name, url, thumbnail, prices) |
+| `PromotedProductSeeder.php` | Seeder | Seeds products id 1–3 as promoted |
+| First-visit promotional popup | Frontend UX | Full-bleed image popup in `layouts/app.blade.php`; fetches `/api/promoted-products`; JS slider + auto-advance + dots + progress bar; `localStorage` flag `sg_promo_seen_v1` |
+| Hero banner redesign | Frontend UX | 3 themed fallback slides (Flash Sale/New Arrivals/Exclusive Deals) with real-time midnight countdown, urgency badges, date display; `frontend/home/index.blade.php` |
+| Image lazy loading | Performance | `loading="lazy"` on `components/product-card.blade.php` thumbnail |
+| Auto low-stock email | Inventory | `InventoryService::checkLowStock()` fires `LowStockAlertNotification` to all Super Admin + Admin users after every `stockOut()` |
+| Reorder button | Customer UX | `Customer/OrderController@reorder` re-adds in-stock items to cart; `POST customer/orders/{order}/reorder`; buttons on orders index + show views |
+| Customer invoice PDF | Customer UX | `Customer/OrderController@invoicePdf`; `GET customer/orders/{order}/invoice/pdf`; "Invoice PDF" download button on `customer/orders/show.blade.php` |
+| Social proof badges | Product UX | "X viewing now" (seeded deterministic JS) + "Y sold in 24h" (real `order_items` query); shown on `frontend/products/show.blade.php` |
+| Sticky add-to-cart bar | Product UX | Fixed bar slides up from bottom when main ATC button scrolls out of view (`IntersectionObserver`); syncs variant + qty; `frontend/products/show.blade.php` |
+
+---
+
+## Recent Additions — Session 1 (2026-06-25)
 
 | Item | Type | Purpose |
 |------|------|---------|

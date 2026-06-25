@@ -18,7 +18,17 @@ class AdminUserSeeder extends Seeder
                 'status'   => 'active',
             ]
         );
-
         $admin->assignRole('Super Admin');
+
+        $arafat = User::firstOrCreate(
+            ['email' => 'arafat.dev61@gmail.com'],
+            [
+                'name'     => 'Arafat',
+                'phone'    => '01700000001',
+                'password' => Hash::make('password'),
+                'status'   => 'active',
+            ]
+        );
+        $arafat->assignRole('Super Admin');
     }
 }

@@ -5,7 +5,7 @@
     @endif
     <a href="{{ route('products.show', $product->slug) }}">
         <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
-             class="card-img-top" alt="{{ $product->name }}" style="height:200px;object-fit:cover">
+             class="card-img-top" alt="{{ $product->name }}" style="height:200px;object-fit:cover" loading="lazy">
     </a>
     <div class="card-body d-flex flex-column p-3">
         <small class="text-muted">{{ $product->category->name ?? '' }}</small>

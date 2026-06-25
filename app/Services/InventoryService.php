@@ -4,6 +4,8 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StockHistory;
+use App\Models\User;
+use App\Notifications\LowStockAlertNotification;
 
 class InventoryService
 {
@@ -41,6 +43,20 @@ class InventoryService
             'note'       => $note,
             'created_by' => $userId,
         ]);
+
+        $this->checkLowStock($productId);
+    }
+
+    private function checkLowStock(int $productId): void
+    {
+        $product = Product::find($productId);
+        if (!$product || $product->low_stock_threshold <= 0) return;
+        if ($product->stock_quantity > $product->low_stock_threshold) return;
+        if ($product->stock_quantity <= 0) return;
+
+        User::role(['Super Admin', 'Admin'])->each(
+            fn(User $admin) => $admin->notify(new LowStockAlertNotification($product))
+        );
     }
 
     public function adjust(int $productId, ?int $variantId, int $newQty, string $note = '', int $userId = null): void

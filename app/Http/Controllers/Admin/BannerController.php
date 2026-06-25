@@ -23,7 +23,7 @@ class BannerController extends Controller
             'subtitle'    => 'nullable|string|max:255',
             'button_text' => 'nullable|string|max:100',
             'button_url'  => 'nullable|string|max:500',
-            'image'       => 'required|image|max:5120',
+            'image'       => 'nullable|image|max:5120',
             'type'        => 'required|in:hero,promo',
             'sort_order'  => 'nullable|integer',
             'status'      => 'required|in:active,inactive',
