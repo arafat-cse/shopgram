@@ -223,14 +223,16 @@
                     <li><a href="{{ route('contact.index') }}" class="text-muted text-decoration-none">Contact Us</a></li>
                 </ul>
             </div>
+            @if($footerPages->isNotEmpty())
             <div class="col-lg-3">
                 <h6 class="fw-bold">Policies</h6>
                 <ul class="list-unstyled small">
-                    <li><a href="{{ route('page.show', 'privacy-policy') }}" class="text-muted text-decoration-none">Privacy Policy</a></li>
-                    <li><a href="{{ route('page.show', 'return-policy') }}" class="text-muted text-decoration-none">Return Policy</a></li>
-                    <li><a href="{{ route('page.show', 'terms-and-conditions') }}" class="text-muted text-decoration-none">Terms & Conditions</a></li>
+                    @foreach($footerPages as $fp)
+                    <li><a href="{{ route('page.show', $fp->slug) }}" class="text-muted text-decoration-none">{{ $fp->title }}</a></li>
+                    @endforeach
                 </ul>
             </div>
+            @endif
             <div class="col-lg-3">
                 <h6 class="fw-bold">Newsletter</h6>
                 <form action="{{ route('newsletter.subscribe') }}" method="POST">

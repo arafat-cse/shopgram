@@ -116,8 +116,11 @@
         <a href="{{ route('admin.banners.index') }}" class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
             <i class="bi bi-image"></i> <span>Banners</span>
         </a>
+        <a href="{{ route('admin.promoted.index') }}" class="nav-link {{ request()->routeIs('admin.promoted.*') ? 'active' : '' }}">
+            <i class="bi bi-megaphone"></i> <span>Promoted Products</span>
+        </a>
         <a href="{{ route('admin.pages.index') }}" class="nav-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
-            <i class="bi bi-file-text"></i> <span>Pages</span>
+            <i class="bi bi-file-text"></i> <span>Footer Pages</span>
         </a>
         <a href="{{ route('admin.newsletter.index') }}" class="nav-link {{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}">
             <i class="bi bi-envelope"></i> <span>Newsletter</span>

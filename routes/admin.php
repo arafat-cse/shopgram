@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\PromotedProductController;
 
 Route::middleware(['auth', 'admin.access'])
     ->prefix('admin')
@@ -161,6 +162,10 @@ Route::middleware(['auth', 'admin.access'])
     Route::post('notifications/mark-read',[NotificationController::class, 'markRead'])->name('notifications.mark-read');
     Route::post('push/subscribe',        [NotificationController::class, 'pushSubscribe'])->name('push.subscribe');
     Route::post('push/unsubscribe',      [NotificationController::class, 'pushUnsubscribe'])->name('push.unsubscribe');
+
+    // Promoted Products
+    Route::get('promoted-products',              [PromotedProductController::class, 'index'])->name('promoted.index');
+    Route::post('promoted-products/{product}/toggle', [PromotedProductController::class, 'toggle'])->name('promoted.toggle');
 
     // Activity Log
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');

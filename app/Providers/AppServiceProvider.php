@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Page;
 use App\Models\Setting;
 use App\Models\SupportTicket;
 use App\Policies\OrderPolicy;
@@ -72,6 +73,12 @@ class AppServiceProvider extends ServiceProvider
                     ->get());
             } catch (\Exception $e) {
                 $view->with('navCategories', collect());
+            }
+
+            try {
+                $view->with('footerPages', Page::active()->footer()->orderBy('title')->get());
+            } catch (\Exception $e) {
+                $view->with('footerPages', collect());
             }
         });
     }

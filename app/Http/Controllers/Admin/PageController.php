@@ -28,6 +28,7 @@ class PageController extends Controller
             'status'          => 'required|in:active,inactive',
         ]);
 
+        $data['show_in_footer'] = $request->boolean('show_in_footer');
         $data['slug'] = Str::slug($data['title']);
         $page = Page::create($data);
         ActivityLogService::created('Page', $page->id, "Created page \"{$page->title}\"");
@@ -48,6 +49,7 @@ class PageController extends Controller
             'status'          => 'required|in:active,inactive',
         ]);
 
+        $data['show_in_footer'] = $request->boolean('show_in_footer');
         $page->update($data);
         ActivityLogService::updated('Page', $page->id, "Updated page \"{$page->title}\"");
         return redirect()->route('admin.pages.index')->with('success', 'Page updated.');

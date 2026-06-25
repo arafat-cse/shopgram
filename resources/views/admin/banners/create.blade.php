@@ -23,8 +23,8 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Image *</label>
-                <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" accept="image/jpeg,image/png,image/webp" required>
+                <label class="form-label">Image <span class="text-muted small">(optional — leave blank for CSS fallback slide)</span></label>
+                <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" accept="image/jpeg,image/png,image/webp">
                 @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
