@@ -310,5 +310,254 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @stack('scripts')
+
+{{-- First-visit promotional popup --}}
+<div class="modal fade" id="promoPopupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:860px;">
+        <div class="modal-content border-0 overflow-hidden" style="border-radius:20px;">
+
+            <div id="promoLoaded">
+
+                {{-- Full-bleed image card — banner style --}}
+                <div class="position-relative" id="promoCard" style="cursor:pointer; user-select:none;">
+
+                    {{-- Image / placeholder --}}
+                    <img id="promoImg" src="" alt="" loading="lazy"
+                         style="width:100%; height:540px; object-fit:cover; display:block;">
+                    <div id="promoImgPh"
+                         style="width:100%; height:540px; display:none; align-items:center; justify-content:center;
+                                background:linear-gradient(135deg,#1a0533 0%,#6b0f6b 50%,#c2185b 100%); font-size:6rem;">
+                        🛍️
+                    </div>
+
+                    {{-- Dark gradient overlay --}}
+                    <div style="position:absolute; inset:0;
+                                background:linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.28) 45%, rgba(0,0,0,.08) 100%);
+                                pointer-events:none;"></div>
+
+                    {{-- Close X —top right --}}
+                    <button data-bs-dismiss="modal"
+                            style="position:absolute; top:14px; right:14px; width:34px; height:34px;
+                                   border-radius:50%; border:0; background:rgba(0,0,0,.45);
+                                   color:#fff; font-size:1.1rem; line-height:1; cursor:pointer;
+                                   display:flex; align-items:center; justify-content:center;
+                                   backdrop-filter:blur(4px); transition:background .15s; z-index:10;"
+                            onmouseover="this.style.background='rgba(0,0,0,.75)'"
+                            onmouseout="this.style.background='rgba(0,0,0,.45)'">&times;</button>
+
+                    {{-- Discount badge — top left --}}
+                    <div id="promoDiscBadge"
+                         style="display:none; position:absolute; top:14px; left:14px;
+                                background:linear-gradient(135deg,#e91e63,#ad1457);
+                                color:#fff; font-weight:800; font-size:1.05rem;
+                                padding:6px 14px; border-radius:999px;
+                                box-shadow:0 4px 16px rgba(233,30,99,.5); z-index:10;"></div>
+
+                    {{-- Progress bar --}}
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:rgba(255,255,255,.2); z-index:10;">
+                        <div id="promoProgress" style="height:100%; width:0%;
+                             background:linear-gradient(90deg,#e91e63,#f5821f);
+                             transition:width .12s linear;"></div>
+                    </div>
+
+                    {{-- Bottom overlay content --}}
+                    <div style="position:absolute; bottom:0; left:0; right:0; padding:28px 24px 20px; color:#fff; z-index:5;">
+
+                        {{-- Eyebrow --}}
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span style="background:rgba(233,30,99,.85); backdrop-filter:blur(4px);
+                                         font-size:.72rem; font-weight:700; letter-spacing:.06em;
+                                         text-transform:uppercase; padding:4px 12px; border-radius:999px;">
+                                ⚡ Special Offer
+                            </span>
+                            <span id="promoSavePill" style="display:none; background:rgba(56,142,60,.85);
+                                  backdrop-filter:blur(4px); font-size:.72rem; font-weight:700;
+                                  letter-spacing:.04em; text-transform:uppercase; padding:4px 12px; border-radius:999px;"></span>
+                        </div>
+
+                        {{-- Product name --}}
+                        <div id="promoName"
+                             style="font-size:clamp(1.2rem,3.5vw,1.6rem); font-weight:800;
+                                    line-height:1.2; margin-bottom:10px;
+                                    text-shadow:0 2px 12px rgba(0,0,0,.5);"></div>
+
+                        {{-- Price row --}}
+                        <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:16px;">
+                            <span id="promoPrice"
+                                  style="font-size:clamp(1.5rem,4vw,2rem); font-weight:900; color:#fff; line-height:1;"></span>
+                            <span id="promoOldPrice"
+                                  style="display:none; font-size:1.05rem; color:rgba(255,255,255,.6); text-decoration:line-through;"></span>
+                            <span id="promoSaveAmt"
+                                  style="display:none; font-size:.82rem; background:rgba(255,255,255,.15);
+                                         backdrop-filter:blur(3px); padding:3px 10px; border-radius:999px; font-weight:600;"></span>
+                        </div>
+
+                        {{-- CTA button + dots row --}}
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                            <a id="promoCta" href="#"
+                               style="display:inline-flex; align-items:center; gap:8px;
+                                      padding:11px 28px; border-radius:12px;
+                                      background:linear-gradient(135deg,#e91e63,#c2185b);
+                                      color:#fff; font-size:1rem; font-weight:700;
+                                      text-decoration:none; box-shadow:0 6px 22px rgba(233,30,99,.5);
+                                      transition:transform .15s, box-shadow .15s; white-space:nowrap;"
+                               onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(233,30,99,.6)'"
+                               onmouseout="this.style.transform='';this.style.boxShadow='0 6px 22px rgba(233,30,99,.5)'">
+                                Shop Now &rarr;
+                            </a>
+
+                            {{-- Dot navigation --}}
+                            <div id="promoDots" style="display:flex; gap:6px; align-items:center;"></div>
+                        </div>
+
+                        {{-- Skip link --}}
+                        <div style="margin-top:12px;">
+                            <button data-bs-dismiss="modal"
+                                    style="border:0; background:none; color:rgba(255,255,255,.55);
+                                           font-size:.78rem; cursor:pointer; padding:0; letter-spacing:.02em;">
+                                Skip for now &times;
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Side arrows --}}
+                    <button onclick="promoGo(-1)"
+                            style="position:absolute; left:12px; top:50%; transform:translateY(-50%);
+                                   width:36px; height:36px; border-radius:50%; border:0;
+                                   background:rgba(255,255,255,.2); backdrop-filter:blur(4px);
+                                   color:#fff; font-size:1rem; cursor:pointer;
+                                   display:flex; align-items:center; justify-content:center;
+                                   transition:background .15s; z-index:10;"
+                            onmouseover="this.style.background='rgba(255,255,255,.4)'"
+                            onmouseout="this.style.background='rgba(255,255,255,.2)'">&#8592;</button>
+                    <button onclick="promoGo(1)"
+                            style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                                   width:36px; height:36px; border-radius:50%; border:0;
+                                   background:rgba(255,255,255,.2); backdrop-filter:blur(4px);
+                                   color:#fff; font-size:1rem; cursor:pointer;
+                                   display:flex; align-items:center; justify-content:center;
+                                   transition:background .15s; z-index:10;"
+                            onmouseover="this.style.background='rgba(255,255,255,.4)'"
+                            onmouseout="this.style.background='rgba(255,255,255,.2)'">&#8594;</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#promoImgPh { display: flex; }
+#promoImg[src=""] + #promoImgPh { display: flex; }
+.promo-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,.45); cursor: pointer;
+    transition: background .2s, transform .2s; border: 0;
+}
+.promo-dot.active { background: #e91e63; transform: scale(1.4); }
+</style>
+
+<script>
+(function () {
+    const STORAGE_KEY = 'sg_promo_seen_v1';
+    if (localStorage.getItem(STORAGE_KEY)) return;
+
+    let slides = [], current = 0, autoTimer = null, progTimer = null, progVal = 0;
+    const AUTO_MS = 5000;
+
+    function fmt(n) { return '৳' + parseFloat(n).toLocaleString('en-BD'); }
+
+    function render(idx) {
+        current = ((idx % slides.length) + slides.length) % slides.length;
+        const p = slides[current];
+
+        // Image
+        const img = document.getElementById('promoImg');
+        const ph  = document.getElementById('promoImgPh');
+        if (p.thumbnail) {
+            img.src = p.thumbnail; img.alt = p.name;
+            img.style.display = 'block'; ph.style.display = 'none';
+        } else {
+            img.style.display = 'none'; ph.style.display = 'flex';
+        }
+
+        // Discount badge top-left
+        const badge = document.getElementById('promoDiscBadge');
+        if (p.sale_price && p.regular_price > 0) {
+            const pct = Math.round(((p.regular_price - p.sale_price) / p.regular_price) * 100);
+            badge.textContent = '-' + pct + '%';
+            badge.style.display = 'block';
+        } else { badge.style.display = 'none'; }
+
+        // Name
+        document.getElementById('promoName').textContent = p.name;
+
+        // Price
+        document.getElementById('promoPrice').textContent = fmt(p.sale_price || p.regular_price);
+        const oldEl  = document.getElementById('promoOldPrice');
+        const saveEl = document.getElementById('promoSaveAmt');
+        const savePill = document.getElementById('promoSavePill');
+        if (p.sale_price && p.regular_price > p.sale_price) {
+            const saved = p.regular_price - p.sale_price;
+            const pct   = Math.round((saved / p.regular_price) * 100);
+            oldEl.textContent = fmt(p.regular_price); oldEl.style.display = 'inline';
+            saveEl.textContent = 'Save ' + pct + '%'; saveEl.style.display = 'inline';
+            savePill.textContent = '🎉 Save ' + fmt(saved); savePill.style.display = 'inline';
+        } else {
+            oldEl.style.display = 'none';
+            saveEl.style.display = 'none';
+            savePill.style.display = 'none';
+        }
+
+        // CTA
+        document.getElementById('promoCta').href = p.url;
+
+        // Dots
+        const dotsEl = document.getElementById('promoDots');
+        dotsEl.innerHTML = '';
+        slides.forEach((_, i) => {
+            const d = document.createElement('button');
+            d.className = 'promo-dot' + (i === current ? ' active' : '');
+            d.addEventListener('click', (e) => { e.stopPropagation(); resetAuto(); render(i); });
+            dotsEl.appendChild(d);
+        });
+
+        // Progress bar
+        clearInterval(progTimer); progVal = 0;
+        const bar = document.getElementById('promoProgress');
+        bar.style.transition = 'none'; bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.transition = 'width .12s linear';
+            progTimer = setInterval(() => {
+                progVal += 100 / (AUTO_MS / 120);
+                bar.style.width = Math.min(progVal, 100) + '%';
+            }, 120);
+        }, 50);
+    }
+
+    function resetAuto() {
+        clearInterval(autoTimer);
+        autoTimer = setInterval(() => render(current + 1), AUTO_MS);
+    }
+
+    window.promoGo = function(dir) { resetAuto(); render(current + dir); };
+
+    fetch('/api/promoted-products')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.length) return;
+            slides = data;
+            render(0);
+            resetAuto();
+            const modal = new bootstrap.Modal(document.getElementById('promoPopupModal'), { backdrop: true });
+            modal.show();
+            document.getElementById('promoPopupModal').addEventListener('hidden.bs.modal', () => {
+                clearInterval(autoTimer); clearInterval(progTimer);
+                localStorage.setItem(STORAGE_KEY, '1');
+            });
+        })
+        .catch(() => {});
+}());
+</script>
 </body>
 </html>

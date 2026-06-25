@@ -78,14 +78,13 @@
 |---------|-------------|---------------------|
 | **Bulk order status update** | Check multiple orders → change status all at once | Checkbox datatable + `POST /admin/orders/bulk-status` |
 | **CSV product import** | Upload CSV to create/update products in bulk | `maatwebsite/excel` already installed |
-| **CSV/Excel export for all modules** | Export orders, customers, products, stock to Excel | `maatwebsite/excel` — implement in each controller |
 | **Scheduled product publish** | Set `published_at` date — product goes live automatically | `published_at` column + `where('published_at', '<=', now())` scope |
 
 ### 🔴 Smart Inventory
 
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
-| **Auto low-stock email to admin** | Send `LowStockAlertNotification` when stock hits threshold during order | Trigger in `InventoryService::deductStock()` — notification already built |
+| **Auto low-stock email to admin** | Send `LowStockAlertNotification` when stock hits threshold during order | Trigger in `InventoryService::deductStock()` — `LowStockAlertNotification` class exists, wire it up |
 | **Inventory forecast** | Show "At current sell rate, stock runs out in X days" | Avg daily sales from `order_items` ÷ current stock |
 | **Restock purchase order** | Admin creates purchase order (PO) to track incoming stock | `purchase_orders` + `purchase_order_items` tables |
 
@@ -120,8 +119,6 @@
 
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
-| **Admin activity log** | Track who did what: created product, updated order status, etc. | `admin_activity_logs` table, log in each admin controller |
-| **Dashboard notifications bell** | Real-time count of new orders, tickets, low stock | Polling AJAX every 60s → `/admin/notifications/count` |
 | **Dark mode for admin** | Toggle dark/light in admin panel | CSS variables + `localStorage` preference |
 | **Admin quick search** | Press `/` anywhere in admin → search orders, products, customers | JS modal + AJAX |
 | **Keyboard shortcuts** | `N` = new product, `O` = orders, `ESC` = close modal | JS `keydown` listener |
@@ -145,7 +142,6 @@
 |---------|-------------|-------|
 | **Redis cache for product listing** | Cache product queries for 5 min — huge speed boost | `CACHE_DRIVER=redis`, wrap queries in `Cache::remember()` |
 | **Image WebP conversion on upload** | Auto-convert uploaded images to WebP | `spatie/image` package |
-| **Image CDN / lazy loading** | Defer off-screen images | `loading="lazy"` attr on all `<img>` (3-line change) |
 | **Rate limiting on cart/checkout** | Prevent checkout spam/bots | Laravel `RateLimiter` in `RouteServiceProvider` |
 | **2FA for admin login** | Extra security for admin panel | `pragmarx/google2fa-laravel` |
 | **Sitemap auto-generation** | SEO: auto sitemap.xml for all products/categories | `spatie/laravel-sitemap` |
@@ -161,17 +157,35 @@ For above features, new tables required:
 flash_sales          — id, name, discount_percent, starts_at, ends_at, status
 flash_sale_products  — flash_sale_id, product_id
 stock_notifications  — id, user_id, product_id, notified_at (nullable)
-recently_viewed      — id, user_id, product_id, viewed_at
 product_questions    — id, product_id, user_id, question, status
 product_answers      — id, question_id, user_id, answer
 loyalty_points       — column on users table: points INT default 0
 point_transactions   — id, user_id, type(earn/redeem), points, note, order_id, created_at
 referral_codes       — column on users: referral_code (unique)
 referral_conversions — id, referrer_id, referee_id, order_id, credit_amount
-admin_activity_logs  — id, user_id, action, model_type, model_id, meta(json), created_at
 purchase_orders      — id, supplier_name, status, expected_at, note, created_by
 purchase_order_items — id, po_id, product_id, variant_id, qty, unit_cost
 ```
+
+---
+
+## ✅ ALREADY IMPLEMENTED
+
+| Feature | Where |
+|---------|-------|
+| **Admin activity log** | `admin_activity_logs` table · `ActivityLogController` · route `activity-logs.index` · logged in all admin controllers |
+| **Dashboard notifications bell** | `NotificationController` · polling `/admin/notifications/counts` + `/recent` · bell icon + badge in `layouts/admin.blade.php` |
+| **CSV/Excel export** (orders, customers, products, stock, analytics, newsletter) | `ReportController@export` · `AnalyticsController@exportExcel/Pdf` · `reports/{type}/export` routes |
+| **Analytics module** | `AnalyticsController` · `AnalyticsService` · full analytics dashboard with export |
+| **Recently viewed products** | `RecentlyViewedProductService` · shown on homepage |
+| **Wishlist** (add/remove/view) | `WishlistController` · `WishlistService` · customer dashboard |
+| **Product duplication** | Admin product create with `duplicate_product_id` → copies product + gallery + variants |
+| **Image lazy loading** | `loading="lazy"` — needs adding to `product-card.blade.php` (quick win, not yet done) |
+| **Hero banner redesign + urgency** | 3 themed fallback slides (Flash Sale/New Arrivals/Deals) · real-time midnight countdown · date badges · `frontend/home/index.blade.php` |
+| **First-visit promotional popup** | `is_promoted` on products · `/api/promoted-products` · Bootstrap modal + JS slider · `layouts/app.blade.php` |
+| **Password visibility toggle** | Eye icon on login + register forms · `auth/login.blade.php` · `auth/register.blade.php` |
+| **Admin order invoice PDF** | `OrderController@invoicePdf` · route `admin.orders.invoice.pdf` |
+| **LowStockAlertNotification class** | `app/Notifications/LowStockAlertNotification.php` — class exists, auto-trigger in InventoryService not yet wired |
 
 ---
 
@@ -180,24 +194,23 @@ purchase_order_items — id, po_id, product_id, variant_id, qty, unit_cost
 ```
 Phase A (Quick wins — 1-2 days each):
   1. Reorder button (customer)
-  2. Auto low-stock email (trigger already built)
-  3. Customer invoice download
-  4. Image lazy loading (3 min change)
-  5. CSV export for orders + customers
+  2. Auto low-stock email — wire LowStockAlertNotification into InventoryService::stockOut()
+  3. Customer invoice download (customer-side route, class already exists)
+  4. Image lazy loading — add loading="lazy" to product-card.blade.php
 
 Phase B (Medium effort — 3-5 days each):
-  6. Mini cart drawer (AJAX)
-  7. Product quick view modal
-  8. Bulk order status update
-  9. Abandoned cart list + email
-  10. Flash sale manager
-  11. AJAX product filters
-  12. CSV product import
+  5. Mini cart drawer (AJAX)
+  6. Product quick view modal
+  7. Bulk order status update
+  8. Abandoned cart list + email
+  9. Flash sale manager
+  10. AJAX product filters
+  11. CSV product import
 
 Phase C (Bigger features — 1 week+):
-  13. Loyalty points system
-  14. Smart search (Meilisearch)
-  15. Referral system
-  16. Q&A on product page
-  17. PWA support
+  12. Loyalty points system
+  13. Smart search (Meilisearch)
+  14. Referral system
+  15. Q&A on product page
+  16. PWA support
 ```

@@ -87,6 +87,7 @@ class ProductController extends Controller
             'is_featured'        => 'boolean',
             'is_new_arrival'     => 'boolean',
             'is_best_selling'    => 'boolean',
+            'is_promoted'        => 'boolean',
             'thumbnail'          => 'nullable|image|max:16384',
             'gallery'            => 'nullable|array|max:8',
             'gallery.*'          => 'image|max:16384',
@@ -106,6 +107,7 @@ class ProductController extends Controller
         $data['is_featured']     = $request->boolean('is_featured');
         $data['is_new_arrival']  = $request->boolean('is_new_arrival');
         $data['is_best_selling'] = $request->boolean('is_best_selling');
+        $data['is_promoted']     = $request->boolean('is_promoted');
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
@@ -154,6 +156,7 @@ class ProductController extends Controller
             'is_featured'        => 'boolean',
             'is_new_arrival'     => 'boolean',
             'is_best_selling'    => 'boolean',
+            'is_promoted'        => 'boolean',
             'thumbnail'          => 'nullable|image|max:16384',
             'gallery'            => 'nullable|array|max:8',
             'gallery.*'          => 'image|max:16384',
@@ -165,6 +168,7 @@ class ProductController extends Controller
         $data['is_featured']     = $request->boolean('is_featured');
         $data['is_new_arrival']  = $request->boolean('is_new_arrival');
         $data['is_best_selling'] = $request->boolean('is_best_selling');
+        $data['is_promoted']     = $request->boolean('is_promoted');
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
