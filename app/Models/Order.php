@@ -36,6 +36,7 @@ class Order extends Model
     public function statusHistories() { return $this->hasMany(OrderStatusHistory::class)->latest(); }
     public function payment() { return $this->hasOne(Payment::class); }
     public function returnRequests() { return $this->hasMany(ReturnRequest::class); }
+    public function messages() { return $this->hasMany(OrderMessage::class)->orderBy('created_at'); }
 
     public static function generateOrderNumber(): string {
         return 'SG-' . strtoupper(uniqid());
@@ -71,5 +72,17 @@ class Order extends Model
             'refunded' => 'teal',
             default => 'secondary',
         };
+    }
+
+    public function isChatOpen(): bool
+    {
+        return in_array($this->status, [
+            'pending',
+            'confirmed',
+            'processing',
+            'packed',
+            'shipped',
+            'out_for_delivery',
+        ]);
     }
 }

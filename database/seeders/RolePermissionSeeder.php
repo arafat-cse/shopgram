@@ -22,7 +22,7 @@ class RolePermissionSeeder extends Seeder
             'permissions.view', 'permissions.assign',
             'product.view', 'product.create', 'product.edit', 'product.delete',
             'category.manage', 'brand.manage',
-            'order.view', 'order.update', 'order.delete', 'order.status.update',
+            'order.view', 'order.update', 'order.delete', 'order.status.update', 'order.chat',
             'customer.view', 'customer.manage',
             'coupon.manage', 'inventory.manage', 'report.view',
             'banner.manage', 'page.manage', 'setting.manage',
@@ -46,25 +46,25 @@ class RolePermissionSeeder extends Seeder
                 'dashboard.view', 'analytics.view', 'analytics.sales.view', 'analytics.stock.view', 'analytics.customer.view',
                 'product.view', 'products.view', 'product.create', 'product.edit',
                 'category.manage', 'brand.manage', 'order.view', 'order.update',
-                'order.status.update', 'orders.view', 'orders.edit', 'orders.status_update',
+                'order.status.update', 'order.chat', 'orders.view', 'orders.edit', 'orders.status_update',
                 'customer.view', 'customers.view', 'inventory.manage', 'report.view',
             ],
             'Sales Manager' => [
                 'dashboard.view', 'analytics.view', 'analytics.sales.view',
-                'order.view', 'orders.view', 'order.update', 'orders.edit', 'order.status.update', 'orders.status_update',
+                'order.view', 'orders.view', 'order.update', 'orders.edit', 'order.status.update', 'order.chat', 'orders.status_update',
             ],
             'Sales Executive' => [
-                'dashboard.view', 'order.view', 'order.update', 'order.status.update', 'customer.view',
+                'dashboard.view', 'order.view', 'order.update', 'order.status.update', 'order.chat', 'customer.view',
             ],
             'Inventory Manager' => [
                 'dashboard.view', 'analytics.view', 'analytics.stock.view',
                 'product.view', 'products.view', 'product.edit', 'products.edit', 'inventory.manage',
             ],
             'Order Manager' => [
-                'dashboard.view', 'order.view', 'order.update', 'order.status.update',
+                'dashboard.view', 'order.view', 'order.update', 'order.status.update', 'order.chat',
             ],
             'Customer Support' => [
-                'dashboard.view', 'order.view', 'ticket.view', 'ticket.reply', 'customer.view',
+                'dashboard.view', 'order.view', 'order.chat', 'ticket.view', 'ticket.reply', 'customer.view',
             ],
             'Accountant' => [
                 'dashboard.view', 'analytics.view', 'analytics.sales.view',
