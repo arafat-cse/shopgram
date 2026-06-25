@@ -3,6 +3,8 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\CartService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -18,6 +20,35 @@ class OrderController extends Controller
         abort_if($order->user_id !== auth()->id(), 403);
         $order->load(['items.product', 'items.variant', 'statusHistories', 'payment', 'courier']);
         return view('customer.orders.show', compact('order'));
+    }
+
+    public function invoicePdf(Order $order)
+    {
+        abort_if($order->user_id !== auth()->id(), 403);
+        $order->load(['items.product', 'items.variant', 'payment', 'courier']);
+        $pdf = Pdf::loadView('admin.orders.invoice', compact('order'));
+        return $pdf->download("invoice-{$order->order_number}.pdf");
+    }
+
+    public function reorder(Order $order, CartService $cart)
+    {
+        abort_if($order->user_id !== auth()->id(), 403);
+
+        $order->load('items.product', 'items.variant');
+        $user  = auth()->user();
+        $added = 0;
+
+        foreach ($order->items as $item) {
+            if (!$item->product || !$item->product->isInStock()) continue;
+            $cart->addItem($user, $item->product_id, $item->variant_id, $item->quantity);
+            $added++;
+        }
+
+        if ($added === 0) {
+            return back()->with('error', 'None of the items are currently in stock.');
+        }
+
+        return redirect()->route('cart.index')->with('success', $added . ' item(s) added to cart from your previous order.');
     }
 
     public function tracking()

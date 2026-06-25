@@ -5,6 +5,21 @@
 
 ---
 
+## 🎯 IMPLEMENT NEXT — Best ROI (Ordered by impact ÷ effort)
+
+| # | Feature | Why best now | Est. effort |
+|---|---------|-------------|-------------|
+| 1 | **Mini cart drawer** | Biggest UX win. Customer adds item → stays on page → buys more | 2 days |
+| 4 | **Flash sale countdown timer** | Bangladeshi shoppers respond strongly to urgency. `sale_ends_at` column + JS | 2 days |
+| 5 | **Abandoned cart email** | Recovers ~15% of lost carts automatically. Scheduled job + mail | 2 days |
+| 6 | **Flash sale manager** | Admin-controlled deals = conversion engine. Full tables needed | 3 days |
+| 7 | **Product quick view modal** | Keeps customer on listing page → more products seen → more buys | 3 days |
+| 8 | **Loyalty points system** | Retention goldmine. Customers come back to spend points | 5 days |
+
+> **Start with 1–2 today** — zero backend work needed.
+
+---
+
 ## Priority Legend
 - 🔴 High impact — implement first
 - 🟡 Medium impact — implement next
@@ -44,8 +59,8 @@
 
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
-| **"X people viewing this"** | Fake-but-effective social proof on product page | Random number seeded by product_id (no tracking needed) |
-| **"Y sold in last 24h"** | Show recent sales count | Query `order_items` where `created_at >= now()-24h` |
+| ~~**"X people viewing this"**~~ | ✅ Done — seeded JS counter on product page | — |
+| ~~**"Y sold in last 24h"**~~ | ✅ Done — real query from `order_items`, shown on product page | — |
 | **Review photos** | Customers upload images with reviews | Add `review_images` table, image upload in ReviewController |
 | **Verified purchase badge** | Badge on reviews from confirmed buyers | Check if reviewer has delivered order containing product |
 | **Q&A section on product page** | Customer asks question, admin answers | `product_questions` + `product_answers` tables |
@@ -54,8 +69,7 @@
 
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
-| **Order invoice download** | Customer downloads own order invoice PDF | DomPDF already installed — expose customer route |
-| **Reorder button** | One click re-adds all items from past order to cart | `POST /customer/orders/{order}/reorder` → CartService |
+| **Wishlist → share link** | Share wishlist URL with others | Generate token, public route `/wishlist/{token}` |
 | **Wishlist → share link** | Share wishlist URL with others | Generate token, public route `/wishlist/{token}` |
 | **Loyalty points display** | Show earned points in dashboard | `loyalty_points` column on users table |
 
@@ -180,12 +194,16 @@ purchase_order_items — id, po_id, product_id, variant_id, qty, unit_cost
 | **Recently viewed products** | `RecentlyViewedProductService` · shown on homepage |
 | **Wishlist** (add/remove/view) | `WishlistController` · `WishlistService` · customer dashboard |
 | **Product duplication** | Admin product create with `duplicate_product_id` → copies product + gallery + variants |
-| **Image lazy loading** | `loading="lazy"` — needs adding to `product-card.blade.php` (quick win, not yet done) |
+| **Image lazy loading** | `loading="lazy"` on `product-card.blade.php` |
 | **Hero banner redesign + urgency** | 3 themed fallback slides (Flash Sale/New Arrivals/Deals) · real-time midnight countdown · date badges · `frontend/home/index.blade.php` |
 | **First-visit promotional popup** | `is_promoted` on products · `/api/promoted-products` · Bootstrap modal + JS slider · `layouts/app.blade.php` |
 | **Password visibility toggle** | Eye icon on login + register forms · `auth/login.blade.php` · `auth/register.blade.php` |
+| **Auto low-stock email** | `InventoryService::checkLowStock()` → `LowStockAlertNotification` → admins notified on stock-out |
+| **Reorder button** | `Customer/OrderController@reorder` · `POST customer/orders/{order}/reorder` · buttons on orders index + show |
+| **Customer invoice PDF** | `Customer/OrderController@invoicePdf` · `GET customer/orders/{order}/invoice/pdf` · download button on orders show |
 | **Admin order invoice PDF** | `OrderController@invoicePdf` · route `admin.orders.invoice.pdf` |
-| **LowStockAlertNotification class** | `app/Notifications/LowStockAlertNotification.php` — class exists, auto-trigger in InventoryService not yet wired |
+| **Social proof badges** | "X viewing now" (seeded JS) + "Y sold in 24h" (real query) · `frontend/products/show.blade.php` |
+| **Sticky add-to-cart bar** | `IntersectionObserver` hides/shows bar when main ATC scrolls out · `frontend/products/show.blade.php` |
 
 ---
 

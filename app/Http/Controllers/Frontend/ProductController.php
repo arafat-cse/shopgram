@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
@@ -67,6 +68,10 @@ class ProductController extends Controller
         $recentlyViewed->record($product);
         $related = Product::active()->where('category_id', $product->category_id)->where('id', '!=', $product->id)->take(6)->get();
 
-        return view('frontend.products.show', compact('product', 'related', 'recentProducts'));
+        $soldLast24h = OrderItem::where('product_id', $product->id)
+            ->where('created_at', '>=', now()->subHours(24))
+            ->sum('quantity');
+
+        return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h'));
     }
 }

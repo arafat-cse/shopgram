@@ -80,6 +80,49 @@
         .product-thumb-strip { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
         .product-thumb-btn { height: 64px; }
     }
+
+    .social-proof-badge {
+        font-size: .8rem;
+        font-weight: 500;
+        color: #374151;
+        background: #f9fafb !important;
+        border-color: #e5e7eb !important;
+    }
+    .social-proof-badge .bi { font-size: .85rem; }
+
+    #stickyAtcBar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1040;
+        background: #fff;
+        border-top: 1px solid #e5e7eb;
+        box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+        padding: 10px 0;
+        transform: translateY(100%);
+        transition: transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    #stickyAtcBar.visible { transform: translateY(0); }
+    #stickyAtcBar .sticky-thumb {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #eee;
+        flex-shrink: 0;
+    }
+    #stickyAtcBar .sticky-name {
+        font-weight: 600;
+        font-size: .9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+    @media (max-width: 575px) {
+        #stickyAtcBar .sticky-name { max-width: 120px; }
+    }
 </style>
 @endpush
 @section('content')
@@ -159,6 +202,20 @@
             @else
                 <span class="badge bg-success mb-3">In Stock</span>
             @endif
+
+            {{-- Social Proof --}}
+            <div class="d-flex flex-wrap gap-2 mb-3" id="socialProofBadges">
+                <span class="badge rounded-pill text-bg-light border px-3 py-2 social-proof-badge">
+                    <i class="bi bi-eye text-danger me-1"></i>
+                    <span id="viewingCount">–</span> people viewing now
+                </span>
+                @if($soldLast24h > 0)
+                <span class="badge rounded-pill text-bg-light border px-3 py-2 social-proof-badge">
+                    <i class="bi bi-bag-check text-success me-1"></i>
+                    {{ $soldLast24h }} sold in last 24h
+                </span>
+                @endif
+            </div>
 
             @if($product->short_description)
                 <p class="text-muted">{{ $product->short_description }}</p>
@@ -301,8 +358,52 @@
     </section>
     @endif
 </div>
+{{-- Sticky Add-to-Cart Bar --}}
+@if($product->isInStock())
+<div id="stickyAtcBar" aria-hidden="true">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3">
+            <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
+                 alt="{{ $product->name }}" class="sticky-thumb">
+            <div class="flex-grow-1 min-w-0">
+                <div class="sticky-name">{{ $product->name }}</div>
+                <div class="text-danger fw-bold small">
+                    ৳{{ number_format($product->sale_price ?? $product->regular_price, 0) }}
+                    @if($product->sale_price)<span class="text-muted text-decoration-line-through ms-1 fw-normal">৳{{ number_format($product->regular_price, 0) }}</span>@endif
+                </div>
+            </div>
+            <form action="{{ route('cart.add') }}" method="POST" class="flex-shrink-0">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <input type="hidden" name="variant_id" class="sticky-variant-input">
+                <input type="hidden" name="quantity" class="sticky-qty-input" value="1">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 @push('scripts')
 <script>
+// Seeded "viewing now" — deterministic from product_id so it's consistent per product
+(function() {
+    const seed = {{ $product->id }};
+    const base = ((seed * 1103515245 + 12345) >>> 0) % 23 + 6; // 6–28
+    let current = base;
+    const el = document.getElementById('viewingCount');
+    if (el) {
+        el.textContent = current;
+        setInterval(function() {
+            const delta = Math.random() < 0.5 ? 1 : -1;
+            current = Math.max(3, Math.min(38, current + delta));
+            el.textContent = current;
+        }, 8000);
+    }
+})();
+
 const qtyInput = document.getElementById('qtyInput');
 document.getElementById('qtyMinus').addEventListener('click', () => { if (qtyInput.value > 1) { qtyInput.value--; syncQty(); } });
 document.getElementById('qtyPlus').addEventListener('click', () => { qtyInput.value++; syncQty(); });
@@ -354,7 +455,25 @@ if (variantSelect) {
         const v = this.value;
         document.getElementById('hiddenVariant').value = v;
         document.getElementById('buyVariant').value = v;
+        // sync sticky bar variant
+        document.querySelectorAll('.sticky-variant-input').forEach(el => el.value = v);
     });
+}
+
+// Sticky ATC bar — show when main ATC button scrolls out of view
+const stickyBar = document.getElementById('stickyAtcBar');
+const mainAtcBtn = document.querySelector('.d-flex.gap-3.mb-3 button[type="submit"]');
+if (stickyBar && mainAtcBtn) {
+    // sync qty to sticky bar
+    const syncStickyQty = () => document.querySelectorAll('.sticky-qty-input').forEach(el => el.value = qtyInput.value);
+    qtyInput.addEventListener('input', syncStickyQty);
+
+    const obs = new IntersectionObserver(entries => {
+        const hidden = !entries[0].isIntersecting;
+        stickyBar.classList.toggle('visible', hidden);
+        stickyBar.setAttribute('aria-hidden', String(!hidden));
+    }, { threshold: 0.2 });
+    obs.observe(mainAtcBtn);
 }
 </script>
 @endpush

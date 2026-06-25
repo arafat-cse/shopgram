@@ -3,7 +3,18 @@
 @section('customer_content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Order #{{ $order->order_number }}</h4>
-    <x-order-status-badge :status="$order->status" />
+    <div class="d-flex align-items-center gap-2">
+        <x-order-status-badge :status="$order->status" />
+        <a href="{{ route('customer.orders.invoice.pdf', $order) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-download"></i> Invoice PDF
+        </a>
+        <form action="{{ route('customer.orders.reorder', $order) }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-arrow-repeat"></i> Reorder
+            </button>
+        </form>
+    </div>
 </div>
 
 <div class="row g-4">

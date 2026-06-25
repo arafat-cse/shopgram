@@ -25,6 +25,8 @@ Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(functi
 
     // Orders
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
+    Route::post('orders/{order}/reorder', [OrderController::class, 'reorder'])->name('orders.reorder');
+    Route::get('orders/{order}/invoice/pdf', [OrderController::class, 'invoicePdf'])->name('orders.invoice.pdf');
     Route::get('/order-tracking', [OrderController::class, 'tracking'])->name('order.tracking');
     Route::post('/order-tracking', [OrderController::class, 'trackByNumber'])->name('order.track');
 
