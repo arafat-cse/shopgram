@@ -85,7 +85,9 @@ Route::middleware('auth')->group(function () {
     // Chat API — used by Node.js server and browser
     Route::prefix('api/chat')->group(function () {
         Route::get('token', [ChatController::class, 'token'])->name('chat.token');
+        Route::get('total-unread', [ChatController::class, 'totalUnreadCount'])->name('chat.total-unread');
         Route::get('orders/{order}/messages', [ChatController::class, 'messages'])->name('chat.messages');
+        Route::post('orders/{order}/upload', [ChatController::class, 'upload'])->name('chat.upload');
         Route::get('orders/{order}/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread-count');
     });
 });

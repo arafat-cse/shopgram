@@ -16,18 +16,23 @@ function registerSocketHandlers(io) {
         console.log(`[chat] ${socket.user.name} (${socket.user.role}) joined ${room}`);
 
         socket.on('send_message', async (data) => {
-            const message = data.message?.trim();
-            if (!message) return;
+            const message = data.message?.trim() || '';
+            const attachment = data.attachment || null;
+            if (!message && !attachment) return;
 
             try {
-                const savedMessage = await laravel.saveOrderMessage(orderId, message, socket.user);
+                const savedMessage = await laravel.saveOrderMessage(orderId, message, socket.user, attachment);
 
                 io.to(room).emit('new_message', {
                     id: savedMessage.id,
                     sender_name: socket.user.name,
                     sender_role: socket.user.role,
-                    message,
-                    time: new Date().toISOString(),
+                    message: savedMessage.message || message,
+                    attachment: savedMessage.attachment || attachment?.url || null,
+                    attachment_type: savedMessage.attachment_type || attachment?.type || null,
+                    attachment_name: savedMessage.attachment_name || attachment?.name || null,
+                    attachment_size: savedMessage.attachment_size || attachment?.size || null,
+                    created_at: savedMessage.created_at || new Date().toISOString(),
                 });
 
                 console.log(`[chat] Message sent in ${room} by ${socket.user.name}`);

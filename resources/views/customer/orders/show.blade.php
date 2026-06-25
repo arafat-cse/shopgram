@@ -100,9 +100,28 @@
                 <div id="chatMessages" style="height:320px;overflow-y:auto;padding:16px;background:#f8fafc;">
                     <div class="text-center text-muted small py-4">Loading messages...</div>
                 </div>
-                <div class="border-top p-3 d-flex gap-2">
-                    <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." maxlength="2000">
-                    <button class="btn btn-primary px-4" id="chatSendBtn">Send</button>
+                <div class="border-top p-3">
+                    <div id="filePreview" class="mb-2 d-none">
+                        <div class="d-flex align-items-start gap-2 p-2 bg-light rounded">
+                            <img id="imagePreview" src="" class="rounded" style="max-width:80px;max-height:80px;object-fit:cover;display:none;">
+                            <div id="fileInfo" class="flex-grow-1">
+                                <div id="fileName" class="small fw-medium"></div>
+                                <div id="fileSize" class="small text-muted"></div>
+                                <div id="uploadStatus" class="small text-muted">Preparing...</div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-link text-danger p-0" id="removeFileBtn">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <label for="fileInput" class="btn btn-outline-secondary px-3 mb-0">
+                            <i class="bi bi-paperclip"></i>
+                        </label>
+                        <input type="file" id="fileInput" class="d-none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                        <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." maxlength="2000">
+                        <button class="btn btn-primary px-4" id="chatSendBtn">Send</button>
+                    </div>
                 </div>
                 <div id="typingIndicator" class="px-3 pb-2 text-muted" style="font-size:.8rem;min-height:20px;"></div>
             </div>
@@ -120,7 +139,7 @@
 @push('scripts')
 <script src="{{ config('chat.node_url') }}/socket.io/socket.io.js"></script>
 <script>
-(async function () {
+(function () {
     const ORDER_ID = {{ $order->id }};
     const msgBox   = document.getElementById('chatMessages');
     const input    = document.getElementById('chatInput');
@@ -131,87 +150,340 @@
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    try {
-        // 1. Get auth token from Laravel
-        const tokenRes = await fetch('/api/chat/token', {
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            }
-        });
-        const { token } = await tokenRes.json();
-
-        // 2. Connect to Node.js
-        const socket = io('{{ config("chat.node_url") }}', {
-            auth: { token },
-            query: { order_id: ORDER_ID },
-        });
-
-        // 3. Load history
-        const histRes  = await fetch(`/api/chat/orders/${ORDER_ID}/messages`, {
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            }
-        });
-        const messages = await histRes.json();
-        msgBox.innerHTML = '';
-        messages.forEach(renderMessage);
-        scrollToBottom();
-
-        // 4. Receive new messages
-        socket.on('new_message', (msg) => {
-            renderMessage(msg);
-            scrollToBottom();
-        });
-
-        socket.on('chat_closed', (d) => {
-            msgBox.insertAdjacentHTML('beforeend', `<div class="text-center text-danger small py-2">${d.message}</div>`);
-            if(input) input.disabled = true;
-            if(sendBtn) sendBtn.disabled = true;
-            scrollToBottom();
-        });
-
-        socket.on('user_typing', (d) => {
-            if (d.role === 'staff') {
-                typer.textContent = 'Support is typing...';
-                setTimeout(() => typer.textContent = '', 2000);
-            }
-        });
-
-        // 5. Send message
-        function send() {
-            const msg = input.value.trim();
-            if (!msg) return;
-            socket.emit('send_message', { message: msg });
-            input.value = '';
+    // Check if socket.io is available
+    if (typeof io === 'undefined') {
+        console.error('[chat] socket.io library not loaded');
+        if(msgBox) {
+            msgBox.innerHTML = '<div class="text-center text-danger small py-4"><i class="bi bi-exclamation-circle d-block mb-2 fs-5"></i>Chat service unavailable<div class="small text-muted mt-2">Please refresh the page</div></div>';
         }
-
-        if(sendBtn) sendBtn.addEventListener('click', send);
-        if(input) {
-            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
-            input.addEventListener('input', () => socket.emit('typing'));
-        }
-
-        function scrollToBottom() {
-            msgBox.scrollTop = msgBox.scrollHeight;
-        }
-
-        function renderMessage(msg) {
-            const isMe = msg.sender_role === 'customer';
-            msgBox.insertAdjacentHTML('beforeend', `
-                <div class="d-flex ${isMe ? 'justify-content-end' : 'justify-content-start'} mb-2">
-                    <div class="px-3 py-2 rounded-3 small" style="max-width:75%;background:${isMe ? '#0d6efd' : '#fff'};color:${isMe ? '#fff' : '#1e293b'};border:1px solid #e2e8f0">
-                        ${!isMe ? `<div class="fw-semibold" style="font-size:.75rem;color:#6c757d">${msg.sender_name || msg.user?.name || 'Support'}</div>` : ''}
-                        ${msg.message}
-                    </div>
-                </div>`);
-        }
-    } catch (e) {
-        console.error('Chat error:', e);
-        if(msgBox) msgBox.innerHTML = '<div class="text-center text-danger small py-4">Unable to connect to chat. Please try again later.</div>';
+        return;
     }
+
+    let socket = null;
+    let currentFile = null;
+
+    // Helper functions
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function isImage(url) {
+        return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function scrollToBottom() {
+        msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
+    function renderMessage(msg) {
+        const isMe = msg.sender_role === 'customer';
+        let content = '';
+
+        if (msg.message) {
+            content += `<div class="mb-1">${escapeHtml(msg.message)}</div>`;
+        }
+
+        if (msg.attachment) {
+            const fileNameText = escapeHtml(msg.attachment_name || 'Attachment');
+            const fileSizeText = msg.attachment_size ? formatFileSize(Number(msg.attachment_size)) : '';
+
+            if (msg.attachment_type === 'image' || (!msg.attachment_type && isImage(msg.attachment))) {
+                content += `<a href="${msg.attachment}" target="_blank" class="d-inline-block text-decoration-none">
+                    <img src="${msg.attachment}" class="img-fluid rounded" alt="${fileNameText}" style="max-width:250px;max-height:250px;object-fit:cover;border:1px solid rgba(255,255,255,0.2);">
+                    <div class="small ${isMe ? 'text-white-50' : 'text-muted'} mt-1">${fileNameText}${fileSizeText ? ` · ${fileSizeText}` : ''}</div>
+                </a>`;
+            } else {
+                content += `<a href="${msg.attachment}" target="_blank" class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-2 text-decoration-none" style="background:${isMe ? 'rgba(255,255,255,0.15)' : '#f1f5f9'};color:${isMe ? '#fff' : '#0f172a'}">
+                    <i class="bi bi-file-earmark fs-5"></i>
+                    <span><span class="d-block">Open File</span><span class="small ${isMe ? 'text-white-50' : 'text-muted'}">${fileNameText}${fileSizeText ? ` · ${fileSizeText}` : ''}</span></span>
+                </a>`;
+            }
+        }
+
+        if (!msg.message && msg.attachment) {
+            content = content.replace('class="mb-1"', '');
+        }
+
+        const messageTime = msg.created_at || msg.time;
+        const timeLabel = messageTime
+            ? new Date(messageTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            : new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        msgBox.insertAdjacentHTML('beforeend', `
+            <div class="d-flex ${isMe ? 'justify-content-end' : 'justify-content-start'} mb-2">
+                <div class="px-3 py-2 rounded-3" style="max-width:80%;background:${isMe ? '#0d6efd' : '#fff'};color:${isMe ? '#fff' : '#1e293b'};border:1px solid #e2e8f0">
+                    ${!isMe ? `<div class="fw-semibold mb-1" style="font-size:.75rem;color:#6c757d">${msg.sender_name || msg.user?.name || 'Support'}</div>` : ''}
+                    ${content}
+                    <div class="small ${isMe ? 'text-white-50' : 'text-muted'} mt-1" style="font-size:.65rem">${timeLabel}</div>
+                </div>
+            </div>`);
+    }
+
+    // Send message function
+    function send() {
+        const msg = input.value.trim();
+        if (!msg && !currentFile) return;
+
+        const messageData = { message: msg };
+        if (currentFile) {
+            messageData.attachment = currentFile;
+        }
+
+        if (socket && socket.connected) {
+            socket.emit('send_message', messageData);
+            input.value = '';
+
+            // Reset file input
+            if (currentFile) {
+                const filePreview = document.getElementById('filePreview');
+                const fileInput = document.getElementById('fileInput');
+                const imagePreview = document.getElementById('imagePreview');
+                if(filePreview) filePreview.classList.add('d-none');
+                if(fileInput) fileInput.value = '';
+                if(imagePreview) {
+                    imagePreview.src = '';
+                    imagePreview.style.display = 'none';
+                }
+                currentFile = null;
+            }
+        } else {
+            console.error('[chat] Socket not connected');
+            if(msgBox) {
+                msgBox.insertAdjacentHTML('beforeend', `<div class="text-center text-danger small py-2">Not connected to chat service. Retrying...</div>`);
+                scrollToBottom();
+            }
+        }
+    }
+
+    // Setup send button and input event listeners FIRST
+    if(sendBtn) sendBtn.addEventListener('click', send);
+    if(input) {
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+        input.addEventListener('input', () => { if (socket && socket.connected) socket.emit('typing'); });
+    }
+
+    // File upload handling
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const imagePreview = document.getElementById('imagePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+
+    if(fileInput) {
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Reset previous state
+            currentFile = null;
+
+            // Show file info
+            if(filePreview) filePreview.classList.remove('d-none');
+            if(fileName) fileName.textContent = file.name;
+            if(fileSize) fileSize.textContent = formatFileSize(file.size);
+            if(uploadStatus) uploadStatus.textContent = 'Preparing...';
+
+            // Show image preview if it's an image
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if(imagePreview) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                if(imagePreview) imagePreview.style.display = 'none';
+            }
+
+            // Upload file to Laravel
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                if(sendBtn) {
+                    sendBtn.disabled = true;
+                    sendBtn.textContent = 'Uploading...';
+                }
+                if(uploadStatus) {
+                    uploadStatus.textContent = 'Uploading...';
+                    uploadStatus.className = 'small text-warning';
+                }
+
+                const uploadRes = await fetch(`/api/chat/orders/${ORDER_ID}/upload`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    body: formData
+                });
+
+                if (!uploadRes.ok) throw new Error('Upload failed');
+
+                const uploadData = await uploadRes.json();
+                currentFile = uploadData;
+
+                if(uploadStatus) {
+                    uploadStatus.textContent = 'Ready to send';
+                    uploadStatus.className = 'small text-success';
+                }
+                if(fileName) fileName.innerHTML = `<i class="bi bi-check-circle text-success"></i> ${file.name}`;
+            } catch (err) {
+                console.error('Upload error:', err);
+                if(uploadStatus) {
+                    uploadStatus.textContent = 'Upload failed';
+                    uploadStatus.className = 'small text-danger';
+                }
+                setTimeout(() => {
+                    if(filePreview) filePreview.classList.add('d-none');
+                    if(fileInput) fileInput.value = '';
+                    currentFile = null;
+                }, 2000);
+            } finally {
+                if(sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = 'Send';
+                }
+            }
+        });
+    }
+
+    if(removeFileBtn) {
+        removeFileBtn.addEventListener('click', () => {
+            if(filePreview) filePreview.classList.add('d-none');
+            if(fileInput) fileInput.value = '';
+            currentFile = null;
+            if(imagePreview) {
+                imagePreview.src = '';
+                imagePreview.style.display = 'none';
+            }
+        });
+    }
+
+    // Now initialize the chat connection
+    (async function initChat() {
+        try {
+            // 1. Get auth token from Laravel
+            console.log('[chat] Fetching auth token...');
+            const tokenRes = await Promise.race([
+                fetch('/api/chat/token', {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Token request timeout')), 10000))
+            ]);
+
+            if (!tokenRes.ok) {
+                throw new Error(`Token request failed: ${tokenRes.status} ${tokenRes.statusText}`);
+            }
+
+            const { token } = await tokenRes.json();
+            console.log('[chat] Auth token received');
+
+            // 2. Connect to Node.js
+            console.log('[chat] Connecting to socket...');
+            socket = io('{{ config("chat.node_url") }}', {
+                auth: { token },
+                query: { order_id: ORDER_ID },
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 5000,
+                reconnectionAttempts: 5
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('[chat] Socket connection error:', error);
+                if (msgBox && msgBox.innerHTML.includes('Loading')) {
+                    msgBox.innerHTML = '<div class="text-center text-danger small py-4">Connection error. Retrying...</div>';
+                }
+            });
+
+            socket.on('connect', () => {
+                console.log('[chat] Socket connected');
+            });
+
+            // 3. Load message history
+            console.log('[chat] Loading message history...');
+            const histRes = await Promise.race([
+                fetch(`/api/chat/orders/${ORDER_ID}/messages`, {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Messages request timeout')), 10000))
+            ]);
+
+            if (!histRes.ok) {
+                throw new Error(`Messages request failed: ${histRes.status} ${histRes.statusText}`);
+            }
+
+            const messages = await histRes.json();
+            console.log('[chat] Loaded', messages.length, 'messages');
+            msgBox.innerHTML = '';
+            if (messages.length === 0) {
+                msgBox.innerHTML = '<div class="text-center text-muted small py-4">No messages yet. Start a conversation!</div>';
+            } else {
+                messages.forEach(renderMessage);
+            }
+            scrollToBottom();
+
+            // 4. Receive new messages via socket
+            socket.on('new_message', (msg) => {
+                console.log('[chat] New message received:', msg.id);
+                if (msgBox.querySelector('.text-center.text-muted')) {
+                    msgBox.innerHTML = '';
+                }
+                renderMessage(msg);
+                scrollToBottom();
+            });
+
+            socket.on('chat_closed', (d) => {
+                msgBox.insertAdjacentHTML('beforeend', `<div class="text-center text-danger small py-2">${d.message}</div>`);
+                if (input) input.disabled = true;
+                if (sendBtn) sendBtn.disabled = true;
+                scrollToBottom();
+            });
+
+            socket.on('user_typing', (d) => {
+                if (d.role === 'staff') {
+                    typer.textContent = 'Support is typing...';
+                    setTimeout(() => typer.textContent = '', 2000);
+                }
+            });
+
+        } catch (e) {
+            console.error('[chat] Chat initialization error:', e);
+            if (msgBox) {
+                const errorMsg = e.message || 'Unknown error';
+                msgBox.innerHTML = `<div class="text-center text-danger small py-4">
+                    <i class="bi bi-exclamation-circle d-block mb-2 fs-5"></i>
+                    Unable to load chat
+                    <div class="small text-muted mt-2">${errorMsg}</div>
+                    <div class="mt-2"><button onclick="location.reload()" class="btn btn-sm btn-outline-danger">Retry</button></div>
+                </div>`;
+            }
+        }
+    })();
+
 })();
 </script>
 @endpush
 @endsection
+

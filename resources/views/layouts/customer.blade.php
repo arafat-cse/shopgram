@@ -26,6 +26,10 @@
                     <a href="{{ route('customer.orders.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('customer.orders.*') ? 'active' : '' }}">
                         <i class="bi bi-bag me-2"></i>My Orders
                     </a>
+                    <a href="{{ route('customer.orders.index') }}" class="list-group-item list-group-item-action position-relative" id="messageIcon">
+                        <i class="bi bi-chat-dots me-2"></i>Messages
+                        <span class="badge bg-danger rounded-pill d-none float-end" id="messageBadge" style="font-size:.65rem;padding:2px 5px;">0</span>
+                    </a>
                     <a href="{{ route('order.tracking') }}" class="list-group-item list-group-item-action {{ request()->routeIs('order.tracking') ? 'active' : '' }}">
                         <i class="bi bi-geo me-2"></i>Track Order
                     </a>
@@ -61,4 +65,38 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageBadge = document.getElementById('messageBadge');
+    if (!messageBadge) return;
+
+    // Function to fetch unread count
+    function fetchMessageCount() {
+        fetch('/api/chat/total-unread', {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.count > 0) {
+                messageBadge.textContent = data.count > 99 ? '99+' : data.count;
+                messageBadge.classList.remove('d-none');
+            } else {
+                messageBadge.classList.add('d-none');
+            }
+        })
+        .catch(() => {});
+    }
+
+    // Initial fetch
+    fetchMessageCount();
+
+    // Poll every 30 seconds
+    setInterval(fetchMessageCount, 30000);
+});
+</script>
+@endpush
 @endsection

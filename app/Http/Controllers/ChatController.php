@@ -33,6 +33,13 @@ class ChatController extends Controller
     public function messages(Order $order)
     {
         $this->authorizeOrderAccess($order);
+        $readerRole = auth()->user()->can('order.chat') ? 'staff' : 'customer';
+        $senderRoleToMarkRead = $readerRole === 'staff' ? 'customer' : 'staff';
+
+        OrderMessage::where('order_id', $order->id)
+            ->where('sender_role', $senderRoleToMarkRead)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
 
         return response()->json(
             $order->messages()
@@ -62,7 +69,13 @@ class ChatController extends Controller
             return response()->json(['error' => 'Chat closed'], 403);
         }
 
-        $rules = ['message' => 'required|string|max:2000'];
+        $rules = [
+            'message'          => 'nullable|required_without:attachment|string|max:2000',
+            'attachment'       => 'nullable|string',
+            'attachment_type'  => 'nullable|in:image,file',
+            'attachment_name'  => 'nullable|string|max:255',
+            'attachment_size'  => 'nullable|integer|min:0',
+        ];
 
         if ($isInternal) {
             $rules['user_id'] = 'required|exists:users,id';
@@ -79,13 +92,47 @@ class ChatController extends Controller
         }
 
         $msg = OrderMessage::create([
-            'order_id'    => $order->id,
-            'user_id'     => $validated['user_id'] ?? auth()->id(),
-            'sender_role' => $senderRole,
-            'message'     => $validated['message'],
+            'order_id'         => $order->id,
+            'user_id'          => $validated['user_id'] ?? auth()->id(),
+            'sender_role'      => $senderRole,
+            'message'          => $validated['message'] ?? '',
+            'attachment'       => $validated['attachment'] ?? null,
+            'attachment_type'  => $validated['attachment_type'] ?? null,
+            'attachment_name'  => $validated['attachment_name'] ?? null,
+            'attachment_size'  => $validated['attachment_size'] ?? null,
         ]);
 
         return response()->json($msg->load('user:id,name'));
+    }
+
+    /**
+     * Upload file attachment for chat
+     */
+    public function upload(Request $request, Order $order)
+    {
+        $this->authorizeOrderAccess($order);
+
+        if (!$order->isChatOpen()) {
+            return response()->json(['error' => 'Chat closed'], 403);
+        }
+
+        $request->validate([
+            'file' => 'required|file|max:10240', // Max 10MB
+        ]);
+
+        $file = $request->file('file');
+        $mimeType = $file->getMimeType();
+        $isImage = str_starts_with($mimeType, 'image/');
+
+        // Store file
+        $path = $file->store('chat-attachments', 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+            'type' => $isImage ? 'image' : 'file',
+            'name' => $file->getClientOriginalName(),
+            'size' => $file->getSize(),
+        ]);
     }
 
     /**
@@ -132,6 +179,42 @@ class ChatController extends Controller
                 ->where('is_read', false)
                 ->count()
         ]);
+    }
+
+    /**
+     * Get total unread message count for customer
+     */
+    public function totalUnreadCount(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['count' => 0]);
+        }
+
+        // For customers: count staff messages in their open orders
+        if (!$user->can('order.chat')) {
+            $count = OrderMessage::whereIn('order_id', function ($query) use ($user) {
+                $query->select('id')
+                    ->from('orders')
+                    ->where('user_id', $user->id)
+                    ->whereIn('status', ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'out_for_delivery']);
+            })
+            ->where('sender_role', 'staff')
+            ->where('is_read', false)
+            ->count();
+        } else {
+            // For staff: count customer messages in all open orders
+            $count = OrderMessage::whereIn('order_id', function ($query) {
+                $query->select('id')
+                    ->from('orders')
+                    ->whereIn('status', ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'out_for_delivery']);
+            })
+            ->where('sender_role', 'customer')
+            ->where('is_read', false)
+            ->count();
+        }
+
+        return response()->json(['count' => $count]);
     }
 
     /**

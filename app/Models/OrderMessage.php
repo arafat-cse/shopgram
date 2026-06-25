@@ -14,10 +14,15 @@ class OrderMessage extends Model
         'sender_role',
         'message',
         'is_read',
+        'attachment',
+        'attachment_type',
+        'attachment_name',
+        'attachment_size',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
+        'attachment_size' => 'integer',
         'created_at' => 'datetime',
     ];
 

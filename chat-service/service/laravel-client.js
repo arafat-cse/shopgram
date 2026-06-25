@@ -9,13 +9,25 @@ const client = axios.create({
     },
 });
 
-async function saveOrderMessage(orderId, message, user) {
-    const response = await client.post(`/api/chat/orders/${orderId}/messages`, {
-        message,
+async function saveOrderMessage(orderId, message, user, attachment = null) {
+    const payload = {
         user_id: user.id,
         sender_role: user.role,
-    });
+    };
 
+    // Only include message if non-empty (avoid validation fail on attachment-only messages)
+    if (message && message.trim()) {
+        payload.message = message.trim();
+    }
+
+    if (attachment) {
+        payload.attachment     = attachment.url;
+        payload.attachment_type = attachment.type;
+        payload.attachment_name = attachment.name;
+        payload.attachment_size = attachment.size;
+    }
+
+    const response = await client.post(`/api/chat/orders/${orderId}/messages`, payload);
     return response.data;
 }
 
