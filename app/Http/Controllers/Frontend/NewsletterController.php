@@ -18,4 +18,13 @@ class NewsletterController extends Controller
 
         return back()->with('success', 'You have been subscribed to our newsletter.');
     }
+
+    public function unsubscribe(Request $request, Newsletter $subscriber)
+    {
+        abort_unless($request->hasValidSignature(), 403);
+
+        $subscriber->update(['status' => 'unsubscribed']);
+
+        return redirect()->route('home')->with('success', 'You have been unsubscribed from our newsletter.');
+    }
 }

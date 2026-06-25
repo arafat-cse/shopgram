@@ -26,6 +26,7 @@ Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->nam
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::get('/newsletter/unsubscribe/{subscriber}', [NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 Route::get('/page/{slug}', [FrontPageController::class, 'show'])->name('page.show');
 Route::get('/order-tracking', [CustomerOrderController::class, 'tracking'])->name('order.tracking');
 Route::post('/order-tracking', [CustomerOrderController::class, 'trackByNumber'])->name('order.track');
