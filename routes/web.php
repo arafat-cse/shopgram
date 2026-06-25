@@ -30,6 +30,23 @@ Route::get('/page/{slug}', [FrontPageController::class, 'show'])->name('page.sho
 Route::get('/order-tracking', [CustomerOrderController::class, 'tracking'])->name('order.tracking');
 Route::post('/order-tracking', [CustomerOrderController::class, 'trackByNumber'])->name('order.track');
 
+// Promoted products for popup
+Route::get('/api/promoted-products', function () {
+    $products = \App\Models\Product::active()->promoted()
+        ->select('id', 'name', 'slug', 'thumbnail', 'regular_price', 'sale_price')
+        ->latest()
+        ->take(10)
+        ->get()
+        ->map(fn($p) => [
+            'name'          => $p->name,
+            'url'           => route('products.show', $p->slug),
+            'thumbnail'     => $p->thumbnail ? asset('storage/' . $p->thumbnail) : null,
+            'regular_price' => $p->regular_price,
+            'sale_price'    => $p->sale_price,
+        ]);
+    return response()->json($products);
+})->name('api.promoted-products');
+
 // Auth routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

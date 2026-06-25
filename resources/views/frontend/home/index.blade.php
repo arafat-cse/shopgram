@@ -48,29 +48,192 @@
         display: block;
     }
 
+    /* ── Hero fallback slide themes ── */
     .hero-fallback {
         min-height: 394px;
         height: 100%;
-        background:
-            radial-gradient(circle at 76% 52%, rgba(255,255,255,.9) 0 4%, transparent 4.3%),
-            radial-gradient(circle at 68% 53%, rgba(252,247,221,.95) 0 5.5%, transparent 5.8%),
-            radial-gradient(circle at 59% 54%, rgba(251,188,5,.85) 0 4.8%, transparent 5.1%),
-            linear-gradient(180deg, rgba(179,217,240,.92) 0%, rgba(209,233,236,.75) 38%, rgba(217,222,190,.85) 60%, rgba(218,180,127,.95) 100%);
+        position: relative;
+        overflow: hidden;
     }
 
+    /* Slide 1 — Flash Sale: deep crimson → orange */
+    .hero-fb-1 {
+        background: linear-gradient(135deg, #1a0a00 0%, #6b1a00 40%, #c0390b 70%, #e8621a 100%);
+    }
+    .hero-fb-1::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 60% 55% at 80% 50%, rgba(255,160,50,.22) 0%, transparent 60%),
+            radial-gradient(circle at 90% 10%, rgba(255,220,80,.18) 0%, transparent 40%);
+        pointer-events: none;
+    }
+    /* Slide 2 — New Arrivals: dark navy → indigo */
+    .hero-fb-2 {
+        background: linear-gradient(135deg, #050a1a 0%, #0d1b4b 45%, #1a2d7a 70%, #2a4db5 100%);
+    }
+    .hero-fb-2::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 55% 50% at 75% 45%, rgba(100,160,255,.18) 0%, transparent 60%),
+            radial-gradient(circle at 85% 15%, rgba(180,220,255,.12) 0%, transparent 35%);
+        pointer-events: none;
+    }
+    /* Slide 3 — Exclusive Deals: forest → teal */
+    .hero-fb-3 {
+        background: linear-gradient(135deg, #021209 0%, #064a26 45%, #0b7c43 70%, #10a861 100%);
+    }
+    .hero-fb-3::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 55% 50% at 78% 48%, rgba(80,255,160,.15) 0%, transparent 60%),
+            radial-gradient(circle at 88% 12%, rgba(160,255,200,.12) 0%, transparent 35%);
+        pointer-events: none;
+    }
+
+    /* Promo card — "Today's Deal" deep purple → pink */
     .promo-fallback {
         min-height: 394px;
         height: 100%;
-        background:
-            radial-gradient(ellipse at 30% 22%, rgba(185, 216, 95, .96) 0 9%, transparent 9.4%),
-            radial-gradient(ellipse at 47% 24%, rgba(218, 229, 130, .96) 0 8%, transparent 8.4%),
-            radial-gradient(ellipse at 64% 19%, rgba(164, 205, 76, .95) 0 9%, transparent 9.4%),
-            linear-gradient(120deg, rgba(12,17,11,.5), rgba(13,19,12,.88)),
-            url("{{ asset('images/no-image.png') }}");
-        background-color: #17200f;
-        background-size: auto, auto, auto, cover, 72px;
-        background-position: center;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(150deg, #160820 0%, #3b0764 45%, #6d1e99 72%, #c026d3 100%);
     }
+    .promo-fallback::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 65% 55% at 50% 80%, rgba(255,80,200,.18) 0%, transparent 60%),
+            radial-gradient(circle at 15% 20%, rgba(200,120,255,.15) 0%, transparent 40%);
+        pointer-events: none;
+    }
+
+    /* Decorative circle ring on right side of slides */
+    .hero-deco-ring {
+        position: absolute;
+        right: -60px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        border: 48px solid rgba(255,255,255,.06);
+        pointer-events: none;
+    }
+    .hero-deco-ring::after {
+        content: '';
+        position: absolute;
+        inset: 32px;
+        border-radius: 50%;
+        border: 24px solid rgba(255,255,255,.04);
+    }
+
+    /* Urgency badge */
+    .urgency-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-size: clamp(.72rem, 1.1vw, .92rem);
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+    .urgency-badge.fire  { background: rgba(255,80,0,.85);  color: #fff; }
+    .urgency-badge.new   { background: rgba(60,130,255,.85); color: #fff; }
+    .urgency-badge.deal  { background: rgba(16,185,100,.85); color: #fff; }
+    .urgency-badge.promo { background: rgba(220,0,220,.75);  color: #fff; }
+
+    /* Countdown block */
+    .hero-countdown {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 14px;
+    }
+    .cd-label {
+        font-size: clamp(.7rem, 1vw, .9rem);
+        font-weight: 500;
+        opacity: .85;
+        white-space: nowrap;
+    }
+    .cd-blocks {
+        display: flex;
+        gap: 5px;
+    }
+    .cd-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 46px;
+        padding: 4px 6px 2px;
+        border-radius: 7px;
+        background: rgba(0,0,0,.45);
+        border: 1px solid rgba(255,255,255,.15);
+        backdrop-filter: blur(4px);
+    }
+    .cd-num {
+        font-size: clamp(1.1rem, 1.8vw, 1.7rem);
+        font-weight: 800;
+        line-height: 1;
+    }
+    .cd-unit {
+        font-size: .58rem;
+        font-weight: 600;
+        opacity: .7;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+    .cd-sep {
+        font-size: 1.3rem;
+        font-weight: 700;
+        opacity: .7;
+        margin-top: -6px;
+    }
+
+    /* Deal date badge */
+    .deal-date-badge {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 5px 14px;
+        border-radius: 7px;
+        background: rgba(0,0,0,.4);
+        border: 1px solid rgba(255,255,255,.18);
+        font-size: clamp(.72rem, 1vw, .88rem);
+        font-weight: 600;
+        opacity: .9;
+        backdrop-filter: blur(3px);
+    }
+
+    /* Make hero CTA a real link-looking button */
+    .hero-cta-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 18px;
+        padding: 10px 30px 12px;
+        border: 2px solid rgba(255,255,255,.55);
+        border-radius: 10px;
+        background: rgba(0,0,0,.55);
+        color: #fff;
+        font-size: clamp(1rem, 1.6vw, 1.5rem);
+        font-weight: 700;
+        text-decoration: none;
+        backdrop-filter: blur(4px);
+        transition: background .2s, border-color .2s;
+        pointer-events: all;
+    }
+    .hero-cta-link:hover { background: rgba(0,0,0,.75); color: #fff; border-color: rgba(255,255,255,.85); }
 
     .hero-overlay {
         position: absolute;
@@ -604,22 +767,100 @@
                     @endforeach
                 </div>
 
+                @php
+                    $fbSlides = [
+                        [
+                            'badge_class' => 'fire',
+                            'badge_icon'  => '⚡',
+                            'badge_text'  => 'Flash Sale — Today Only',
+                            'eyebrow'     => 'Limited Time Deal',
+                            'headline'    => 'Up to 50% OFF',
+                            'sub'         => 'On top electronics, gadgets & more',
+                            'cta_text'    => 'Shop Now',
+                            'cta_url'     => route('products.index'),
+                            'countdown'   => true,
+                            'theme'       => 'hero-fb-1',
+                        ],
+                        [
+                            'badge_class' => 'new',
+                            'badge_icon'  => '🆕',
+                            'badge_text'  => 'Just Dropped',
+                            'eyebrow'     => 'Fresh Picks',
+                            'headline'    => 'New Arrivals',
+                            'sub'         => 'Discover what\'s just landed in store',
+                            'cta_text'    => 'Explore Now',
+                            'cta_url'     => route('products.index'),
+                            'countdown'   => false,
+                            'date_msg'    => 'Added ' . now()->format('d M Y'),
+                            'theme'       => 'hero-fb-2',
+                        ],
+                        [
+                            'badge_class' => 'deal',
+                            'badge_icon'  => '🎯',
+                            'badge_text'  => 'Exclusive Deal',
+                            'eyebrow'     => 'Best Value',
+                            'headline'    => 'Grab Big Deals',
+                            'sub'         => 'Handpicked products at unbeatable prices',
+                            'cta_text'    => 'See Offers',
+                            'cta_url'     => route('products.index'),
+                            'countdown'   => false,
+                            'date_msg'    => 'Valid till ' . now()->addDays(3)->format('d M Y'),
+                            'theme'       => 'hero-fb-3',
+                        ],
+                    ];
+                @endphp
+
                 <div class="carousel-inner h-100">
                     @foreach($heroSlides as $index => $banner)
+                        @php $fb = $fbSlides[$index % 3]; @endphp
                         <div class="carousel-item h-100 {{ $index === 0 ? 'active' : '' }}">
                             @if($banner && $banner->image)
                                 <img src="{{ asset('storage/'.$banner->image) }}" alt="{{ $banner->title ?? 'ShopGram offer' }}">
-                            @else
-                                <div class="hero-fallback"></div>
-                            @endif
-
-                            <div class="hero-overlay">
-                                <div class="hero-copy">
-                                    <div class="eyebrow">{{ $banner->subtitle ?? 'First Impression' }}</div>
-                                    <h1>{{ $banner->title ?? 'ShopGram offer' }}</h1>
-                                    <span class="hero-cta">{{ $banner->button_text ?? 'Learn More' }}</span>
+                                <div class="hero-overlay" style="pointer-events:none;">
+                                    <div class="hero-copy">
+                                        <div class="eyebrow">{{ $banner->subtitle }}</div>
+                                        <h1>{{ $banner->title }}</h1>
+                                        <a href="{{ $banner->button_url ?: route('products.index') }}" class="hero-cta-link" style="pointer-events:all;">
+                                            {{ $banner->button_text ?: 'Shop Now' }} &rarr;
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <div class="hero-fallback {{ $fb['theme'] }}">
+                                    <div class="hero-deco-ring"></div>
+                                </div>
+                                <div class="hero-overlay" style="pointer-events:none;">
+                                    <div class="hero-copy">
+                                        <span class="urgency-badge {{ $fb['badge_class'] }}">
+                                            {{ $fb['badge_icon'] }} {{ $fb['badge_text'] }}
+                                        </span>
+                                        <div class="eyebrow" style="opacity:.85; font-size:clamp(.95rem,1.6vw,1.5rem);">{{ $fb['eyebrow'] }}</div>
+                                        <h1>{{ $fb['headline'] }}</h1>
+                                        <div style="font-size:clamp(.85rem,1.2vw,1.1rem); opacity:.8; margin-top:6px;">{{ $fb['sub'] }}</div>
+
+                                        @if($fb['countdown'])
+                                            <div class="hero-countdown">
+                                                <span class="cd-label">⏰ Ends in:</span>
+                                                <div class="cd-blocks">
+                                                    <div class="cd-block"><span class="cd-num" id="cd-h-{{ $index }}">00</span><span class="cd-unit">hrs</span></div>
+                                                    <span class="cd-sep">:</span>
+                                                    <div class="cd-block"><span class="cd-num" id="cd-m-{{ $index }}">00</span><span class="cd-unit">min</span></div>
+                                                    <span class="cd-sep">:</span>
+                                                    <div class="cd-block"><span class="cd-num" id="cd-s-{{ $index }}">00</span><span class="cd-unit">sec</span></div>
+                                                </div>
+                                            </div>
+                                        @elseif(!empty($fb['date_msg']))
+                                            <span class="deal-date-badge">📅 {{ $fb['date_msg'] }}</span>
+                                        @endif
+
+                                        <div>
+                                            <a href="{{ $fb['cta_url'] }}" class="hero-cta-link" style="pointer-events:all;">
+                                                {{ $fb['cta_text'] }} &rarr;
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -635,16 +876,31 @@
             <a class="hero-card promo-card text-decoration-none" href="{{ $promoBanner?->button_url ?: route('products.index') }}">
                 @if($promoBanner && $promoBanner->image)
                     <img src="{{ asset('storage/'.$promoBanner->image) }}" alt="{{ $promoBanner->title ?? 'Special offer' }}">
-                @else
-                    <div class="promo-fallback"></div>
-                @endif
-                <div class="hero-overlay">
-                    <div class="promo-copy">
-                        <div class="eyebrow">{{ $promoBanner->subtitle ?? 'First Impression' }}</div>
-                        <h2>{{ $promoBanner->title ?? 'ShopGram offer' }}</h2>
-                        <span class="hero-cta">{{ $promoBanner->button_text ?? 'Learn More' }}</span>
+                    <div class="hero-overlay">
+                        <div class="promo-copy">
+                            <div class="eyebrow">{{ $promoBanner->subtitle }}</div>
+                            <h2>{{ $promoBanner->title }}</h2>
+                            <span class="hero-cta">{{ $promoBanner->button_text ?: 'Learn More' }}</span>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="promo-fallback">
+                        <div class="hero-deco-ring" style="right:-40px; width:280px; height:280px;"></div>
+                    </div>
+                    <div class="hero-overlay">
+                        <div class="promo-copy">
+                            <span class="urgency-badge promo" style="margin-bottom:10px;">🔥 Today's Deal</span>
+                            <div class="eyebrow" style="opacity:.8; font-size:clamp(.9rem,1.3vw,1.3rem);">Don't Miss Out</div>
+                            <h2>Exclusive<br>Offers</h2>
+                            <span class="deal-date-badge" style="display:block; margin-top:10px; text-align:right;">
+                                📅 Valid: {{ now()->format('d M') }} – {{ now()->addDays(2)->format('d M Y') }}
+                            </span>
+                            <span class="hero-cta" style="margin-top:14px; font-size:clamp(.9rem,1.3vw,1.3rem); min-width:140px; padding:8px 16px 10px;">
+                                View All Deals &rarr;
+                            </span>
+                        </div>
+                    </div>
+                @endif
             </a>
         </section>
 
@@ -944,6 +1200,23 @@
 
         setupAutoSlider('featuredCategorySlider', '.category-item', '[data-category-slide]', 3000);
         setupAutoSlider('brandSlider', '.brand-card', '[data-brand-slide]', 2800);
+
+        // Midnight countdown for flash sale slides
+        function pad(n) { return String(n).padStart(2, '0'); }
+        function tickCountdown() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            let diff = Math.max(0, Math.floor((midnight - now) / 1000));
+            const h = Math.floor(diff / 3600); diff -= h * 3600;
+            const m = Math.floor(diff / 60);   diff -= m * 60;
+            const s = diff;
+            document.querySelectorAll('[id^="cd-h-"]').forEach(el => el.textContent = pad(h));
+            document.querySelectorAll('[id^="cd-m-"]').forEach(el => el.textContent = pad(m));
+            document.querySelectorAll('[id^="cd-s-"]').forEach(el => el.textContent = pad(s));
+        }
+        tickCountdown();
+        setInterval(tickCountdown, 1000);
     });
 </script>
 @endpush

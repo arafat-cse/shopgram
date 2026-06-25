@@ -112,9 +112,13 @@
                         <input type="checkbox" class="form-check-input" name="is_new_arrival" value="1" {{ old('is_new_arrival', $product->is_new_arrival) ? 'checked' : '' }}>
                         <label class="form-check-label">New Arrival</label>
                     </div>
-                    <div class="form-check">
+                    <div class="form-check mb-2">
                         <input type="checkbox" class="form-check-input" name="is_best_selling" value="1" {{ old('is_best_selling', $product->is_best_selling) ? 'checked' : '' }}>
                         <label class="form-check-label">Best Seller</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="is_promoted" value="1" {{ old('is_promoted', $product->is_promoted) ? 'checked' : '' }}>
+                        <label class="form-check-label">Promoted <small class="text-muted">(popup)</small></label>
                     </div>
                 </div>
             </div>
