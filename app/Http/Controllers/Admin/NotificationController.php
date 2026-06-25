@@ -130,6 +130,30 @@ class NotificationController extends Controller
         return $this->counts();
     }
 
+    public function pushSubscribe(Request $request)
+    {
+        $request->validate([
+            'endpoint'    => 'required|url',
+            'keys.auth'   => 'required|string',
+            'keys.p256dh' => 'required|string',
+        ]);
+
+        auth()->user()->updatePushSubscription(
+            $request->endpoint,
+            $request->keys['p256dh'],
+            $request->keys['auth'],
+        );
+
+        return response()->json(['status' => 'subscribed']);
+    }
+
+    public function pushUnsubscribe(Request $request)
+    {
+        $request->validate(['endpoint' => 'required|url']);
+        auth()->user()->deletePushSubscription($request->endpoint);
+        return response()->json(['status' => 'unsubscribed']);
+    }
+
     public function messages()
     {
         $messages = ContactMessage::where('status', 'unread')

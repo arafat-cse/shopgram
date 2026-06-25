@@ -1,7 +1,7 @@
 # ShopGram — Project Structure
 
 **Stack:** Laravel 12, Blade, MySQL, Bootstrap 5, jQuery  
-**Last updated:** 2026-06-25 (session 2 — UX + conversion features)
+**Last updated:** 2026-06-25 (session 3 — web push notifications)
 
 ---
 
@@ -164,6 +164,7 @@
 - `2026_06_24_..._create_contact_messages_table.php`
 - `2026_06_24_100001_create_admin_activity_logs_table.php`
 - `2026_06_25_..._add_is_promoted_to_products_table.php`
+- `2026_06_25_..._create_push_subscriptions_table.php`
 
 ### seeders/
 - `DatabaseSeeder.php`
@@ -309,6 +310,24 @@
 ## Status
 
 All spec files implemented. No known gaps.
+
+## Recent Additions — Session 3 (2026-06-25)
+
+| Item | Type | Purpose |
+|------|------|---------|
+| `laravel-notification-channels/webpush` | Package | Browser push notification support via Web Push API + VAPID |
+| VAPID keys | Config | Auto-generated via `php artisan webpush:vapid`; stored in `.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`) |
+| `push_subscriptions` table | Migration | Stores per-user browser push endpoint + keys |
+| `HasPushSubscriptions` trait | Model | Added to `User.php` — enables `updatePushSubscription()` / `deletePushSubscription()` |
+| `webpush` channel in notifications | Notifications | Added to `LowStockAlertNotification`, `OrderPlacedNotification`, `OrderStatusUpdatedNotification` — each has `toWebPush()` |
+| `pushSubscribe()` + `pushUnsubscribe()` | Controller | Added to `Admin/NotificationController.php` |
+| `POST admin/push/subscribe` | Route | Saves browser push subscription for logged-in admin |
+| `POST admin/push/unsubscribe` | Route | Removes push subscription |
+| `public/sw.js` | Service Worker | Handles `push` event → `showNotification`; `notificationclick` → opens URL |
+| Push toggle button | Admin Layout | Bell-slash icon in top bar; click → browser permission prompt → subscribe/unsubscribe; icon turns yellow when active |
+| `AdminUserSeeder` — second admin | Seeder | `arafat.dev61@gmail.com` seeded as Super Admin (password: `password`) |
+
+---
 
 ## Recent Additions — Session 2 (2026-06-25)
 

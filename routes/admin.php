@@ -159,6 +159,8 @@ Route::middleware(['auth', 'admin.access'])
     Route::get('notifications/recent',   [NotificationController::class, 'recent'])->name('notifications.recent');
     Route::get('notifications/messages', [NotificationController::class, 'messages'])->name('notifications.messages');
     Route::post('notifications/mark-read',[NotificationController::class, 'markRead'])->name('notifications.mark-read');
+    Route::post('push/subscribe',        [NotificationController::class, 'pushSubscribe'])->name('push.subscribe');
+    Route::post('push/unsubscribe',      [NotificationController::class, 'pushUnsubscribe'])->name('push.unsubscribe');
 
     // Activity Log
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');

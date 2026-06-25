@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class LowStockAlertNotification extends Notification implements ShouldQueue
 {
@@ -15,7 +16,16 @@ class LowStockAlertNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'webpush'];
+    }
+
+    public function toWebPush(object $notifiable, mixed $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title('⚠️ Low Stock — ' . $this->product->name)
+            ->body($this->product->stock_quantity . ' units left (threshold: ' . $this->product->low_stock_threshold . ')')
+            ->action('Manage Inventory', url('/admin/inventory'))
+            ->icon('/images/logo.png');
     }
 
     public function toMail(object $notifiable): MailMessage
