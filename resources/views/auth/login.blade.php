@@ -107,8 +107,13 @@
                                 Password
                                 <a href="{{ route('password.request') }}" class="small">Forgot password?</a>
                             </label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
-                            @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <div class="input-group">
+                                <input type="password" name="password" id="login-password" class="form-control @error('password') is-invalid @enderror" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('login-password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" name="remember" id="remember">
@@ -125,3 +130,18 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+function togglePassword(id, btn) {
+    const input = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+    }
+}
+</script>
+@endpush
