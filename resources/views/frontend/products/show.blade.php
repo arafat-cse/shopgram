@@ -22,6 +22,10 @@
         cursor: zoom-in;
     }
 
+    .product-main-image-wrap.has-video-active {
+        cursor: default;
+    }
+
     .product-main-image-wrap img {
         width: 100%;
         height: 100%;
@@ -133,6 +137,13 @@
         {{-- Product Images --}}
         <div class="col-md-5">
             @php
+                $videoId = '';
+                if ($product->video_url) {
+                    if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $product->video_url, $match)) {
+                        $videoId = $match[1];
+                    }
+                }
+
                 $galleryImages = collect();
                 if ($product->thumbnail) {
                     $galleryImages->push([
@@ -159,13 +170,30 @@
             <div class="product-gallery-shell">
                 <div class="product-main-image-wrap">
                     <img id="mainImage" src="{{ $galleryImages->first()['url'] }}" alt="{{ $product->name }}">
+                    @if($videoId)
+                        <div id="videoContainer" style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; background: #000;">
+                            <iframe id="videoIframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width: 100%; height: 100%;"></iframe>
+                        </div>
+                    @endif
                 </div>
 
-                @if($galleryImages->count() > 1)
+                @if(($galleryImages->count() + ($videoId ? 1 : 0)) > 1)
                     <div class="product-thumb-strip" aria-label="Product image gallery">
+                        @if($videoId)
+                            <button type="button"
+                                    class="product-thumb-btn"
+                                    data-is-video="true"
+                                    data-video-id="{{ $videoId }}"
+                                    aria-label="View product video">
+                                <div class="position-relative d-flex align-items-center justify-content-center" style="width: 100%; height: 100%;">
+                                    <img src="https://img.youtube.com/vi/{{ $videoId }}/hqdefault.jpg" alt="Video Thumbnail" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; filter: brightness(0.7)">
+                                    <i class="bi bi-play-circle-fill text-white position-absolute" style="font-size: 1.6rem; z-index: 2;"></i>
+                                </div>
+                            </button>
+                        @endif
                         @foreach($galleryImages as $galleryImage)
                             <button type="button"
-                                    class="product-thumb-btn {{ $loop->first ? 'active' : '' }}"
+                                    class="product-thumb-btn {{ ($loop->first && !$videoId) ? 'active' : '' }}"
                                     data-image="{{ $galleryImage['url'] }}"
                                     aria-label="View image {{ $loop->iteration }}">
                                 <img src="{{ $galleryImage['url'] }}" alt="{{ $galleryImage['alt'] }}">
@@ -423,9 +451,12 @@ qtyInput.addEventListener('change', syncQty);
 
 const mainImage = document.getElementById('mainImage');
 const mainImageWrap = document.querySelector('.product-main-image-wrap');
+const videoContainer = document.getElementById('videoContainer');
+const videoIframe = document.getElementById('videoIframe');
 
 if (mainImage && mainImageWrap && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     mainImageWrap.addEventListener('mousemove', (event) => {
+        if (mainImage.style.display === 'none') return;
         const rect = mainImageWrap.getBoundingClientRect();
         const x = ((event.clientX - rect.left) / rect.width) * 100;
         const y = ((event.clientY - rect.top) / rect.height) * 100;
@@ -439,20 +470,37 @@ if (mainImage && mainImageWrap && window.matchMedia('(hover: hover) and (pointer
 
 document.querySelectorAll('.product-thumb-btn').forEach((button) => {
     button.addEventListener('click', () => {
-        const nextImage = button.dataset.image;
-        if (!mainImage || mainImage.src === nextImage) {
-            return;
-        }
-
         document.querySelectorAll('.product-thumb-btn').forEach((item) => item.classList.remove('active'));
         button.classList.add('active');
-        mainImage.classList.add('is-changing');
 
-        window.setTimeout(() => {
-            mainImage.src = nextImage;
-            mainImage.style.transformOrigin = 'center';
-            mainImage.classList.remove('is-changing');
-        }, 120);
+        if (button.dataset.isVideo === 'true') {
+            const videoId = button.dataset.videoId;
+            if (videoContainer && videoIframe) {
+                videoIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                videoContainer.style.display = 'block';
+                if (mainImage) mainImage.style.display = 'none';
+                if (mainImageWrap) mainImageWrap.classList.add('has-video-active');
+            }
+        } else {
+            if (videoContainer && videoIframe) {
+                videoContainer.style.display = 'none';
+                videoIframe.src = '';
+            }
+            if (mainImage) {
+                mainImage.style.display = 'block';
+                if (mainImageWrap) mainImageWrap.classList.remove('has-video-active');
+                
+                const nextImage = button.dataset.image;
+                if (mainImage.src !== nextImage) {
+                    mainImage.classList.add('is-changing');
+                    window.setTimeout(() => {
+                        mainImage.src = nextImage;
+                        mainImage.style.transformOrigin = 'center';
+                        mainImage.classList.remove('is-changing');
+                    }, 120);
+                }
+            }
+        }
     });
 });
 

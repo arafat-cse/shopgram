@@ -137,6 +137,12 @@
                     <input type="file" name="thumbnail" class="form-control product-image-input" accept="image/jpeg,image/png,image/webp">
                     <small class="text-muted">JPEG/PNG/WebP, max 16MB</small>
                 </div>
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white fw-bold">YouTube Video</div>
+                <div class="card-body">
+                    <input type="url" name="video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." value="{{ old('video_url', $prefill['video_url'] ?? '') }}">
+                    <small class="text-muted">Enter a valid YouTube video URL to show it in the product gallery.</small>
+                </div>
             </div>
 
             <div class="card border-0 shadow-sm mt-4">
