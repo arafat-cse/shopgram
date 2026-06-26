@@ -34,8 +34,15 @@ class AuthController extends Controller
             }
 
             if (session('pending_action')) {
+                $action = session('pending_action');
                 $redirectTo = app(PendingActionService::class)->execute($user);
-                return redirect($redirectTo)->with('success', 'Login successful. Continuing your action.');
+                $msg = match($action) {
+                    'add_to_cart'      => '✅ Logged in! Product added to your cart.',
+                    'buy_now'          => '✅ Logged in! Taking you to checkout.',
+                    'add_to_wishlist'  => '✅ Logged in! Product added to your wishlist.',
+                    default            => '✅ Login successful!',
+                };
+                return redirect($redirectTo)->with('success', $msg);
             }
 
             if ($user->hasAnyRole(['Super Admin', 'Admin', 'Manager', 'Sales Executive', 'Inventory Manager', 'Order Manager', 'Customer Support'])) {
@@ -77,8 +84,15 @@ class AuthController extends Controller
         Auth::login($user);
 
         if (session('pending_action')) {
+            $action = session('pending_action');
             $redirectTo = app(PendingActionService::class)->execute($user);
-            return redirect($redirectTo)->with('success', 'Registration successful. Continuing your action.');
+            $msg = match($action) {
+                'add_to_cart'      => '🎉 Welcome! Product added to your cart.',
+                'buy_now'          => '🎉 Welcome! Taking you to checkout.',
+                'add_to_wishlist'  => '🎉 Welcome! Product added to your wishlist.',
+                default            => '🎉 Welcome to ShopGram!',
+            };
+            return redirect($redirectTo)->with('success', $msg);
         }
 
         return redirect()->route('customer.dashboard')->with('success', 'Welcome to ShopGram!');

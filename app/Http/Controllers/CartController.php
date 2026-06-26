@@ -51,10 +51,6 @@ class CartController extends Controller
             $request->quantity ?? 1
         );
 
-        if ($request->buy_now) {
-            return redirect()->route('checkout.index');
-        }
-
         return redirect()->route('cart.index')->with('success', 'Product added to cart.');
     }
 

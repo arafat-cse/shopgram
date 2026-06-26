@@ -17,13 +17,9 @@ class PendingActionService
 
         switch ($action) {
             case 'add_to_cart':
-                app(CartService::class)->addItem($user, $prodId, $varId, $qty);
-                $redirect = route('cart.index');
-                break;
-
             case 'buy_now':
                 app(CartService::class)->addItem($user, $prodId, $varId, $qty);
-                $redirect = route('checkout.index');
+                $redirect = route('cart.index');
                 break;
 
             case 'checkout':

@@ -21,13 +21,25 @@ class ReviewController extends Controller
             'comment'    => 'nullable|string|max:1000',
         ]);
 
+        $productId = $request->product_id;
+        $deliveredOrder = \App\Models\Order::where('user_id', auth()->id())
+            ->where('status', 'delivered')
+            ->whereHas('items', function ($query) use ($productId) {
+                $query->where('product_id', $productId);
+            })
+            ->first();
+
+        if (!$deliveredOrder) {
+            return back()->withErrors(['product_id' => 'You can only review products you have purchased and that have been delivered.']);
+        }
+
         Review::updateOrCreate(
-            ['user_id' => auth()->id(), 'product_id' => $request->product_id],
+            ['user_id' => auth()->id(), 'product_id' => $productId],
             [
                 'rating'   => $request->rating,
                 'comment'  => $request->comment,
                 'status'   => 'pending',
-                'order_id' => $request->order_id,
+                'order_id' => $deliveredOrder->id,
             ]
         );
 

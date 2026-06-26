@@ -31,7 +31,7 @@ Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(functi
     Route::post('/order-tracking', [OrderController::class, 'trackByNumber'])->name('order.track');
 
     // Wishlist
-    Route::resource('wishlist', WishlistController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('wishlist', WishlistController::class)->only(['index', 'destroy']);
 
     // Reviews
     Route::resource('reviews', ReviewController::class)->only(['store', 'index']);
@@ -43,3 +43,6 @@ Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(functi
     // Returns
     Route::resource('returns', ReturnController::class)->only(['index', 'store', 'show']);
 });
+
+Route::post('customer/wishlist', [WishlistController::class, 'store'])->name('customer.wishlist.store');
+
