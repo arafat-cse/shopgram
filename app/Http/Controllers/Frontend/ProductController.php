@@ -72,6 +72,16 @@ class ProductController extends Controller
             ->where('created_at', '>=', now()->subHours(24))
             ->sum('quantity');
 
-        return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h'));
+        $canReview = false;
+        if (auth()->check()) {
+            $canReview = \App\Models\Order::where('user_id', auth()->id())
+                ->where('status', 'delivered')
+                ->whereHas('items', function ($query) use ($product) {
+                    $query->where('product_id', $product->id);
+                })
+                ->exists();
+        }
+
+        return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h', 'canReview'));
     }
 }

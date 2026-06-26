@@ -309,22 +309,34 @@
                 @endforelse
 
                 @auth
+                    @if($canReview)
+                    <hr>
+                    <h6>Write a Review</h6>
+                    <form action="{{ route('customer.reviews.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <div class="mb-2">
+                            <label class="form-label">Rating</label>
+                            <select name="rating" class="form-select form-select-sm" style="max-width:120px">
+                                @for($i=5;$i>=1;$i--)<option value="{{ $i }}">{{ $i }} Star</option>@endfor
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <textarea name="comment" class="form-control" rows="3" placeholder="Your review..."></textarea>
+                        </div>
+                        <button class="btn btn-primary btn-sm">Submit Review</button>
+                    </form>
+                    @else
+                    <hr>
+                    <div class="alert alert-light border text-muted py-2 px-3 small">
+                        <i class="bi bi-info-circle me-1"></i> You can only review this product if you have purchased it and the order has been delivered.
+                    </div>
+                    @endif
+                @else
                 <hr>
-                <h6>Write a Review</h6>
-                <form action="{{ route('customer.reviews.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <div class="mb-2">
-                        <label class="form-label">Rating</label>
-                        <select name="rating" class="form-select form-select-sm" style="max-width:120px">
-                            @for($i=5;$i>=1;$i--)<option value="{{ $i }}">{{ $i }} Star</option>@endfor
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <textarea name="comment" class="form-control" rows="3" placeholder="Your review..."></textarea>
-                    </div>
-                    <button class="btn btn-primary btn-sm">Submit Review</button>
-                </form>
+                <div class="alert alert-light border text-muted py-2 px-3 small">
+                    <i class="bi bi-info-circle me-1"></i> Please <a href="{{ route('login') }}">login</a> to write a review.
+                </div>
                 @endauth
             </div>
         </div>
