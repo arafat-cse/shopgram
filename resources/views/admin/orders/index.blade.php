@@ -37,7 +37,7 @@
     <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead class="table-light">
-                <tr><th>Order #</th><th>Customer</th><th>Date</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th></tr>
+                <tr><th>Order #</th><th>Customer</th><th>Date</th><th>Total</th><th>Payment</th><th>Status</th><th>Messages</th><th>Actions</th></tr>
             </thead>
             <tbody>
                 @forelse($orders as $order)
@@ -48,10 +48,33 @@
                     <td class="small">৳{{ number_format($order->total, 0) }}</td>
                     <td><span class="badge bg-{{ $order->payment_status === 'paid' ? 'success' : ($order->payment_status === 'failed' ? 'danger' : 'secondary') }}">{{ ucfirst($order->payment_status) }}</span></td>
                     <td><x-order-status-badge :status="$order->status" /></td>
+                    <td>
+                        @php($latestMessage = $order->latestCustomerMessage)
+                        @if($latestMessage)
+                            <a href="{{ route('admin.orders.show', $order) }}#orderChat" class="text-decoration-none d-inline-flex align-items-start gap-2">
+                                <span class="btn btn-sm btn-outline-primary position-relative">
+                                    <i class="bi bi-chat-dots"></i>
+                                    @if($order->unread_customer_messages_count > 0)
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{ $order->unread_customer_messages_count }}
+                                        </span>
+                                    @endif
+                                </span>
+                                <span class="small text-dark">
+                                    <span class="d-block fw-semibold">{{ $latestMessage->user->name ?? $order->user->name ?? 'Customer' }}</span>
+                                    <span class="d-block text-muted text-truncate" style="max-width:180px">
+                                        {{ $latestMessage->message ?: ($latestMessage->attachment_type === 'image' ? 'Sent an image' : 'Sent a file') }}
+                                    </span>
+                                </span>
+                            </a>
+                        @else
+                            <span class="text-muted small">-</span>
+                        @endif
+                    </td>
                     <td><a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                 </tr>
                 @empty
-                <tr><td colspan="7" class="text-center py-4 text-muted">No orders found.</td></tr>
+                <tr><td colspan="8" class="text-center py-4 text-muted">No orders found.</td></tr>
                 @endforelse
             </tbody>
         </table>

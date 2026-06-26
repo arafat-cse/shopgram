@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\TicketReply;
+use App\Models\User;
+use App\Notifications\TicketCreatedNotification;
+use App\Notifications\TicketCustomerReplyNotification;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
@@ -41,6 +44,9 @@ class TicketController extends Controller
             'is_admin_reply' => false,
         ]);
 
+        // Notify all admin users
+        User::role('admin')->each(fn($admin) => $admin->notify(new TicketCreatedNotification($ticket)));
+
         return redirect()->route('customer.tickets.show', $ticket)->with('success', 'Ticket created.');
     }
 
@@ -69,6 +75,9 @@ class TicketController extends Controller
         ]);
 
         $ticket->update(['status' => 'open']);
+
+        // Notify all admin users
+        User::role('admin')->each(fn($admin) => $admin->notify(new TicketCustomerReplyNotification($ticket, $request->message)));
 
         return back()->with('success', 'Reply sent.');
     }

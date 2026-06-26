@@ -12,6 +12,7 @@ use App\Http\Controllers\Frontend\PageController as FrontPageController;
 use App\Http\Controllers\Frontend\ContactController;
 use App\Http\Controllers\Frontend\NewsletterController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 
@@ -62,6 +63,12 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Internal chat API used by the Node.js socket service.
+Route::prefix('api/chat')->group(function () {
+    Route::post('orders/{order}/messages', [ChatController::class, 'store'])->name('chat.store');
+    Route::post('orders/{order}/close', [ChatController::class, 'close'])->name('chat.close');
+});
+
 // Cart routes (auth required)
 Route::middleware('auth')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -74,6 +81,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place-order');
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+    // Chat API — used by Node.js server and browser
+    Route::prefix('api/chat')->group(function () {
+        Route::get('token', [ChatController::class, 'token'])->name('chat.token');
+        Route::get('total-unread', [ChatController::class, 'totalUnreadCount'])->name('chat.total-unread');
+        Route::get('orders/{order}/messages', [ChatController::class, 'messages'])->name('chat.messages');
+        Route::post('orders/{order}/upload', [ChatController::class, 'upload'])->name('chat.upload');
+        Route::get('orders/{order}/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread-count');
+    });
 });
 
 // Customer dashboard routes

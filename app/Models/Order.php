@@ -36,6 +36,13 @@ class Order extends Model
     public function statusHistories() { return $this->hasMany(OrderStatusHistory::class)->latest(); }
     public function payment() { return $this->hasOne(Payment::class); }
     public function returnRequests() { return $this->hasMany(ReturnRequest::class); }
+    public function messages() { return $this->hasMany(OrderMessage::class)->orderBy('created_at'); }
+    public function latestCustomerMessage()
+    {
+        return $this->hasOne(OrderMessage::class)
+            ->where('sender_role', 'customer')
+            ->latestOfMany('created_at');
+    }
 
     public static function generateOrderNumber(): string {
         return 'SG-' . strtoupper(uniqid());
@@ -71,5 +78,28 @@ class Order extends Model
             'refunded' => 'teal',
             default => 'secondary',
         };
+    }
+
+    public function isChatOpen(): bool
+    {
+        return in_array($this->status, [
+            'pending',
+            'confirmed',
+            'processing',
+            'packed',
+            'shipped',
+            'out_for_delivery',
+        ]);
+    }
+
+    /**
+     * Get unread customer message count for this order
+     */
+    public function getUnreadMessageCountAttribute(): int
+    {
+        return OrderMessage::where('order_id', $this->id)
+            ->where('sender_role', 'customer')
+            ->where('is_read', false)
+            ->count();
     }
 }

@@ -15,7 +15,12 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $query = Order::with('user');
+        $query = Order::with(['user', 'latestCustomerMessage.user'])
+            ->withCount([
+                'messages as unread_customer_messages_count' => fn($query) => $query
+                    ->where('sender_role', 'customer')
+                    ->where('is_read', false),
+            ]);
 
         if ($request->status) $query->where('status', $request->status);
         if ($request->payment_status) $query->where('payment_status', $request->payment_status);

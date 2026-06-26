@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
+use App\Models\OrderMessage;
 use App\Models\Payment;
 use App\Models\CartItem;
 use App\Models\Product;
@@ -140,5 +141,21 @@ class OrderService
             'note'       => $note,
             'updated_by' => $adminId,
         ]);
+
+        // Close chat when order is delivered or cancelled
+        if (in_array($status, ['delivered', 'cancelled'])) {
+            OrderMessage::where('order_id', $order->id)->update(['is_read' => true]);
+
+            // Notify Node.js to close the room
+            try {
+                \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-Internal-Key' => config('chat.internal_key'),
+                    'Accept' => 'application/json',
+                ])->post(config('chat.node_url') . '/internal/close-room/' . $order->id);
+            } catch (\Exception $e) {
+                // Log error but don't fail the status update
+                \Illuminate\Support\Facades\Log::error('Failed to notify Node.js of chat close: ' . $e->getMessage());
+            }
+        }
     }
 }

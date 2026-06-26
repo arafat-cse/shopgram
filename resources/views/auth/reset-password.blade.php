@@ -17,12 +17,28 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">New Password</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
-                            @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <div class="input-group">
+                                <input type="password" name="password" id="passwordField"
+                                    class="form-control @error('password') is-invalid @enderror" required>
+                                <button type="button" class="btn btn-outline-secondary px-3" id="togglePassword"
+                                    tabindex="-1" title="Show/hide password">
+                                    <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                                </button>
+                                @error('password')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label class="form-label">Confirm Password</label>
-                            <input type="password" name="password_confirmation" class="form-control" required>
+                            <div class="input-group">
+                                <input type="password" name="password_confirmation" id="confirmPasswordField"
+                                    class="form-control" required>
+                                <button type="button" class="btn btn-outline-secondary px-3" id="toggleConfirmPassword"
+                                    tabindex="-1" title="Show/hide password">
+                                    <i class="bi bi-eye" id="toggleConfirmPasswordIcon"></i>
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Reset Password</button>
                     </form>
@@ -31,4 +47,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    function setupToggle(btnId, fieldId, iconId) {
+        const btn  = document.getElementById(btnId);
+        const field = document.getElementById(fieldId);
+        const icon  = document.getElementById(iconId);
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            const isPassword = field.type === 'password';
+            field.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('bi-eye',      !isPassword);
+            icon.classList.toggle('bi-eye-slash',  isPassword);
+        });
+    }
+    setupToggle('togglePassword',        'passwordField',        'togglePasswordIcon');
+    setupToggle('toggleConfirmPassword', 'confirmPasswordField', 'toggleConfirmPasswordIcon');
+</script>
 @endsection
+
