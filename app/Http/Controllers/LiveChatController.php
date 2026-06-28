@@ -52,28 +52,31 @@ class LiveChatController extends Controller
             'session_id' => 'nullable|string|max:36',
         ]);
 
-        $sessionId = $validated['session_id'] ?? Str::uuid()->toString();
+        $chat = null;
+        $isNewChat = false;
 
-        $chat = LiveChat::firstOrCreate(
-            ['session_id' => $sessionId],
-            [
-                'guest_name'  => $validated['name'],
-                'guest_phone' => $validated['phone'],
-                'user_id'     => auth()->id(),
-                'status'      => 'waiting',
-            ]
-        );
+        if (!empty($validated['session_id'])) {
+            $chat = LiveChat::where('session_id', $validated['session_id'])
+                ->where('status', '!=', 'closed')
+                ->where('guest_name', $validated['name'])
+                ->where('guest_phone', $validated['phone'])
+                ->first();
+        }
 
-        // Update name/phone if re-opening with same session
-        if (!$chat->wasRecentlyCreated) {
-            $chat->update([
-                'guest_name'  => $validated['name'],
-                'guest_phone' => $validated['phone'],
+        if (!$chat) {
+            $chat = LiveChat::create([
+                'session_id'      => Str::uuid()->toString(),
+                'guest_name'      => $validated['name'],
+                'guest_phone'     => $validated['phone'],
+                'user_id'         => auth()->id(),
+                'status'          => 'waiting',
+                'last_message_at' => now(),
             ]);
+            $isNewChat = true;
         }
 
         // Notify admin panel of new chat via Node.js
-        if ($chat->wasRecentlyCreated) {
+        if ($isNewChat) {
             try {
                 Http::withHeaders([
                     'X-Internal-Key' => config('chat.internal_key'),
@@ -81,7 +84,7 @@ class LiveChatController extends Controller
                 ])->post(config('chat.node_internal_url') . '/internal/livechat/notify-admin', [
                     'chat_id'    => $chat->id,
                     'guest_name' => $chat->guest_name,
-                    'status'     => 'waiting',
+                    'status'     => $chat->status,
                 ]);
             } catch (\Exception $e) {
                 logger()->error('LiveChat: notify-admin failed: ' . $e->getMessage());
@@ -168,9 +171,35 @@ class LiveChatController extends Controller
 
         $chat->update(['last_message_at' => now()]);
 
-        $msg = LiveChatMessage::create(array_merge($validated, ['chat_id' => $chat->id]));
+        $msg = LiveChatMessage::create(array_merge($validated, ['chat_id' => $chat->id]))->refresh();
+        $autoReply = null;
 
-        return response()->json($msg);
+        if ($validated['sender_type'] === 'guest') {
+            $hasStaffReply = LiveChatMessage::where('chat_id', $chat->id)
+                ->where('sender_type', 'staff')
+                ->exists();
+
+            if (!$hasStaffReply) {
+                $chat->loadMissing('assignedAgent:id,name');
+                $senderName = $chat->assignedAgent?->name ?? 'ShopGram Support';
+
+                $autoReply = LiveChatMessage::create([
+                    'chat_id'     => $chat->id,
+                    'sender_type' => 'staff',
+                    'sender_name' => $senderName,
+                    'user_id'     => $chat->assigned_to,
+                    'message'     => "আসসালামু আলাইকুম {$chat->guest_name}.\nWelcome to ShopGram. How can I help you?",
+                    'is_read'     => false,
+                ])->refresh();
+
+                $chat->update(['last_message_at' => now()]);
+            }
+        }
+
+        return response()->json([
+            'message'    => $msg,
+            'auto_reply' => $autoReply,
+        ]);
     }
 
     /**
@@ -423,6 +452,31 @@ class LiveChatController extends Controller
         }
 
         return response()->json(['closed' => true]);
+    }
+
+    /**
+     * POST /admin/live-chat/{chat}/reopen
+     */
+    public function adminReopen(LiveChat $chat)
+    {
+        $user = auth()->user();
+
+        $chat->update([
+            'status'          => 'active',
+            'assigned_to'     => $chat->assigned_to ?: $user->id,
+            'last_message_at' => now(),
+        ]);
+
+        try {
+            Http::withHeaders([
+                'X-Internal-Key' => config('chat.internal_key'),
+                'Accept'         => 'application/json',
+            ])->post(config('chat.node_internal_url') . '/internal/livechat/reopen/' . $chat->id);
+        } catch (\Exception $e) {
+            logger()->error('LiveChat: failed to notify Node.js of admin reopen: ' . $e->getMessage());
+        }
+
+        return response()->json(['reopened' => true]);
     }
 
     /**

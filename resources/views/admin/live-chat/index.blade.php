@@ -4,8 +4,10 @@
 
 @push('styles')
 <style>
-.lca-wrap{display:flex;height:calc(100vh - 64px);overflow:hidden}
-.lca-sidebar{width:320px;flex-shrink:0;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;background:#fff}
+body:has(.lca-wrap){overflow:hidden}
+body:has(.lca-wrap) .page-content{padding:1rem 1.5rem 0;overflow:hidden}
+.lca-wrap{display:flex;height:calc(100vh - 175px);max-height:calc(100vh - 175px);min-height:420px;overflow:hidden}
+.lca-sidebar{width:320px;flex-shrink:0;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;background:#fff;min-height:0;overflow:hidden}
 .lca-sidebar-head{padding:16px;border-bottom:1px solid #e2e8f0;flex-shrink:0}
 .lca-sidebar-head h6{margin:0 0 10px;font-weight:700;color:#1e293b}
 .lca-search{position:relative}
@@ -15,7 +17,7 @@
 .lca-filter-tabs{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid #e2e8f0;flex-shrink:0;overflow-x:auto}
 .lca-filter-tab{padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;white-space:nowrap;transition:all .15s}
 .lca-filter-tab.active{background:#0d6efd;border-color:#0d6efd;color:#fff}
-.lca-list{flex:1;overflow-y:auto}
+.lca-list{flex:1;min-height:0;overflow-y:auto}
 .lca-item{padding:13px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background .12s;position:relative}
 .lca-item:hover{background:#f8fafc}
 .lca-item.active{background:#eff6ff;border-left:3px solid #0d6efd}
@@ -30,13 +32,13 @@
 .lca-status-dot.active{background:#22c55e}
 .lca-status-dot.closed{background:#94a3b8}
 /* Chat window */
-.lca-main{flex:1;display:flex;flex-direction:column;background:#f8fafc}
+.lca-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:#f8fafc;overflow:hidden}
 .lca-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8}
 .lca-empty svg{width:56px;height:56px;margin-bottom:12px;opacity:.4}
 .lca-chat-head{padding:14px 20px;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .lca-chat-head-info h6{margin:0;font-weight:700;font-size:.95rem}
 .lca-chat-head-info small{font-size:.75rem;color:#64748b}
-.lca-messages{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.lca-messages{flex:1;min-height:0;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
 .lca-msg{display:flex;flex-direction:column;max-width:72%}
 .lca-msg.guest{align-self:flex-start}
 .lca-msg.staff{align-self:flex-end;align-items:flex-end}
@@ -52,7 +54,7 @@
 #lca-typing{padding:4px 20px;font-size:.75rem;color:#94a3b8;min-height:20px}
 .lca-reply-area{padding:12px 16px;background:#fff;border-top:1px solid #e2e8f0;flex-shrink:0}
 .lca-reply-row{display:flex;align-items:flex-end;gap:10px}
-#lca-reply-input{flex:1;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 13px;font-size:.88rem;resize:none;max-height:120px;outline:none;transition:border-color .15s;background:#f8fafc}
+#lca-reply-input{flex:1;height:42px;min-height:42px;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 13px;font-size:.88rem;line-height:20px;resize:none;overflow:hidden;outline:none;transition:border-color .15s;background:#f8fafc}
 #lca-reply-input:focus{border-color:#0d6efd;background:#fff}
 .lca-reply-send{background:#0d6efd;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-weight:600;font-size:.85rem;cursor:pointer;transition:background .15s;flex-shrink:0;height:42px}
 .lca-reply-send:hover{background:#0b5ed7}
@@ -60,6 +62,8 @@
 .lca-reply-attach:hover{border-color:#0d6efd;color:#0d6efd}
 .lca-close-btn{background:#dc3545;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s}
 .lca-close-btn:hover{background:#b91c1c}
+.lca-reopen-btn{background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s}
+.lca-reopen-btn:hover{background:#15803d}
 .lca-assign-select{font-size:.8rem;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 10px;outline:none}
 .lca-file-preview{padding:8px 14px;background:#eff6ff;border-top:1px solid #dbeafe;display:none;align-items:center;gap:8px;font-size:.8rem;color:#1e293b}
 .lca-file-preview.show{display:flex}
@@ -98,7 +102,7 @@
             <div style="font-size:.82rem">Choose a chat from the left panel to reply</div>
         </div>
 
-        <div id="lca-chat-window" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+        <div id="lca-chat-window" style="display:none;flex:1;min-height:0;flex-direction:column;overflow:hidden">
             <div class="lca-chat-head">
                 <div class="lca-chat-head-info">
                     <h6 id="lca-cw-name">—</h6>
@@ -111,6 +115,7 @@
                             <option value="{{ $agent->id }}">{{ $agent->name }}</option>
                         @endforeach
                     </select>
+                    <button class="lca-reopen-btn" id="lca-cw-reopen-btn" onclick="lcaReopenChat()" style="display:none">Reopen Chat</button>
                     <button class="lca-close-btn" id="lca-cw-close-btn" onclick="lcaCloseChat()" style="display:none">Close Chat</button>
                 </div>
             </div>
@@ -140,7 +145,7 @@
 @push('scripts')
 <script>
 const NODE_URL   = '{{ config("chat.node_url") }}';
-const CSRF       = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+const LCA_CSRF   = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
 let currentChatId = null;
 let currentStatus = null;
@@ -238,13 +243,16 @@ async function lcaOpenChat(chatId) {
 
     const replyArea = document.getElementById('lca-reply-area');
     const closeBtn  = document.getElementById('lca-cw-close-btn');
+    const reopenBtn = document.getElementById('lca-cw-reopen-btn');
     const assignSel = document.getElementById('lca-assign-select');
     if (currentStatus === 'closed') {
         replyArea.style.display = 'none';
         closeBtn.style.display  = 'none';
+        reopenBtn.style.display = 'inline-block';
     } else {
         replyArea.style.display = 'block';
         closeBtn.style.display  = 'inline-block';
+        reopenBtn.style.display = 'none';
     }
     assignSel.style.display = currentStatus !== 'closed' ? 'block' : 'none';
     if (chat.assigned_to) assignSel.value = chat.assigned_to;
@@ -315,7 +323,13 @@ async function lcaConnectStaffSocket() {
         if (d.chat_id == currentChatId && d.status === 'closed') {
             document.getElementById('lca-reply-area').style.display = 'none';
             document.getElementById('lca-cw-close-btn').style.display = 'none';
+            document.getElementById('lca-cw-reopen-btn').style.display = 'inline-block';
             currentStatus = 'closed';
+        } else if (d.chat_id == currentChatId && d.status === 'active') {
+            document.getElementById('lca-reply-area').style.display = 'block';
+            document.getElementById('lca-cw-close-btn').style.display = 'inline-block';
+            document.getElementById('lca-cw-reopen-btn').style.display = 'none';
+            currentStatus = 'active';
         }
         lcaLoadList();
     });
@@ -347,7 +361,7 @@ async function lcaSend() {
 
         const res = await fetch(`/admin/live-chat/${currentChatId}/messages`, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': CSRF, Accept: 'application/json' },
+            headers: { 'X-CSRF-TOKEN': LCA_CSRF, Accept: 'application/json' },
             body: fd,
         });
         const data = await res.json();
@@ -372,22 +386,41 @@ async function lcaCloseChat() {
 
     const res = await fetch(`/admin/live-chat/${currentChatId}/close`, {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': CSRF, Accept: 'application/json' },
+        headers: { 'X-CSRF-TOKEN': LCA_CSRF, Accept: 'application/json' },
     });
     if (res.ok) {
         document.getElementById('lca-reply-area').style.display = 'none';
         document.getElementById('lca-cw-close-btn').style.display = 'none';
+        document.getElementById('lca-cw-reopen-btn').style.display = 'inline-block';
         currentStatus = 'closed';
         lcaLoadList();
     }
 }
 
 // ── Assign ────────────────────────────────────────────────────────────────────
+async function lcaReopenChat() {
+    if (!currentChatId) return;
+
+    const res = await fetch(`/admin/live-chat/${currentChatId}/reopen`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': LCA_CSRF, Accept: 'application/json' },
+    });
+
+    if (res.ok) {
+        currentStatus = 'active';
+        document.getElementById('lca-reply-area').style.display = 'block';
+        document.getElementById('lca-cw-close-btn').style.display = 'inline-block';
+        document.getElementById('lca-cw-reopen-btn').style.display = 'none';
+        document.getElementById('lca-assign-select').style.display = 'block';
+        lcaLoadList();
+    }
+}
+
 async function lcaAssign(agentId) {
     if (!currentChatId) return;
     await fetch(`/admin/live-chat/${currentChatId}/assign`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': LCA_CSRF, Accept: 'application/json' },
         body: JSON.stringify({ agent_id: agentId }),
     });
 }
@@ -406,7 +439,7 @@ document.getElementById('lca-attach-input')?.addEventListener('change', async (e
     try {
         const res  = await fetch(`/admin/live-chat/${currentChatId}/upload`, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': CSRF },
+            headers: { 'X-CSRF-TOKEN': LCA_CSRF },
             body: fd,
         });
         const data = await res.json();
@@ -446,11 +479,6 @@ document.getElementById('lca-search')?.addEventListener('input', (e) => {
 document.getElementById('lca-reply-input')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); lcaSend(); }
 });
-document.getElementById('lca-reply-input')?.addEventListener('input', () => {
-    const el = document.getElementById('lca-reply-input');
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-});
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function showToast(msg) {
@@ -476,16 +504,6 @@ function timeAgo(iso) {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 (function () {
-    // Debug: show fetch result directly in the list
-    const debugEl = document.getElementById('lca-list');
-    if (debugEl) {
-        debugEl.innerHTML = '<div style="padding:10px;font-size:.75rem;color:#666">JS running, fetching...</div>';
-        fetch('/admin/live-chat/chats', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
-            .then(r => r.text())
-            .then(t => { debugEl.innerHTML = '<div style="padding:10px;font-size:.72rem;overflow:auto;max-height:300px"><pre>' + t.substring(0,500) + '</pre></div>'; })
-            .catch(e => { debugEl.innerHTML = '<div style="padding:10px;color:red">' + e.message + '</div>'; });
-    }
-
     lcaLoadList();
     setInterval(lcaLoadList, 20000);
 

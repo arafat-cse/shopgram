@@ -295,6 +295,18 @@
                 if (s) saveSession({ ...s, status: 'closed' });
             });
 
+            socket.on('livechat_reopened', (d) => {
+                document.getElementById('lc-input').disabled = false;
+                document.querySelector('.lc-send-btn').disabled = false;
+                document.getElementById('lc-typing').innerHTML = '';
+                const bar = document.getElementById('lc-status-bar');
+                bar.textContent = d.message || 'Support has reopened this chat.';
+                bar.classList.add('show');
+                setTimeout(() => bar.classList.remove('show'), 3000);
+                const s = getSession();
+                if (s) saveSession({ ...s, status: 'active' });
+            });
+
         } catch (e) {
             console.error('[livechat] Socket connect failed:', e);
         }

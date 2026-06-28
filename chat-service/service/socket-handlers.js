@@ -42,7 +42,7 @@ function handleLiveChat(io, socket, chatId) {
         if (!message && !attachment) return;
 
         try {
-            const saved = await laravel.saveLiveChatMessage(chatId, {
+            const savedResponse = await laravel.saveLiveChatMessage(chatId, {
                 sender_type:     senderType,
                 sender_name:     senderName,
                 user_id:         isStaff ? socket.user.id : null,
@@ -52,6 +52,7 @@ function handleLiveChat(io, socket, chatId) {
                 attachment_name: attachment?.name || null,
                 attachment_size: attachment?.size || null,
             });
+            const saved = savedResponse.message || savedResponse;
 
             const out = {
                 id:              saved.id,
@@ -70,6 +71,14 @@ function handleLiveChat(io, socket, chatId) {
             // Notify admin panel of new guest message
             if (!isStaff) {
                 io.to('livechat_admin').emit('new_livechat_message', { chat_id: chatId, message: out });
+            }
+
+            if (savedResponse.auto_reply) {
+                io.to(room).emit('new_message', savedResponse.auto_reply);
+                io.to('livechat_admin').emit('new_livechat_message', {
+                    chat_id: chatId,
+                    message: savedResponse.auto_reply,
+                });
             }
         } catch (err) {
             console.error('[livechat] Failed to save message:', err.response?.data || err.message);

@@ -26,6 +26,16 @@ function registerHttpRoutes(app, io) {
         return res.json({ closed: true });
     });
 
+    // Reopen a live chat room
+    app.post('/internal/livechat/reopen/:chatId', (req, res) => {
+        if (req.headers['x-internal-key'] !== config.internalKey) return res.status(403).json({ error: 'Forbidden' });
+        const room = `livechat_${req.params.chatId}`;
+        io.to(room).emit('livechat_reopened', { message: 'Support has reopened this chat.' });
+        io.to('livechat_admin').emit('livechat_status_changed', { chat_id: req.params.chatId, status: 'active' });
+        console.log(`[livechat] Room ${room} reopened`);
+        return res.json({ reopened: true });
+    });
+
     // Emit a message from admin to guest socket room
     app.post('/internal/livechat/emit/:chatId', (req, res) => {
         if (req.headers['x-internal-key'] !== config.internalKey) return res.status(403).json({ error: 'Forbidden' });

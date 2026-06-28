@@ -184,6 +184,7 @@ Route::middleware(['auth', 'admin.access'])
         Route::get('live-chat/{chat}/messages',         [LiveChatController::class, 'adminMessages'])->name('live-chat.messages');
         Route::post('live-chat/{chat}/messages',        [LiveChatController::class, 'adminStore'])->name('live-chat.store');
         Route::post('live-chat/{chat}/close',           [LiveChatController::class, 'adminClose'])->name('live-chat.close');
+        Route::post('live-chat/{chat}/reopen',          [LiveChatController::class, 'adminReopen'])->name('live-chat.reopen');
         Route::post('live-chat/{chat}/assign',          [LiveChatController::class, 'adminAssign'])->name('live-chat.assign');
         Route::post('live-chat/{chat}/upload',          [LiveChatController::class, 'adminUpload'])->name('live-chat.upload');
     });
