@@ -87,6 +87,23 @@ class OrderController extends Controller
         return back()->with('success', 'Courier assigned.');
     }
 
+    public function updatePaymentStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'payment_status' => 'required|in:unpaid,paid,failed,refunded',
+        ]);
+
+        $old = $order->payment_status;
+        $order->update(['payment_status' => $request->payment_status]);
+
+        ActivityLogService::updated('Order', $order->id,
+            "Changed payment status of order {$order->order_number} from {$old} to {$request->payment_status}",
+            ['old_payment_status' => $old, 'new_payment_status' => $request->payment_status]
+        );
+
+        return back()->with('success', 'Payment status updated.');
+    }
+
     public function invoice(Order $order)
     {
         $order->load(['user', 'items.product', 'payment']);

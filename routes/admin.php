@@ -73,6 +73,7 @@ Route::middleware(['auth', 'admin.access'])
     Route::middleware('permission:order.view')->group(function () {
         Route::resource('orders', OrderController::class)->only(['index', 'show', 'update']);
         Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status.update');
+        Route::post('orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.payment.status.update')->middleware('permission:order.payment.update');
         Route::post('orders/{order}/assign-courier', [OrderController::class, 'assignCourier'])->name('orders.courier.assign');
         Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
         Route::get('orders/{order}/invoice/pdf', [OrderController::class, 'invoicePdf'])->name('orders.invoice.pdf');
