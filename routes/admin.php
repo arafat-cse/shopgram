@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\PromotedProductController;
+use App\Http\Controllers\LiveChatController;
 
 Route::middleware(['auth', 'admin.access'])
     ->prefix('admin')
@@ -173,4 +174,17 @@ Route::middleware(['auth', 'admin.access'])
 
     // Activity Log
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    // Live chat admin panel
+    Route::middleware('permission:order.chat')->group(function () {
+        Route::get('live-chat',                         [LiveChatController::class, 'adminIndex'])->name('live-chat.index');
+        Route::get('live-chat/chats',                   [LiveChatController::class, 'adminChats'])->name('live-chat.chats');
+        Route::get('live-chat/unread',                  [LiveChatController::class, 'adminTotalUnread'])->name('live-chat.unread');
+        Route::get('live-chat/staff-token',             [LiveChatController::class, 'adminStaffToken'])->name('live-chat.staff-token');
+        Route::get('live-chat/{chat}/messages',         [LiveChatController::class, 'adminMessages'])->name('live-chat.messages');
+        Route::post('live-chat/{chat}/messages',        [LiveChatController::class, 'adminStore'])->name('live-chat.store');
+        Route::post('live-chat/{chat}/close',           [LiveChatController::class, 'adminClose'])->name('live-chat.close');
+        Route::post('live-chat/{chat}/assign',          [LiveChatController::class, 'adminAssign'])->name('live-chat.assign');
+        Route::post('live-chat/{chat}/upload',          [LiveChatController::class, 'adminUpload'])->name('live-chat.upload');
+    });
 });

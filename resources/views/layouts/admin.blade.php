@@ -127,6 +127,13 @@
         </a>
 
         <div class="nav-section">Support</div>
+        @can('order.chat')
+        <a href="{{ route('admin.live-chat.index') }}" class="nav-link {{ request()->routeIs('admin.live-chat.*') ? 'active' : '' }}" id="admin-lc-nav-link">
+            <i class="bi bi-chat-dots"></i>
+            <span>Customer Support</span>
+            <span id="admin-lc-nav-badge" class="badge bg-danger ms-auto" style="display:none;font-size:.65rem;padding:2px 5px"></span>
+        </a>
+        @endcan
         <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
             <i class="bi bi-star"></i> <span>Reviews</span>
         </a>
@@ -460,5 +467,23 @@ setInterval(fetchCounts, 60000);
 })();
 </script>
 @stack('scripts')
+@can('order.chat')
+<script>
+(function () {
+    function pollLcUnread() {
+        fetch('/admin/live-chat/unread', { headers: { Accept: 'application/json' } })
+            .then(r => r.json())
+            .then(d => {
+                const b = document.getElementById('admin-lc-nav-badge');
+                if (!b) return;
+                if (d.count > 0) { b.textContent = d.count > 99 ? '99+' : d.count; b.style.display = 'inline-flex'; }
+                else b.style.display = 'none';
+            }).catch(() => {});
+        setTimeout(pollLcUnread, 30000);
+    }
+    pollLcUnread();
+})();
+</script>
+@endcan
 </body>
 </html>
