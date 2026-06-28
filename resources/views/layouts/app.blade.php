@@ -63,6 +63,184 @@
         .site-footer a:hover { color: #fff !important; padding-left: 3px; }
         .site-footer .form-control { border-color: #fff; }
         .site-footer .border-secondary { border-color: rgba(255,255,255,.18) !important; }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1050;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+        .sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Sidebar Container */
+        .sidebar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            max-width: 80vw;
+            height: 100vh;
+            background: #fff;
+            z-index: 1060;
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+        }
+        .sidebar-container.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        /* Close Button on Overlay */
+        .sidebar-close-btn {
+            position: absolute;
+            top: 15px;
+            left: 295px;
+            background: transparent;
+            border: 0;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 2.2rem;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 1070;
+            transition: color 0.15s;
+        }
+        .sidebar-close-btn:hover {
+            color: #fff;
+        }
+        @media (max-width: 360px) {
+            .sidebar-close-btn {
+                left: auto;
+                right: 15px;
+            }
+        }
+
+        /* Premium Profile Card */
+        .sidebar-header-card {
+            background: linear-gradient(135deg, #f58220 0%, #e06d12 100%);
+            padding: 22px 18px;
+            border-radius: 14px;
+            margin: 12px;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(245, 130, 32, 0.25);
+        }
+        .sidebar-header-card .avatar-circle {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .sidebar-header-card .welcome-text {
+            font-size: 0.92rem;
+            opacity: 0.9;
+            margin-bottom: 2px;
+        }
+        .sidebar-header-card .username {
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .sidebar-header-card .auth-link {
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 1.15rem;
+            display: inline-block;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.6);
+            line-height: 1.1;
+        }
+
+        /* Menu card standard */
+        .sidebar-menu-card {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            margin: 12px;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid #edf0f3;
+        }
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            color: #212529;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.94rem;
+            border-bottom: 1px solid #edf0f3;
+            transition: background-color 0.2s, color 0.2s;
+            cursor: pointer;
+            background: transparent;
+            border-left: 0;
+            border-right: 0;
+            border-top: 0;
+            width: 100%;
+            text-align: left;
+        }
+        .sidebar-menu-item:last-child {
+            border-bottom: 0;
+        }
+        .sidebar-menu-item:hover, .sidebar-menu-item:active {
+            background-color: #e9ecef;
+            color: var(--primary) !important;
+        }
+        .sidebar-menu-item i.bi-chevron-right {
+            font-size: 0.75rem;
+            color: #98a2b3;
+            transition: transform 0.2s ease;
+        }
+        .sidebar-menu-item.open i.bi-chevron-right {
+            transform: rotate(90deg);
+        }
+
+        /* Submenu */
+        .sidebar-submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: #fff;
+            border-bottom: 1px solid #edf0f3;
+        }
+        .sidebar-submenu-item {
+            display: block;
+            padding: 10px 16px 10px 32px;
+            color: #495057;
+            text-decoration: none;
+            font-size: 0.88rem;
+            border-bottom: 1px solid #f1f3f5;
+            transition: color 0.15s, padding-left 0.15s;
+        }
+        .sidebar-submenu-item:last-child {
+            border-bottom: 0;
+        }
+        .sidebar-submenu-item:hover {
+            color: var(--primary);
+            padding-left: 36px;
+        }
     </style>
     @stack('styles')
 </head>
@@ -74,8 +252,8 @@
         <a class="navbar-brand" href="{{ route('home') }}">{{ $siteName ?? 'ShopGram' }}</a>
 
         {{-- Search --}}
-        <form class="d-none d-lg-flex flex-grow-1 mx-4" action="{{ route('search.index') }}" method="GET">
-            <div class="input-group">
+        <form class="d-flex flex-grow-1 mx-2 mx-lg-4" action="{{ route('search.index') }}" method="GET">
+            <div class="input-group input-group-sm">
                 <input type="text" name="q" class="form-control" placeholder="Search products..." value="{{ request('q') }}" autocomplete="off" id="search-input">
                 <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
             </div>
@@ -83,59 +261,51 @@
 
         {{-- Nav Icons --}}
         <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('order.tracking') }}" class="track-order-link">
-                <i class="bi bi-geo-alt"></i>
-                <span>Track Order</span>
-            </a>
-            <a href="{{ route('cart.index') }}" class="text-dark cart-badge">
-                <i class="bi bi-cart3 fs-5"></i>
-                @if($cartCount > 0)<span class="badge bg-danger rounded-pill">{{ $cartCount }}</span>@endif
-            </a>
-            <a href="{{ auth()->check() ? route('customer.wishlist.index') : route('login') }}" class="text-dark cart-badge">
-                <i class="bi bi-heart fs-5"></i>
-                @if($wishlistCount > 0)<span class="badge bg-danger rounded-pill">{{ $wishlistCount }}</span>@endif
-            </a>
-            @auth
-            <div class="dropdown">
-                <a class="text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle fs-5"></i>
+            <div class="d-none d-lg-flex align-items-center gap-3">
+                <a href="{{ route('order.tracking') }}" class="track-order-link">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>Track Order</span>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ route('customer.dashboard') }}">Dashboard</a></li>
-                    <li><a class="dropdown-item" href="{{ route('customer.orders.index') }}">My Orders</a></li>
-                    <li><a class="dropdown-item" href="{{ route('customer.profile.edit') }}">Profile</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button class="dropdown-item text-danger">Logout</button>
-                        </form>
-                    </li>
-                </ul>
+                <a href="{{ route('cart.index') }}" class="text-dark cart-badge">
+                    <i class="bi bi-cart3 fs-5"></i>
+                    @if($cartCount > 0)<span class="badge bg-danger rounded-pill">{{ $cartCount }}</span>@endif
+                </a>
+                <a href="{{ auth()->check() ? route('customer.wishlist.index') : route('login') }}" class="text-dark cart-badge">
+                    <i class="bi bi-heart fs-5"></i>
+                    @if($wishlistCount > 0)<span class="badge bg-danger rounded-pill">{{ $wishlistCount }}</span>@endif
+                </a>
+                @auth
+                <div class="dropdown">
+                    <a class="text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle fs-5"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ route('customer.dashboard') }}">Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{{ route('customer.orders.index') }}">My Orders</a></li>
+                        <li><a class="dropdown-item" href="{{ route('customer.profile.edit') }}">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button class="dropdown-item text-danger">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                @else
+                <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary">Login</a>
+                @endauth
             </div>
-            @else
-            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary">Login</a>
-            @endauth
 
-            <button class="navbar-toggler border-0 d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <button class="navbar-toggler border-0 d-lg-none" type="button" id="sidebarToggleBtn">
                 <span class="navbar-toggler-icon"></span>
             </button>
         </div>
     </div>
-
-    {{-- Mobile Search --}}
-    <div class="container d-lg-none mt-2">
-        <form action="{{ route('search.index') }}" method="GET">
-            <div class="input-group">
-                <input type="text" name="q" class="form-control form-control-sm" placeholder="Search..." value="{{ request('q') }}">
-                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></button>
-            </div>
-        </form>
-    </div>
 </nav>
 
 {{-- Secondary Navigation --}}
-<nav class="shop-secondary-nav" id="shopSecondaryNav">
+<nav class="shop-secondary-nav d-none d-lg-block" id="shopSecondaryNav">
     <div class="container">
         <div class="d-flex align-items-center justify-content-between">
             <button class="navbar-toggler border-0 px-0 d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#shopNavMenu" aria-controls="shopNavMenu" aria-expanded="false" aria-label="Toggle navigation">
@@ -560,6 +730,134 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(() => {});
 }());
+</script>
+
+{{-- Mobile Sidebar Drawer --}}
+<div class="sidebar-overlay" id="sidebarOverlay">
+    <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close menu">&times;</button>
+</div>
+
+<div class="sidebar-container" id="sidebarContainer">
+    {{-- Header --}}
+    <div class="sidebar-header-card d-flex align-items-center gap-3">
+        <div class="avatar-circle">
+            <i class="bi bi-person"></i>
+        </div>
+        <div>
+            @auth
+                <div class="welcome-text text-white">Hello,</div>
+                <div class="username text-white">{{ auth()->user()->name }}!</div>
+                <div class="mt-1">
+                    <a href="{{ route('customer.dashboard') }}" class="text-white small me-3 text-decoration-none" style="font-weight: 500;"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="border-0 bg-transparent text-white p-0 small text-decoration-none" style="font-weight: 500;"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
+                    </form>
+                </div>
+            @else
+                <div class="welcome-text text-white">Hello there!</div>
+                <a href="{{ route('login') }}" class="auth-link text-white text-decoration-none">Signin</a>
+            @endauth
+        </div>
+    </div>
+
+    {{-- Content --}}
+    <div class="sidebar-content">
+        {{-- Quick Links Card --}}
+        <div class="sidebar-menu-card">
+            <a href="{{ route('home') }}" class="sidebar-menu-item">
+                <span>Home</span>
+            </a>
+            <a href="{{ route('products.index') }}" class="sidebar-menu-item">
+                <span>Shop</span>
+            </a>
+            <a href="{{ route('home') }}#offers" class="sidebar-menu-item">
+                <span>Offers</span>
+            </a>
+            <a href="{{ route('order.tracking') }}" class="sidebar-menu-item">
+                <span>Track Order</span>
+            </a>
+            <a href="{{ route('contact.index') }}" class="sidebar-menu-item">
+                <span>Contact Us</span>
+            </a>
+        </div>
+
+        {{-- Categories Card --}}
+        <div class="sidebar-menu-card">
+            @foreach(($navCategories ?? collect()) as $navCategory)
+                @if($navCategory->children->isNotEmpty())
+                    <div class="sidebar-menu-item-wrapper">
+                        <button type="button" class="sidebar-menu-item" onclick="toggleSidebarSubmenu(this)">
+                            <span>{{ $navCategory->name }}</span>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                        <div class="sidebar-submenu">
+                            <a href="{{ route('category.show', $navCategory->slug) }}" class="sidebar-submenu-item">
+                                All {{ $navCategory->name }}
+                            </a>
+                            @foreach($navCategory->children as $childCategory)
+                                <a href="{{ route('category.show', $childCategory->slug) }}" class="sidebar-submenu-item">
+                                    {{ $childCategory->name }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ route('category.show', $navCategory->slug) }}" class="sidebar-menu-item">
+                        <span>{{ $navCategory->name }}</span>
+                    </a>
+                @endif
+            @endforeach
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarContainer = document.getElementById('sidebarContainer');
+
+    function openSidebar() {
+        sidebarOverlay.classList.add('active');
+        sidebarContainer.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        sidebarOverlay.classList.remove('active');
+        sidebarContainer.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', openSidebar);
+    }
+    if (sidebarCloseBtn) {
+        sidebarCloseBtn.addEventListener('click', closeSidebar);
+    }
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function(e) {
+            if (e.target === sidebarOverlay) {
+                closeSidebar();
+            }
+        });
+    }
+
+    window.toggleSidebarSubmenu = function(btn) {
+        const wrapper = btn.closest('.sidebar-menu-item-wrapper');
+        const submenu = wrapper.querySelector('.sidebar-submenu');
+        
+        btn.classList.toggle('open');
+        
+        if (btn.classList.contains('open')) {
+            submenu.style.maxHeight = submenu.scrollHeight + 'px';
+        } else {
+            submenu.style.maxHeight = '0px';
+        }
+    };
+});
 </script>
 </body>
 </html>

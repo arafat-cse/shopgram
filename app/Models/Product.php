@@ -12,7 +12,7 @@ class Product extends Model
         'category_id', 'brand_id', 'name', 'slug', 'sku',
         'short_description', 'description', 'specification',
         'regular_price', 'sale_price', 'purchase_price',
-        'stock_quantity', 'low_stock_threshold', 'thumbnail',
+        'stock_quantity', 'low_stock_threshold', 'thumbnail', 'video_url',
         'status', 'is_featured', 'is_new_arrival', 'is_best_selling', 'is_promoted',
         'seo_title', 'seo_description', 'seo_keywords',
     ];
