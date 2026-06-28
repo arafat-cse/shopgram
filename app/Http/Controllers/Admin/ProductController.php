@@ -62,6 +62,7 @@ class ProductController extends Controller
                 'seo_title' => $sourceProduct->seo_title,
                 'seo_description' => $sourceProduct->seo_description,
                 'seo_keywords' => $sourceProduct->seo_keywords,
+                'video_url' => $sourceProduct->video_url,
             ];
         }
 
@@ -89,6 +90,7 @@ class ProductController extends Controller
             'is_best_selling'    => 'boolean',
             'is_promoted'        => 'boolean',
             'thumbnail'          => 'nullable|image|max:16384',
+            'video_url'          => 'nullable|url|max:255',
             'gallery'            => 'nullable|array|max:8',
             'gallery.*'          => 'image|max:16384',
             'seo_title'          => 'nullable|string|max:255',
@@ -158,6 +160,7 @@ class ProductController extends Controller
             'is_best_selling'    => 'boolean',
             'is_promoted'        => 'boolean',
             'thumbnail'          => 'nullable|image|max:16384',
+            'video_url'          => 'nullable|url|max:255',
             'gallery'            => 'nullable|array|max:8',
             'gallery.*'          => 'image|max:16384',
             'seo_title'          => 'nullable|string|max:255',
