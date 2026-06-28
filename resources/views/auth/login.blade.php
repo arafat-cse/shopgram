@@ -97,10 +97,11 @@
                     <form method="POST" action="{{ route('login.post') }}">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                   value="{{ old('email') }}" required autofocus>
-                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <label class="form-label">Phone Number or Email</label>
+                            <input type="text" name="login" class="form-control @error('login') is-invalid @enderror"
+                                   value="{{ old('login') }}" required autofocus
+                                   placeholder="01XXXXXXXXX or email@example.com">
+                            @error('login')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label d-flex justify-content-between">

@@ -1,7 +1,7 @@
 # ShopGram — Feature Update Roadmap
 
 **Goal:** Smarter UX, higher conversion, better admin control  
-**Last updated:** 2026-06-25
+**Last updated:** 2026-06-28
 
 ---
 
@@ -116,7 +116,6 @@
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
 | **Customer segments** | Tag customers: VIP (spent > X), New, At Risk (no order in 60d) | Computed from order history, show in customer list |
-| **Customer lifetime value** | Show total spent, avg order, first/last order date on customer detail | Aggregate from `orders` table |
 | **Block/unblock with reason** | Store reason when blocking customer | `blocked_reason` + `blocked_at` columns on users |
 
 ### 🟡 Marketing Tools
@@ -126,7 +125,6 @@
 | **Flash sale manager** | Create sale with % off, start/end time, specific products/categories | `flash_sales` + `flash_sale_products` tables |
 | **Loyalty points system** | Earn points per ৳ spent, redeem as discount | `loyalty_points` on users, `point_transactions` table, redeem at checkout |
 | **Referral system** | Customer gets unique link, earns credit when referral buys | `referral_code` on users, `referral_conversions` table |
-| **Newsletter campaigns** | Admin composes email, sends to all subscribers | Queue-based bulk mail using `Newsletter` model |
 | **Pop-up / exit-intent offer** | Show coupon popup when user is about to leave | JS `mouseleave` on document + session flag |
 
 ### 🟢 Admin UX
@@ -689,6 +687,8 @@ order_messages       — id, order_id, user_id, sender_role(customer/staff), mes
 | **Admin order invoice PDF** | `OrderController@invoicePdf` · route `admin.orders.invoice.pdf` |
 | **Social proof badges** | "X viewing now" (seeded JS) + "Y sold in 24h" (real query) · `frontend/products/show.blade.php` |
 | **Sticky add-to-cart bar** | `IntersectionObserver` hides/shows bar when main ATC scrolls out · `frontend/products/show.blade.php` |
+| **Newsletter campaigns** | `NewsletterCampaign` model · `NewsletterController` · bulk send with status tracking · admin routes `admin.php:125-133` |
+| **Customer lifetime value** | `CustomerController@show` calculates `totalSpent` from delivered orders · displayed in `admin.customers.show` |
 
 ---
 
