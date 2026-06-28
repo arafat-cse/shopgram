@@ -39,6 +39,14 @@
         }
     }
 
+    .product-main-image-wrap.touch-zoomed {
+        cursor: zoom-out;
+    }
+    .product-main-image-wrap.touch-zoomed img {
+        transform: scale(2);
+        transition: transform .2s ease;
+    }
+
     .product-main-image-wrap img.is-changing {
         opacity: .45;
         transform: scale(.985);
@@ -315,6 +323,7 @@
                     <form action="{{ route('customer.reviews.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <input type="hidden" name="order_id" value="{{ $unreviewedOrder->id }}">
                         <div class="mb-2">
                             <label class="form-label">Rating</label>
                             <select name="rating" class="form-select form-select-sm" style="max-width:120px">
@@ -424,17 +433,38 @@ qtyInput.addEventListener('change', syncQty);
 const mainImage = document.getElementById('mainImage');
 const mainImageWrap = document.querySelector('.product-main-image-wrap');
 
-if (mainImage && mainImageWrap && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    mainImageWrap.addEventListener('mousemove', (event) => {
-        const rect = mainImageWrap.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width) * 100;
-        const y = ((event.clientY - rect.top) / rect.height) * 100;
-        mainImage.style.transformOrigin = `${x}% ${y}%`;
-    });
+if (mainImage && mainImageWrap) {
+    // Desktop: mouse-follow zoom
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        mainImageWrap.addEventListener('mousemove', (event) => {
+            const rect = mainImageWrap.getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width) * 100;
+            const y = ((event.clientY - rect.top) / rect.height) * 100;
+            mainImage.style.transformOrigin = `${x}% ${y}%`;
+        });
+        mainImageWrap.addEventListener('mouseleave', () => {
+            mainImage.style.transformOrigin = 'center';
+        });
+    }
 
-    mainImageWrap.addEventListener('mouseleave', () => {
-        mainImage.style.transformOrigin = 'center';
-    });
+    // Mobile: tap-to-zoom at touch point
+    let touchZoomed = false;
+    mainImageWrap.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        const rect = mainImageWrap.getBoundingClientRect();
+        const x = ((touch.clientX - rect.left) / rect.width) * 100;
+        const y = ((touch.clientY - rect.top) / rect.height) * 100;
+        if (!touchZoomed) {
+            mainImage.style.transformOrigin = `${x}% ${y}%`;
+            mainImageWrap.classList.add('touch-zoomed');
+            touchZoomed = true;
+        } else {
+            mainImage.style.transformOrigin = 'center';
+            mainImageWrap.classList.remove('touch-zoomed');
+            touchZoomed = false;
+        }
+        e.preventDefault();
+    }, { passive: false });
 }
 
 document.querySelectorAll('.product-thumb-btn').forEach((button) => {

@@ -17,31 +17,39 @@ class ReviewController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
+            'order_id'   => 'required|exists:orders,id',
             'rating'     => 'required|integer|between:1,5',
             'comment'    => 'nullable|string|max:1000',
         ]);
 
-        $productId = $request->product_id;
-        $deliveredOrder = \App\Models\Order::where('user_id', auth()->id())
+        $productId = (int) $request->product_id;
+        $orderId   = (int) $request->order_id;
+        $userId    = auth()->id();
+
+        // Verify the order belongs to this user, is delivered, and contains the product
+        $order = \App\Models\Order::where('id', $orderId)
+            ->where('user_id', $userId)
             ->where('status', 'delivered')
-            ->whereHas('items', function ($query) use ($productId) {
-                $query->where('product_id', $productId);
-            })
+            ->whereHas('items', fn($q) => $q->where('product_id', $productId))
             ->first();
 
-        if (!$deliveredOrder) {
-            return back()->withErrors(['product_id' => 'You can only review products you have purchased and that have been delivered.']);
+        if (!$order) {
+            return back()->withErrors(['product_id' => 'Invalid order or product not purchased.']);
         }
 
-        Review::updateOrCreate(
-            ['user_id' => auth()->id(), 'product_id' => $productId],
-            [
-                'rating'   => $request->rating,
-                'comment'  => $request->comment,
-                'status'   => 'pending',
-                'order_id' => $deliveredOrder->id,
-            ]
-        );
+        // Check not already reviewed for this specific order
+        if (Review::where('user_id', $userId)->where('product_id', $productId)->where('order_id', $orderId)->exists()) {
+            return back()->withErrors(['product_id' => 'You already reviewed this product for that order.']);
+        }
+
+        Review::create([
+            'user_id'    => $userId,
+            'product_id' => $productId,
+            'order_id'   => $orderId,
+            'rating'     => $request->rating,
+            'comment'    => $request->comment,
+            'status'     => 'pending',
+        ]);
 
         return back()->with('success', 'Review submitted for approval.');
     }
