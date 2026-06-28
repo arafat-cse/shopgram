@@ -93,4 +93,10 @@ class ProductController extends Controller
 
         return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h', 'canReview', 'unreviewedOrder'));
     }
+
+    public function quickView(string $slug)
+    {
+        $product = Product::active()->where('slug', $slug)->with(['category', 'variants', 'images'])->firstOrFail();
+        return view('frontend.products.quickview', compact('product'));
+    }
 }

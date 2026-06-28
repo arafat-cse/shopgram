@@ -138,6 +138,26 @@ body:has(.lca-wrap) .page-content{padding:1rem 1.5rem 0;overflow:hidden}
                 </div>
             </div>
         </div>
+        </div>
+    </div>
+</div>
+
+{{-- Custom Close Chat Confirmation Modal --}}
+<div class="modal fade" id="lcaCloseConfirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom py-2">
+                <h6 class="modal-title fw-bold text-danger mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Close Chat</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <p class="mb-0 text-muted" style="font-size: .85rem;">Are you sure you want to close this chat? The customer will see a closed message.</p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light btn-sm px-3" data-bs-dismiss="modal" style="font-size: .8rem;">Cancel</button>
+                <button type="button" class="btn btn-danger btn-sm px-3" id="lcaCloseConfirmBtn" style="font-size: .8rem;">Close Chat</button>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -379,22 +399,49 @@ async function lcaSend() {
     }
 }
 
+// Close Chat Modal Trigger
+let closeChatModalInstance = null;
+function getCloseChatModal() {
+    if (!closeChatModalInstance) {
+        closeChatModalInstance = new bootstrap.Modal(document.getElementById('lcaCloseConfirmModal'));
+    }
+    return closeChatModalInstance;
+}
+
 // ── Close chat ────────────────────────────────────────────────────────────────
 async function lcaCloseChat() {
     if (!currentChatId) return;
-    if (!confirm('Close this chat? The customer will see a closed message.')) return;
-
-    const res = await fetch(`/admin/live-chat/${currentChatId}/close`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': LCA_CSRF, Accept: 'application/json' },
-    });
-    if (res.ok) {
-        document.getElementById('lca-reply-area').style.display = 'none';
-        document.getElementById('lca-cw-close-btn').style.display = 'none';
-        document.getElementById('lca-cw-reopen-btn').style.display = 'inline-block';
-        currentStatus = 'closed';
-        lcaLoadList();
-    }
+    
+    // Show confirmation modal
+    const modal = getCloseChatModal();
+    modal.show();
+    
+    // Reset click listener on the confirm button
+    const confirmBtn = document.getElementById('lcaCloseConfirmBtn');
+    confirmBtn.onclick = async function() {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Closing…';
+        
+        try {
+            const res = await fetch(`/admin/live-chat/${currentChatId}/close`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': LCA_CSRF, Accept: 'application/json' },
+            });
+            if (res.ok) {
+                document.getElementById('lca-reply-area').style.display = 'none';
+                document.getElementById('lca-cw-close-btn').style.display = 'none';
+                document.getElementById('lca-cw-reopen-btn').style.display = 'inline-block';
+                currentStatus = 'closed';
+                lcaLoadList();
+                modal.hide();
+            }
+        } catch(e) {
+            alert('Failed to close chat');
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Close Chat';
+        }
+    };
 }
 
 // ── Assign ────────────────────────────────────────────────────────────────────

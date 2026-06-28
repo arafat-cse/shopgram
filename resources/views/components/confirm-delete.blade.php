@@ -61,17 +61,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('submit', function (event) {
         const form = event.target;
-        const methodInput = form.querySelector('input[name="_method"]');
-        const isDeleteForm = methodInput && methodInput.value.toUpperCase() === 'DELETE';
-
-        if (!isDeleteForm || form.dataset.skipDeleteConfirm === 'true' || confirmedForm === form) {
+        
+        if (confirmedForm === form) {
             confirmedForm = null;
+            return;
+        }
+
+        const inlineConfirm = form.getAttribute('onsubmit') || '';
+        const match = inlineConfirm.match(/confirm\(['"](.+?)['"]\)/);
+        const hasDataConfirm = form.dataset.confirmMessage || form.dataset.confirm;
+
+        if (!match && !hasDataConfirm) {
             return;
         }
 
         event.preventDefault();
         event.stopImmediatePropagation();
-        openDeleteDialog(form, extractConfirmMessage(form, event.submitter), event.submitter?.dataset.confirmTitle || form.dataset.confirmTitle);
+
+        const messageText = form.dataset.confirmMessage || form.dataset.confirm || (match ? match[1] : 'Are you sure?');
+        const titleText = form.dataset.confirmTitle || 'Confirm Action';
+
+        openDeleteDialog(form, messageText, titleText);
+
+        // Customize confirmation button style based on delete action
+        const methodInput = form.querySelector('input[name="_method"]');
+        const isDelete = methodInput && methodInput.value.toUpperCase() === 'DELETE';
+        if (isDelete) {
+            deleteButton.className = 'btn btn-danger';
+            deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Delete';
+        } else {
+            deleteButton.className = 'btn btn-primary';
+            deleteButton.innerHTML = '<i class="bi bi-check-lg me-1"></i> Confirm';
+        }
     }, true);
 
     document.addEventListener('click', function (event) {
