@@ -21,6 +21,7 @@ use App\Http\Controllers\CheckoutController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products', [FrontProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [FrontProductController::class, 'show'])->name('products.show');
+Route::get('/products/{slug}/quickview', [FrontProductController::class, 'quickView'])->name('products.quickview');
 Route::get('/category/{slug}', [FrontCategoryController::class, 'show'])->name('category.show');
 Route::get('/brand/{slug}', [FrontBrandController::class, 'show'])->name('brand.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');

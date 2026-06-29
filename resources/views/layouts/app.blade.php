@@ -241,6 +241,15 @@
             color: var(--primary);
             padding-left: 36px;
         }
+        .product-image-container:hover .qv-trigger-btn {
+            bottom: 12px !important;
+        }
+        .qv-trigger-btn:hover {
+            background-color: var(--primary) !important;
+        }
+        .qv-trigger-btn:hover i {
+            color: #fff !important;
+        }
     </style>
     @stack('styles')
 </head>
@@ -861,5 +870,98 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <x-live-chat-widget />
+
+{{-- Global Quick View Modal --}}
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div id="quickViewModalContent">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const qvModalEl = document.getElementById('quickViewModal');
+    const qvContent = document.getElementById('quickViewModalContent');
+
+    // Safe instance retrieval helper
+    const getModalInstance = () => {
+        return bootstrap.Modal.getOrCreateInstance(qvModalEl);
+    };
+
+    // Explicit fallback close handler
+    qvModalEl.addEventListener('click', function(e) {
+        if (e.target.closest('[data-bs-dismiss="modal"]')) {
+            e.preventDefault();
+            const inst = getModalInstance();
+            if (inst) inst.hide();
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.qv-trigger-btn');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const slug = btn.dataset.slug;
+            
+            // Show spinner
+            qvContent.innerHTML = `
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+            
+            const qvModal = getModalInstance();
+            qvModal.show();
+
+            // Fetch product quick view HTML
+            fetch(`/products/${slug}/quickview`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network error');
+                    return res.text();
+                })
+                .then(html => {
+                    qvContent.innerHTML = html;
+                    
+                    // Re-run scripts inside the injected content
+                    const scripts = qvContent.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        const newScript = document.createElement('script');
+                        newScript.textContent = script.textContent;
+                        document.body.appendChild(newScript);
+                        newScript.remove(); // cleanup
+                    });
+                })
+                .catch(err => {
+                    qvContent.innerHTML = `
+                        <div class="modal-header border-0 pb-0">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center text-danger py-4">
+                            <i class="bi bi-exclamation-triangle text-danger" style="font-size:2.5rem;"></i>
+                            <p class="mt-2 mb-0">Failed to load product details.</p>
+                        </div>
+                    `;
+                });
+        }
+    });
+});
+</script>
 </body>
 </html>

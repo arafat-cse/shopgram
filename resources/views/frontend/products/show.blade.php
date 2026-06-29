@@ -135,6 +135,19 @@
     @media (max-width: 575px) {
         #stickyAtcBar .sticky-name { max-width: 120px; }
     }
+    .swatch-btn {
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 6px 14px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .swatch-btn.active {
+        border-color: var(--primary) !important;
+        background-color: rgba(233, 30, 99, 0.08) !important;
+        color: var(--primary) !important;
+        box-shadow: 0 0 0 1px var(--primary);
+    }
 </style>
 @endpush
 @section('content')
@@ -221,23 +234,21 @@
                 @if($product->sku)<span class="text-muted small">SKU: {{ $product->sku }}</span>@endif
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3" id="priceSection">
                 @if($product->sale_price)
-                    <span class="fs-3 fw-bold text-danger">৳{{ number_format($product->sale_price, 0) }}</span>
-                    <span class="text-muted text-decoration-line-through ms-2">৳{{ number_format($product->regular_price, 0) }}</span>
-                    <span class="badge bg-danger ms-2">{{ $product->discount_percent }}% OFF</span>
+                    <span class="fs-3 fw-bold text-danger" id="mainPrice">৳{{ number_format($product->sale_price, 0) }}</span>
+                    <span class="text-muted text-decoration-line-through ms-2" id="originalPrice">৳{{ number_format($product->regular_price, 0) }}</span>
+                    <span class="badge bg-danger ms-2" id="discountBadge">{{ $product->discount_percent }}% OFF</span>
                 @else
-                    <span class="fs-3 fw-bold text-danger">৳{{ number_format($product->regular_price, 0) }}</span>
+                    <span class="fs-3 fw-bold text-danger" id="mainPrice">৳{{ number_format($product->regular_price, 0) }}</span>
+                    <span class="text-muted text-decoration-line-through ms-2 d-none" id="originalPrice"></span>
+                    <span class="badge bg-danger ms-2 d-none" id="discountBadge"></span>
                 @endif
             </div>
 
-            @if(!$product->isInStock())
-                <span class="badge bg-danger fs-6 mb-3">Out of Stock</span>
-            @elseif($product->isLowStock())
-                <span class="badge bg-warning text-dark fs-6 mb-3">Only {{ $product->stock_quantity }} left!</span>
-            @else
-                <span class="badge bg-success mb-3">In Stock</span>
-            @endif
+            <span id="stockBadge" class="badge {{ !$product->isInStock() ? 'bg-danger' : ($product->isLowStock() ? 'bg-warning text-dark' : 'bg-success') }} fs-6 mb-3">
+                {{ !$product->isInStock() ? 'Out of Stock' : ($product->isLowStock() ? 'Only '.$product->stock_quantity.' left!' : 'In Stock') }}
+            </span>
 
             {{-- Social Proof --}}
             <div class="d-flex flex-wrap gap-2 mb-3" id="socialProofBadges">
@@ -257,19 +268,65 @@
                 <p class="text-muted">{{ $product->short_description }}</p>
             @endif
 
-            {{-- Variant Selector --}}
+            {{-- Variant Selector Swatches --}}
             @if($product->variants->count())
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Select Variant</label>
-                <select class="form-select" id="variantSelect">
-                    <option value="">-- Select --</option>
-                    @foreach($product->variants as $v)
-                    <option value="{{ $v->id }}" data-price="{{ $v->price ?? '' }}" data-stock="{{ $v->stock_quantity }}">
-                        {{ $v->display_name }} {{ $v->price ? '- ৳'.number_format($v->price,0) : '' }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+                @php
+                    $uniqueColors = $product->variants->pluck('color')->filter()->unique();
+                    $uniqueSizes = $product->variants->pluck('size')->filter()->unique();
+                    $uniqueOptions = $product->variants->pluck('custom_option')->filter()->unique();
+                @endphp
+
+                @if($uniqueColors->count())
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small mb-1">Color</label>
+                        <div class="d-flex flex-wrap gap-2" id="colorContainer">
+                            @foreach($uniqueColors as $color)
+                                @php
+                                    $colorMap = [
+                                        'Black' => '#000000', 'White' => '#ffffff', 'Red' => '#ff0000', 'Blue' => '#0000ff',
+                                        'Green' => '#4caf50', 'Purple' => '#800080', 'Yellow' => '#ffff00', 'Pink' => '#ffc0cb',
+                                        'Navy Blue' => '#000080', 'Royal Blue' => '#4169e1', 'Magenta' => '#ff00ff',
+                                        'Awesome Iceblue' => '#e0f7fa', 'Awesome Navy' => '#1a237e', 'Dark Blue' => '#00008b',
+                                        'Off-White' => '#faf9f6'
+                                    ];
+                                    $hex = $colorMap[$color] ?? null;
+                                @endphp
+                                <button type="button" class="btn btn-outline-secondary swatch-btn color-swatch" data-color="{{ $color }}">
+                                    @if($hex)
+                                        <span class="color-dot" style="background-color: {{ $hex }}; border: 1px solid #ccc; display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: middle;"></span>
+                                    @endif
+                                    {{ $color }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if($uniqueSizes->count())
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small mb-1">Size</label>
+                        <div class="d-flex flex-wrap gap-2" id="sizeContainer">
+                            @foreach($uniqueSizes as $size)
+                                <button type="button" class="btn btn-outline-secondary swatch-btn size-swatch" data-size="{{ $size }}">
+                                    {{ $size }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if($uniqueOptions->count())
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small mb-1">Option</label>
+                        <div class="d-flex flex-wrap gap-2" id="optionContainer">
+                            @foreach($uniqueOptions as $opt)
+                                <button type="button" class="btn btn-outline-secondary swatch-btn option-swatch" data-option="{{ $opt }}">
+                                    {{ $opt }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             @endif
 
             {{-- Quantity --}}
@@ -289,7 +346,7 @@
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="variant_id" id="hiddenVariant">
                     <input type="hidden" name="quantity" id="hiddenQty" value="1">
-                    <button type="submit" class="btn btn-primary btn-lg" {{ !$product->isInStock() ? 'disabled' : '' }}>
+                    <button type="submit" id="mainAtcBtn" class="btn btn-primary btn-lg" {{ !$product->isInStock() ? 'disabled' : '' }}>
                         <i class="bi bi-cart-plus"></i> Add to Cart
                     </button>
                 </form>
@@ -299,7 +356,7 @@
                     <input type="hidden" name="variant_id" id="buyVariant">
                     <input type="hidden" name="quantity" id="buyQty" value="1">
                     <input type="hidden" name="buy_now" value="1">
-                    <button type="submit" class="btn btn-warning btn-lg" {{ !$product->isInStock() ? 'disabled' : '' }}>
+                    <button type="submit" id="mainBuyBtn" class="btn btn-warning btn-lg" {{ !$product->isInStock() ? 'disabled' : '' }}>
                         <i class="bi bi-zap"></i> Buy Now
                     </button>
                 </form>
@@ -435,6 +492,20 @@
 </div>
 @endif
 
+{{-- Image Lightbox Modal --}}
+<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true" style="z-index: 2000;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 bg-transparent">
+            <div class="modal-header border-0 p-0 justify-content-end">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="font-size: 1.5rem;"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img id="lightboxImage" src="" class="img-fluid rounded shadow" style="max-height: 85vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 // Seeded "viewing now" — deterministic from product_id so it's consistent per product
@@ -454,9 +525,26 @@
 })();
 
 const qtyInput = document.getElementById('qtyInput');
+function syncQty() {
+    const q = qtyInput.value;
+    document.getElementById('hiddenQty').value = q;
+    document.getElementById('buyQty').value = q;
+    document.querySelectorAll('.sticky-qty-input').forEach(el => el.value = q);
+}
 document.getElementById('qtyMinus').addEventListener('click', () => { if (qtyInput.value > 1) { qtyInput.value--; syncQty(); } });
-document.getElementById('qtyPlus').addEventListener('click', () => { qtyInput.value++; syncQty(); });
-qtyInput.addEventListener('change', syncQty);
+document.getElementById('qtyPlus').addEventListener('click', () => {
+    const max = parseInt(qtyInput.getAttribute('max')) || 999;
+    if (parseInt(qtyInput.value) < max) {
+        qtyInput.value++;
+        syncQty();
+    }
+});
+qtyInput.addEventListener('change', () => {
+    const max = parseInt(qtyInput.getAttribute('max')) || 999;
+    if (qtyInput.value < 1) qtyInput.value = 1;
+    if (qtyInput.value > max) qtyInput.value = max;
+    syncQty();
+});
 
 const mainImage = document.getElementById('mainImage');
 const mainImageWrap = document.querySelector('.product-main-image-wrap');
@@ -498,6 +586,18 @@ if (mainImage && mainImageWrap) {
     }, { passive: false });
 }
 
+// Lightbox Trigger
+const lightboxImage = document.getElementById('lightboxImage');
+const lightboxModal = new bootstrap.Modal(document.getElementById('imageLightboxModal'));
+
+if (mainImageWrap) {
+    mainImageWrap.addEventListener('click', () => {
+        if (videoContainer && videoContainer.style.display === 'block') return;
+        lightboxImage.src = mainImage.src;
+        lightboxModal.show();
+    });
+}
+
 document.querySelectorAll('.product-thumb-btn').forEach((button) => {
     button.addEventListener('click', () => {
         document.querySelectorAll('.product-thumb-btn').forEach((item) => item.classList.remove('active'));
@@ -534,36 +634,154 @@ document.querySelectorAll('.product-thumb-btn').forEach((button) => {
     });
 });
 
-const variantSelect = document.getElementById('variantSelect');
-function syncQty() {
-    const q = qtyInput.value;
-    document.getElementById('hiddenQty').value = q;
-    document.getElementById('buyQty').value = q;
-}
-if (variantSelect) {
-    variantSelect.addEventListener('change', function() {
-        const v = this.value;
-        document.getElementById('hiddenVariant').value = v;
-        document.getElementById('buyVariant').value = v;
-        // sync sticky bar variant
-        document.querySelectorAll('.sticky-variant-input').forEach(el => el.value = v);
+// Swatches & Variants
+(function() {
+    const variants = @json($product->variants);
+    const originalPrice = {{ $product->sale_price ?? $product->regular_price }};
+    const regularPrice = {{ $product->regular_price }};
+    const isDiscounted = {{ $product->sale_price ? 'true' : 'false' }};
+    const discountPercent = {{ $product->discount_percent ?? 0 }};
+    const originalStock = {{ $product->stock_quantity }};
+
+    const hasColors = document.querySelectorAll('.color-swatch').length > 0;
+    const hasSizes = document.querySelectorAll('.size-swatch').length > 0;
+    const hasOptions = document.querySelectorAll('.option-swatch').length > 0;
+
+    let selectedColor = null;
+    let selectedSize = null;
+    let selectedOption = null;
+
+    const colorSwatches = document.querySelectorAll('.color-swatch');
+    const sizeSwatches = document.querySelectorAll('.size-swatch');
+    const optionSwatches = document.querySelectorAll('.option-swatch');
+
+    const mainPriceEl = document.getElementById('mainPrice');
+    const originalPriceEl = document.getElementById('originalPrice');
+    const discountBadgeEl = document.getElementById('discountBadge');
+    const stockBadgeEl = document.getElementById('stockBadge');
+    const hiddenVariantInput = document.getElementById('hiddenVariant');
+    const buyVariantInput = document.getElementById('buyVariant');
+    const mainAtcBtn = document.getElementById('mainAtcBtn');
+    const mainBuyBtn = document.getElementById('mainBuyBtn');
+
+    const updateVariant = () => {
+        if ((hasColors && !selectedColor) || (hasSizes && !selectedSize) || (hasOptions && !selectedOption)) {
+            hiddenVariantInput.value = '';
+            buyVariantInput.value = '';
+            document.querySelectorAll('.sticky-variant-input').forEach(el => el.value = '');
+            mainPriceEl.textContent = '৳' + originalPrice.toLocaleString();
+            if (isDiscounted) {
+                originalPriceEl.classList.remove('d-none');
+                discountBadgeEl.classList.remove('d-none');
+            } else {
+                originalPriceEl.classList.add('d-none');
+                discountBadgeEl.classList.add('d-none');
+            }
+            stockBadgeEl.textContent = originalStock > 0 ? (originalStock <= 5 ? `Only ${originalStock} left!` : 'In Stock') : 'Out of Stock';
+            stockBadgeEl.className = 'badge ' + (originalStock > 0 ? (originalStock <= 5 ? 'bg-warning text-dark' : 'bg-success') : 'bg-danger') + ' fs-6 mb-3';
+            qtyInput.setAttribute('max', originalStock);
+            if (originalStock > 0) {
+                mainAtcBtn.removeAttribute('disabled');
+                mainBuyBtn.removeAttribute('disabled');
+            } else {
+                mainAtcBtn.setAttribute('disabled', 'true');
+                mainBuyBtn.setAttribute('disabled', 'true');
+            }
+            return;
+        }
+
+        const match = variants.find(v => {
+            return (!hasColors || v.color === selectedColor) &&
+                   (!hasSizes || v.size === selectedSize) &&
+                   (!hasOptions || v.custom_option === selectedOption);
+        });
+
+        if (match) {
+            hiddenVariantInput.value = match.id;
+            buyVariantInput.value = match.id;
+            document.querySelectorAll('.sticky-variant-input').forEach(el => el.value = match.id);
+
+            const priceToUse = match.price ? parseFloat(match.price) : originalPrice;
+            mainPriceEl.textContent = '৳' + priceToUse.toLocaleString();
+            
+            if (match.price && isDiscounted) {
+                const calcOrig = Math.round(priceToUse / (1 - (discountPercent / 100)));
+                originalPriceEl.textContent = '৳' + calcOrig.toLocaleString();
+                originalPriceEl.classList.remove('d-none');
+            } else {
+                originalPriceEl.classList.add('d-none');
+                discountBadgeEl.classList.add('d-none');
+            }
+
+            const stock = match.stock_quantity;
+            qtyInput.setAttribute('max', stock);
+            if (parseInt(qtyInput.value) > stock) {
+                qtyInput.value = stock > 0 ? stock : 1;
+                syncQty();
+            }
+
+            if (stock > 0) {
+                stockBadgeEl.textContent = stock <= 5 ? `Only ${stock} left!` : 'In Stock';
+                stockBadgeEl.className = 'badge bg-success fs-6 mb-3';
+                mainAtcBtn.removeAttribute('disabled');
+                mainBuyBtn.removeAttribute('disabled');
+            } else {
+                stockBadgeEl.textContent = 'Out of Stock';
+                stockBadgeEl.className = 'badge bg-danger fs-6 mb-3';
+                mainAtcBtn.setAttribute('disabled', 'true');
+                mainBuyBtn.setAttribute('disabled', 'true');
+            }
+        } else {
+            hiddenVariantInput.value = '';
+            buyVariantInput.value = '';
+            document.querySelectorAll('.sticky-variant-input').forEach(el => el.value = '');
+            stockBadgeEl.textContent = 'Unavailable';
+            stockBadgeEl.className = 'badge bg-secondary fs-6 mb-3';
+            mainAtcBtn.setAttribute('disabled', 'true');
+            mainBuyBtn.setAttribute('disabled', 'true');
+        }
+    };
+
+    colorSwatches.forEach(swatch => {
+        swatch.addEventListener('click', function() {
+            colorSwatches.forEach(s => s.classList.remove('active'));
+            this.classList.add('active');
+            selectedColor = this.dataset.color;
+            updateVariant();
+        });
     });
-}
+
+    sizeSwatches.forEach(swatch => {
+        swatch.addEventListener('click', function() {
+            sizeSwatches.forEach(s => s.classList.remove('active'));
+            this.classList.add('active');
+            selectedSize = this.dataset.size;
+            updateVariant();
+        });
+    });
+
+    optionSwatches.forEach(swatch => {
+        swatch.addEventListener('click', function() {
+            optionSwatches.forEach(s => s.classList.remove('active'));
+            this.classList.add('active');
+            selectedOption = this.dataset.option;
+            updateVariant();
+        });
+    });
+})();
 
 // Sticky ATC bar — show when main ATC button scrolls out of view
 const stickyBar = document.getElementById('stickyAtcBar');
-const mainAtcBtn = document.querySelector('.d-flex.gap-3.mb-3 button[type="submit"]');
-if (stickyBar && mainAtcBtn) {
-    // sync qty to sticky bar
-    const syncStickyQty = () => document.querySelectorAll('.sticky-qty-input').forEach(el => el.value = qtyInput.value);
-    qtyInput.addEventListener('input', syncStickyQty);
+const mainAtcBtnElement = document.getElementById('mainAtcBtn');
+if (stickyBar && mainAtcBtnElement) {
+    qtyInput.addEventListener('input', syncQty);
 
     const obs = new IntersectionObserver(entries => {
         const hidden = !entries[0].isIntersecting;
         stickyBar.classList.toggle('visible', hidden);
         stickyBar.setAttribute('aria-hidden', String(!hidden));
     }, { threshold: 0.2 });
-    obs.observe(mainAtcBtn);
+    obs.observe(mainAtcBtnElement);
 }
 </script>
 @endpush

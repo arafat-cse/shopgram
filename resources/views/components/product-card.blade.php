@@ -1,12 +1,17 @@
 @props(['product'])
 <div class="product-card card h-100 border-0 shadow-sm position-relative">
     @if($product->discount_percent > 0)
-        <span class="badge badge-discount badge-pill text-white" style="background:var(--primary);font-size:.75rem;padding:4px 8px">-{{ $product->discount_percent }}%</span>
+        <span class="badge badge-discount badge-pill text-white" style="background:var(--primary);font-size:.75rem;padding:4px 8px;z-index:3;">-{{ $product->discount_percent }}%</span>
     @endif
-    <a href="{{ route('products.show', $product->slug) }}">
-        <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
-             class="card-img-top" alt="{{ $product->name }}" style="height:200px;object-fit:cover" loading="lazy">
-    </a>
+    <div class="product-image-container position-relative overflow-hidden" style="height: 200px;">
+        <a href="{{ route('products.show', $product->slug) }}">
+            <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
+                 class="card-img-top w-100 h-100" alt="{{ $product->name }}" style="object-fit:cover" loading="lazy">
+        </a>
+        <button type="button" class="btn btn-light btn-sm qv-trigger-btn position-absolute start-50 translate-middle shadow rounded-circle d-flex align-items-center justify-content-center" data-slug="{{ $product->slug }}" title="Quick View" style="bottom: -24px; left: 50%; transform: translate(-50%, 0); width: 38px; height: 38px; z-index: 5; transition: bottom 0.25s ease, background-color 0.2s; border: none;">
+            <i class="bi bi-eye" style="font-size: 1.1rem; color: var(--primary);"></i>
+        </button>
+    </div>
     <div class="card-body d-flex flex-column p-3">
         <small class="text-muted">{{ $product->category->name ?? '' }}</small>
         <h6 class="card-title mb-1 flex-grow-1">

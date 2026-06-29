@@ -446,7 +446,7 @@ setInterval(fetchCounts, 60000);
                 sub = null;
             } else {
                 if (Notification.permission === 'denied') {
-                    alert('Browser blocked notifications. Allow them in site settings, then click again.');
+                    showToast('Browser blocked notifications. Allow them in site settings, then click again.', 'warning');
                     return;
                 }
                 sub = await reg.pushManager.subscribe({
@@ -485,5 +485,51 @@ setInterval(fetchCounts, 60000);
 })();
 </script>
 @endcan
+<script>
+window.showToast = function(message, type = 'danger') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1080';
+        document.body.appendChild(container);
+    }
+    
+    const iconMap = {
+        success: 'bi-check-circle-fill',
+        danger: 'bi-x-circle-fill',
+        warning: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill'
+    };
+    
+    const icon = iconMap[type] || 'bi-info-circle-fill';
+    const bgClass = type === 'error' ? 'danger' : type;
+    
+    const toastEl = document.createElement('div');
+    toastEl.className = 'toast border-0 shadow-sm mb-2';
+    toastEl.setAttribute('role', 'alert');
+    toastEl.setAttribute('data-bs-autohide', 'true');
+    toastEl.setAttribute('data-bs-delay', '4200');
+    
+    toastEl.innerHTML = `
+        <div class="toast-header text-bg-${bgClass} border-0">
+            <i class="bi ${icon} me-2"></i>
+            <strong class="me-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body bg-white text-dark">
+            ${message}
+        </div>
+    `;
+    
+    container.appendChild(toastEl);
+    const toastInstance = new bootstrap.Toast(toastEl);
+    toastInstance.show();
+    
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+};
+</script>
 </body>
 </html>

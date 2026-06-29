@@ -190,7 +190,7 @@ document.querySelectorAll('.product-upload-form').forEach((form) => {
                 totalSize += file.size;
                 if (file.size > maxFileSize) {
                     event.preventDefault();
-                    alert(`${file.name} is larger than 16MB. Please upload a smaller image.`);
+                    showToast(`${file.name} is larger than 16MB. Please upload a smaller image.`, 'danger');
                     return;
                 }
             }
@@ -198,7 +198,7 @@ document.querySelectorAll('.product-upload-form').forEach((form) => {
 
         if (totalSize > maxTotalSize) {
             event.preventDefault();
-            alert('Total image upload is too large. Please keep all selected images under 60MB.');
+            showToast('Total image upload is too large. Please keep all selected images under 60MB.', 'danger');
         }
     });
 });

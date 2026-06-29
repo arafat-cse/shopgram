@@ -57,6 +57,10 @@
 #lc-status-bar{padding:6px 14px;background:#f0fdf4;color:#166534;font-size:.75rem;text-align:center;border-top:1px solid #dcfce7;display:none}
 #lc-status-bar.show{display:block}
 @media(max-width:400px){#lc-panel{right:8px;width:calc(100vw - 16px)}}
+@media(max-width:991.98px){
+    #lc-btn{bottom:80px}
+    #lc-panel{bottom:146px}
+}
 </style>
 
 <div id="lc-btn" role="button" aria-label="Open chat" onclick="lcToggle()">

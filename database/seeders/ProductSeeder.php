@@ -21,7 +21,7 @@ class ProductSeeder extends Seeder
             // ── Electronics / Phones (cat 2)
             [
                 'name'           => 'Samsung Galaxy A55 5G',
-                'category_id'    => 2,
+                'category_slug'  => 'electronics-phones',
                 'brand_id'       => $brands['Samsung'],
                 'regular_price'  => 47000,
                 'sale_price'     => 44500,
@@ -34,7 +34,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => true,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'samsung-phone',
+                'img_seed'       => 'photo-1610945265064-0e34e5519bbf',
                 'variants'       => [
                     ['color' => 'Awesome Iceblue', 'extra_price' => 0, 'stock' => 18],
                     ['color' => 'Awesome Navy',    'extra_price' => 0, 'stock' => 17],
@@ -42,7 +42,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name'           => 'iPhone 15 128GB',
-                'category_id'    => 2,
+                'category_slug'  => 'electronics-phones',
                 'brand_id'       => $brands['Apple'],
                 'regular_price'  => 120000,
                 'sale_price'     => 115000,
@@ -55,7 +55,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => true,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'iphone-apple',
+                'img_seed'       => 'photo-1695048133142-1a20484d2569',
                 'variants'       => [
                     ['color' => 'Black',    'extra_price' => 0,    'stock' => 5],
                     ['color' => 'Blue',     'extra_price' => 0,    'stock' => 5],
@@ -65,7 +65,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name'           => 'Xiaomi Redmi Note 13 Pro',
-                'category_id'    => 2,
+                'category_slug'  => 'electronics-phones',
                 'brand_id'       => $brands['Xiaomi'],
                 'regular_price'  => 28000,
                 'sale_price'     => 25500,
@@ -78,14 +78,14 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => true,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'xiaomi-redmi',
+                'img_seed'       => 'photo-1598327105666-5b89351aff97',
                 'variants'       => [],
             ],
 
             // ── Electronics / Laptops (cat 3)
             [
                 'name'           => 'HP Pavilion 15 Core i5',
-                'category_id'    => 3,
+                'category_slug'  => 'electronics-laptops',
                 'brand_id'       => $brands['HP'],
                 'regular_price'  => 72000,
                 'sale_price'     => 68000,
@@ -98,7 +98,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'hp-laptop',
+                'img_seed'       => 'photo-1588872657578-7efd1f1555ed',
                 'variants'       => [
                     ['custom_option' => '8GB RAM / 512GB SSD',  'extra_price' => 0,     'stock' => 10],
                     ['custom_option' => '16GB RAM / 512GB SSD', 'extra_price' => 8000,  'stock' => 5],
@@ -106,7 +106,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name'           => 'Dell Inspiron 14 AMD',
-                'category_id'    => 3,
+                'category_slug'  => 'electronics-laptops',
                 'brand_id'       => $brands['Dell'],
                 'regular_price'  => 75000,
                 'sale_price'     => null,
@@ -119,14 +119,14 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'dell-laptop',
+                'img_seed'       => 'photo-1593642632823-8f785ba67e45',
                 'variants'       => [],
             ],
 
             // ── Electronics / Accessories (cat 5)
             [
                 'name'           => 'TWS Wireless Earbuds Pro',
-                'category_id'    => 5,
+                'category_slug'  => 'electronics-accessories',
                 'brand_id'       => null,
                 'regular_price'  => 1800,
                 'sale_price'     => 1350,
@@ -139,7 +139,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => true,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'earbuds-wireless',
+                'img_seed'       => 'photo-1590658268037-6bf12165a8df',
                 'variants'       => [
                     ['color' => 'Black', 'extra_price' => 0,   'stock' => 50],
                     ['color' => 'White', 'extra_price' => 0,   'stock' => 50],
@@ -149,7 +149,7 @@ class ProductSeeder extends Seeder
             // ── Fashion / Men (cat 7)
             [
                 'name'           => 'Premium Cotton Round Neck T-Shirt',
-                'category_id'    => 7,
+                'category_slug'  => 'fashion-men',
                 'brand_id'       => null,
                 'regular_price'  => 550,
                 'sale_price'     => 420,
@@ -162,7 +162,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'cotton-tshirt-men',
+                'img_seed'       => 'photo-1583743814966-8936f5b7be1a',
                 'variants'       => [
                     ['size' => 'S',  'color' => 'Black',  'extra_price' => 0, 'stock' => 25],
                     ['size' => 'M',  'color' => 'Black',  'extra_price' => 0, 'stock' => 30],
@@ -176,7 +176,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name'           => 'Slim Fit Denim Jeans',
-                'category_id'    => 7,
+                'category_slug'  => 'fashion-men',
                 'brand_id'       => null,
                 'regular_price'  => 1500,
                 'sale_price'     => 1200,
@@ -189,7 +189,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'denim-jeans-men',
+                'img_seed'       => 'photo-1541099649105-f69ad21f3246',
                 'variants'       => [
                     ['size' => '28', 'color' => 'Dark Blue', 'extra_price' => 0, 'stock' => 10],
                     ['size' => '30', 'color' => 'Dark Blue', 'extra_price' => 0, 'stock' => 20],
@@ -198,11 +198,59 @@ class ProductSeeder extends Seeder
                     ['size' => '36', 'color' => 'Dark Blue', 'extra_price' => 0, 'stock' => 15],
                 ],
             ],
+            [
+                'name'           => 'Casual Linen Long Sleeve Shirt',
+                'category_slug'  => 'fashion-men',
+                'brand_id'       => null,
+                'regular_price'  => 1450,
+                'sale_price'     => 1150,
+                'purchase_price' => 600,
+                'stock_quantity' => 50,
+                'short_description' => '100% Pure Linen, Breathable & Lightweight, Casual Fit',
+                'description'    => '<p>High-quality 100% pure linen long sleeve shirt. Lightweight and highly breathable fabric designed for hot and humid climates. Relaxed, casual fit suitable for both office and weekend wear.</p>',
+                'sku'            => 'SHIRT-LN-MEN',
+                'is_featured'    => true,
+                'is_new_arrival' => true,
+                'is_best_selling' => false,
+                'status'         => 'active',
+                'img_seed'       => 'photo-1596755094514-f87e34085b2c',
+                'variants'       => [
+                    ['size' => 'M',  'color' => 'Navy Blue', 'extra_price' => 0, 'stock' => 10],
+                    ['size' => 'L',  'color' => 'Navy Blue', 'extra_price' => 0, 'stock' => 15],
+                    ['size' => 'XL', 'color' => 'Navy Blue', 'extra_price' => 0, 'stock' => 10],
+                    ['size' => 'M',  'color' => 'Off-White', 'extra_price' => 0, 'stock' => 5],
+                    ['size' => 'L',  'color' => 'Off-White', 'extra_price' => 0, 'stock' => 10],
+                ],
+            ],
+            [
+                'name'           => 'Premium Cotton Polo Shirt',
+                'category_slug'  => 'fashion-men',
+                'brand_id'       => null,
+                'regular_price'  => 950,
+                'sale_price'     => 750,
+                'purchase_price' => 350,
+                'stock_quantity' => 100,
+                'short_description' => 'Classic Polo Collar, Pique Knit Cotton, Ribbed Cuffs',
+                'description'    => '<p>Durable and classic fit polo shirt made from heavy-weight combed cotton pique knit. Double ribbed collar and cuffs, 2-button placket. Resists fading and shrinking.</p>',
+                'sku'            => 'POLO-COT-MEN',
+                'is_featured'    => false,
+                'is_new_arrival' => true,
+                'is_best_selling' => true,
+                'status'         => 'active',
+                'img_seed'       => 'photo-1581655353564-df123a1eb820',
+                'variants'       => [
+                    ['size' => 'M',  'color' => 'Black', 'extra_price' => 0, 'stock' => 20],
+                    ['size' => 'L',  'color' => 'Black', 'extra_price' => 0, 'stock' => 30],
+                    ['size' => 'XL', 'color' => 'Black', 'extra_price' => 0, 'stock' => 10],
+                    ['size' => 'M',  'color' => 'Red',   'extra_price' => 0, 'stock' => 15],
+                    ['size' => 'L',  'color' => 'Red',   'extra_price' => 0, 'stock' => 25],
+                ],
+            ],
 
             // ── Fashion / Women (cat 8)
             [
                 'name'           => 'Floral Print Cotton Kurti',
-                'category_id'    => 8,
+                'category_slug'  => 'fashion-women',
                 'brand_id'       => null,
                 'regular_price'  => 950,
                 'sale_price'     => 750,
@@ -215,7 +263,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => true,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'floral-kurti-women',
+                'img_seed'       => 'photo-1595777457583-95e059d581b8',
                 'variants'       => [
                     ['size' => 'S',  'color' => 'Red',    'extra_price' => 0, 'stock' => 15],
                     ['size' => 'M',  'color' => 'Red',    'extra_price' => 0, 'stock' => 20],
@@ -225,11 +273,32 @@ class ProductSeeder extends Seeder
                     ['size' => 'L',  'color' => 'Green',  'extra_price' => 0, 'stock' => 25],
                 ],
             ],
+            [
+                'name'           => 'Designer Georgette Party Saree',
+                'category_slug'  => 'fashion-women',
+                'brand_id'       => null,
+                'regular_price'  => 3800,
+                'sale_price'     => 3200,
+                'purchase_price' => 1800,
+                'stock_quantity' => 30,
+                'short_description' => 'Premium Georgette Fabric, Intricate Zari Work, With Blouse Piece',
+                'description'    => '<p>Premium Georgette saree adorned with beautiful zari embroidery work. Elegant fall, lightweight, and gorgeous colors make it perfect for weddings, parties, and festive occasions. Comes with unstitched matching blouse piece.</p>',
+                'sku'            => 'SAREE-GEO-WOMEN',
+                'is_featured'    => true,
+                'is_new_arrival' => true,
+                'is_best_selling' => true,
+                'status'         => 'active',
+                'img_seed'       => 'photo-1610030469983-98e550d6193c',
+                'variants'       => [
+                    ['color' => 'Royal Blue', 'extra_price' => 0, 'stock' => 15],
+                    ['color' => 'Magenta',    'extra_price' => 0, 'stock' => 15],
+                ],
+            ],
 
             // ── Fashion / Shoes (cat 10)
             [
                 'name'           => 'Running Sport Shoes',
-                'category_id'    => 10,
+                'category_slug'  => 'fashion-shoes',
                 'brand_id'       => null,
                 'regular_price'  => 3200,
                 'sale_price'     => 2600,
@@ -242,7 +311,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'running-shoes',
+                'img_seed'       => 'photo-1542291026-7eec264c27ff',
                 'variants'       => [
                     ['size' => '40', 'color' => 'Black/White', 'extra_price' => 0, 'stock' => 10],
                     ['size' => '41', 'color' => 'Black/White', 'extra_price' => 0, 'stock' => 15],
@@ -255,7 +324,7 @@ class ProductSeeder extends Seeder
             // ── Home & Garden / Kitchen (cat 13)
             [
                 'name'           => 'Non-Stick Granite Frying Pan 26cm',
-                'category_id'    => 13,
+                'category_slug'  => 'home-garden-kitchen',
                 'brand_id'       => null,
                 'regular_price'  => 1500,
                 'sale_price'     => 1150,
@@ -268,12 +337,12 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'frying-pan-kitchen',
+                'img_seed'       => 'photo-1599940824399-b87987ceb72a',
                 'variants'       => [],
             ],
             [
                 'name'           => 'Electric Rice Cooker 1.8L',
-                'category_id'    => 13,
+                'category_slug'  => 'home-garden-kitchen',
                 'brand_id'       => null,
                 'regular_price'  => 2800,
                 'sale_price'     => 2400,
@@ -286,14 +355,14 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => true,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'rice-cooker',
+                'img_seed'       => 'photo-1578643463396-0997cb5328c1',
                 'variants'       => [],
             ],
 
             // ── Sports / Fitness (cat 16)
             [
                 'name'           => 'Yoga & Exercise Mat 6mm',
-                'category_id'    => 16,
+                'category_slug'  => 'sports-fitness',
                 'brand_id'       => null,
                 'regular_price'  => 900,
                 'sale_price'     => 750,
@@ -306,7 +375,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'yoga-mat-exercise',
+                'img_seed'       => 'photo-1592432678016-e910b452f9a2',
                 'variants'       => [
                     ['color' => 'Purple', 'extra_price' => 0,  'stock' => 25],
                     ['color' => 'Blue',   'extra_price' => 0,  'stock' => 25],
@@ -317,7 +386,7 @@ class ProductSeeder extends Seeder
             // ── Beauty / Skincare (cat 24)
             [
                 'name'           => 'Vitamin C Brightening Face Serum 30ml',
-                'category_id'    => 24,
+                'category_slug'  => 'beauty-skincare',
                 'brand_id'       => null,
                 'regular_price'  => 750,
                 'sale_price'     => 600,
@@ -330,14 +399,14 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => true,
                 'is_best_selling' => false,
                 'status'         => 'active',
-                'img_seed'       => 'vitamin-c-serum',
+                'img_seed'       => 'photo-1608248597279-f99d160bfcbc',
                 'variants'       => [],
             ],
 
             // ── Books / Educational (cat 22)
             [
                 'name'           => 'IELTS Complete Preparation Book 2024',
-                'category_id'    => 22,
+                'category_slug'  => 'books-educational',
                 'brand_id'       => null,
                 'regular_price'  => 700,
                 'sale_price'     => 580,
@@ -350,12 +419,12 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'ielts-book',
+                'img_seed'       => 'photo-1544716278-ca5e3f4abd8c',
                 'variants'       => [],
             ],
             [
                 'name'           => 'Himu Somogro — Humayun Ahmed',
-                'category_id'    => 20,
+                'category_slug'  => 'books-fiction',
                 'brand_id'       => null,
                 'regular_price'  => 850,
                 'sale_price'     => null,
@@ -368,7 +437,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'bangla-book',
+                'img_seed'       => 'photo-1512820790803-83ca734da794',
                 'variants'       => [],
             ],
         ];
@@ -376,7 +445,11 @@ class ProductSeeder extends Seeder
         foreach ($products as $data) {
             $variants = $data['variants'];
             $imgSeed  = $data['img_seed'];
-            unset($data['variants'], $data['img_seed']);
+            $categorySlug = $data['category_slug'];
+            unset($data['variants'], $data['img_seed'], $data['category_slug']);
+
+            $category = \App\Models\Category::where('slug', $categorySlug)->first();
+            $data['category_id'] = $category ? $category->id : null;
 
             $data['slug']              = Str::slug($data['name']);
             $data['low_stock_threshold'] = 5;
@@ -385,7 +458,7 @@ class ProductSeeder extends Seeder
                 ->orWhere('slug', $data['slug'])
                 ->first();
 
-            if (!$existingProduct || !$existingProduct->thumbnail) {
+            if (!$existingProduct || !$existingProduct->thumbnail || !str_contains($existingProduct->thumbnail, $imgSeed)) {
                 $thumbnail = $this->downloadImage($imgSeed);
                 if ($thumbnail) {
                     $data['thumbnail'] = $thumbnail;
@@ -429,7 +502,11 @@ class ProductSeeder extends Seeder
     private function downloadImage(string $seed): ?string
     {
         try {
-            $url      = "https://picsum.photos/seed/{$seed}/600/600";
+            if (str_starts_with($seed, 'photo-')) {
+                $url = "https://images.unsplash.com/{$seed}?w=600&h=600&fit=crop&q=80";
+            } else {
+                $url = "https://picsum.photos/seed/{$seed}/600/600";
+            }
             $response = Http::timeout(10)->get($url);
             if ($response->successful()) {
                 $filename = "products/{$seed}-" . uniqid() . '.jpg';
