@@ -18,43 +18,47 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email'    => 'required|email',
+        $request->validate([
+            'login'    => 'required|string',
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
+        $login = trim($request->login);
+        // Phone: digits only or starts with +/0, no @ symbol
+        $field = (preg_match('/^[+0-9][0-9\s\-]{4,}$/', $login)) ? 'phone' : 'email';
 
-            $user = Auth::user();
+        $user = User::where($field, $login)->first();
 
-            if ($user->status === 'blocked') {
-                Auth::logout();
-                return back()->withErrors(['email' => 'Your account has been blocked. Please contact support.']);
-            }
-
-            if (session('pending_action')) {
-                $action = session('pending_action');
-                $redirectTo = app(PendingActionService::class)->execute($user);
-                $msg = match($action) {
-                    'add_to_cart'      => '✅ Logged in! Product added to your cart.',
-                    'buy_now'          => '✅ Logged in! Taking you to checkout.',
-                    'add_to_wishlist'  => '✅ Logged in! Product added to your wishlist.',
-                    default            => '✅ Login successful!',
-                };
-                return redirect($redirectTo)->with('success', $msg);
-            }
-
-            if ($user->hasAnyRole(['Super Admin', 'Admin', 'Manager', 'Sales Executive', 'Inventory Manager', 'Order Manager', 'Customer Support'])) {
-                return redirect()->route('admin.dashboard');
-            }
-
-            return redirect()->route('customer.dashboard');
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()
+                ->withErrors(['login' => 'These credentials do not match our records.'])
+                ->onlyInput('login');
         }
 
-        return back()
-            ->withErrors(['email' => 'These credentials do not match our records.'])
-            ->onlyInput('email');
+        if ($user->status === 'blocked') {
+            return back()->withErrors(['login' => 'Your account has been blocked. Please contact support.']);
+        }
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        if (session('pending_action')) {
+            $action = session('pending_action');
+            $redirectTo = app(PendingActionService::class)->execute($user);
+            $msg = match($action) {
+                'add_to_cart'      => '✅ Logged in! Product added to your cart.',
+                'buy_now'          => '✅ Logged in! Taking you to checkout.',
+                'add_to_wishlist'  => '✅ Logged in! Product added to your wishlist.',
+                default            => '✅ Login successful!',
+            };
+            return redirect($redirectTo)->with('success', $msg);
+        }
+
+        if ($user->hasAnyRole(['Super Admin', 'Admin', 'Manager', 'Sales Executive', 'Inventory Manager', 'Order Manager', 'Customer Support'])) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('customer.dashboard');
     }
 
     public function showRegister()
@@ -66,15 +70,15 @@ class AuthController extends Controller
     {
         $request->validate([
             'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|max:255|unique:users',
-            'phone'    => 'nullable|string|max:20',
+            'phone'    => 'required|string|max:20|unique:users,phone',
+            'email'    => 'nullable|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         $user = User::create([
             'name'     => $request->name,
-            'email'    => $request->email,
             'phone'    => $request->phone,
+            'email'    => $request->filled('email') ? $request->email : null,
             'password' => Hash::make($request->password),
             'status'   => 'active',
         ]);

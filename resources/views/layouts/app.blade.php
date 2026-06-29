@@ -859,5 +859,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 });
 </script>
+
+<x-live-chat-widget />
 </body>
 </html>

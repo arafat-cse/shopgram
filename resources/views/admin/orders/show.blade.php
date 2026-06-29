@@ -112,8 +112,36 @@
                 <div class="d-flex justify-content-between mb-1"><span>Shipping</span><span>৳{{ number_format($order->shipping_charge,0) }}</span></div>
                 <hr class="my-1">
                 <div class="d-flex justify-content-between fw-bold"><span>Total</span><span>৳{{ number_format($order->total,0) }}</span></div>
-                <div class="mt-2"><strong>Payment:</strong> {{ strtoupper($order->payment_method) }}<br>
-                <strong>Status:</strong> <span class="badge bg-{{ $order->payment_status === 'paid' ? 'success' : 'secondary' }}">{{ ucfirst($order->payment_status) }}</span></div>
+                <div class="mt-2 pt-2 border-top">
+                    <div class="mb-1"><strong>Payment Method:</strong> {{ strtoupper($order->payment_method) }}</div>
+                    @can('order.payment.update')
+                    <form method="POST" action="{{ route('admin.orders.payment.status.update', $order) }}" class="d-flex align-items-center gap-2 mt-1">
+                        @csrf
+                        <label class="small fw-semibold mb-0 flex-shrink-0">Payment Status:</label>
+                        <select name="payment_status" class="form-select form-select-sm"
+                                onchange="this.form.submit()"
+                                style="max-width:130px">
+                            @foreach(['unpaid' => 'Unpaid', 'paid' => 'Paid', 'failed' => 'Failed', 'refunded' => 'Refunded'] as $val => $label)
+                                <option value="{{ $val }}" {{ $order->payment_status === $val ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                    @else
+                    <div><strong>Payment Status:</strong>
+                        @php
+                            $payBadge = match($order->payment_status) {
+                                'paid'     => 'success',
+                                'failed'   => 'danger',
+                                'refunded' => 'warning',
+                                default    => 'secondary',
+                            };
+                        @endphp
+                        <span class="badge bg-{{ $payBadge }}">{{ ucfirst($order->payment_status) }}</span>
+                    </div>
+                    @endcan
+                </div>
             </div>
         </div>
 

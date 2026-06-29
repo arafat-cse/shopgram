@@ -11,18 +11,25 @@ class RolePermissionSeeder extends Seeder
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $permissions = [
-            'dashboard.view',
-            'analytics.view', 'analytics.sales.view', 'analytics.profit_loss.view',
-            'analytics.stock.view', 'analytics.customer.view', 'analytics.report.export',
-            'products.view', 'products.create', 'products.edit', 'products.delete',
+        // Dead permissions to remove (orders.* — never used in code, replaced by order.*)
+        $deadPermissions = [
             'orders.view', 'orders.create', 'orders.edit', 'orders.delete', 'orders.status_update',
             'customers.view', 'customers.edit', 'customers.delete',
             'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
             'permissions.view', 'permissions.assign',
+            'products.view', 'products.create', 'products.edit', 'products.delete',
+        ];
+        \Spatie\Permission\Models\Permission::whereIn('name', $deadPermissions)->delete();
+
+        $permissions = [
+            'dashboard.view',
+            'analytics.view', 'analytics.sales.view', 'analytics.profit_loss.view',
+            'analytics.stock.view', 'analytics.customer.view', 'analytics.report.export',
             'product.view', 'product.create', 'product.edit', 'product.delete',
             'category.manage', 'brand.manage',
-            'order.view', 'order.update', 'order.delete', 'order.status.update', 'order.chat',
+            'order.view', 'order.update', 'order.delete', 'order.status.update',
+            'order.payment.update',
+            'order.chat',
             'customer.view', 'customer.manage',
             'coupon.manage', 'inventory.manage', 'report.view',
             'banner.manage', 'page.manage', 'setting.manage',
@@ -44,24 +51,24 @@ class RolePermissionSeeder extends Seeder
             ]),
             'Manager'     => [
                 'dashboard.view', 'analytics.view', 'analytics.sales.view', 'analytics.stock.view', 'analytics.customer.view',
-                'product.view', 'products.view', 'product.create', 'product.edit',
-                'category.manage', 'brand.manage', 'order.view', 'order.update',
-                'order.status.update', 'order.chat', 'orders.view', 'orders.edit', 'orders.status_update',
-                'customer.view', 'customers.view', 'inventory.manage', 'report.view',
+                'product.view', 'product.create', 'product.edit',
+                'category.manage', 'brand.manage',
+                'order.view', 'order.update', 'order.status.update', 'order.payment.update', 'order.chat',
+                'customer.view', 'inventory.manage', 'report.view',
             ],
             'Sales Manager' => [
                 'dashboard.view', 'analytics.view', 'analytics.sales.view',
-                'order.view', 'orders.view', 'order.update', 'orders.edit', 'order.status.update', 'order.chat', 'orders.status_update',
+                'order.view', 'order.update', 'order.status.update', 'order.payment.update', 'order.chat',
             ],
             'Sales Executive' => [
                 'dashboard.view', 'order.view', 'order.update', 'order.status.update', 'order.chat', 'customer.view',
             ],
             'Inventory Manager' => [
                 'dashboard.view', 'analytics.view', 'analytics.stock.view',
-                'product.view', 'products.view', 'product.edit', 'products.edit', 'inventory.manage',
+                'product.view', 'product.edit', 'inventory.manage',
             ],
             'Order Manager' => [
-                'dashboard.view', 'order.view', 'order.update', 'order.status.update', 'order.chat',
+                'dashboard.view', 'order.view', 'order.update', 'order.status.update', 'order.payment.update', 'order.chat',
             ],
             'Customer Support' => [
                 'dashboard.view', 'order.view', 'order.chat', 'ticket.view', 'ticket.reply', 'customer.view',

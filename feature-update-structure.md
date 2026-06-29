@@ -1,7 +1,7 @@
 # ShopGram — Feature Update Roadmap
 
 **Goal:** Smarter UX, higher conversion, better admin control  
-**Last updated:** 2026-06-25
+**Last updated:** 2026-06-28 (session 2)
 
 ---
 
@@ -9,14 +9,14 @@
 
 | # | Feature | Why best now | Est. effort |
 |---|---------|-------------|-------------|
-| 1 | **Mini cart drawer** | Biggest UX win. Customer adds item → stays on page → buys more | 2 days |
-| 4 | **Flash sale countdown timer** | Bangladeshi shoppers respond strongly to urgency. `sale_ends_at` column + JS | 2 days |
-| 5 | **Abandoned cart email** | Recovers ~15% of lost carts automatically. Scheduled job + mail | 2 days |
-| 6 | **Flash sale manager** | Admin-controlled deals = conversion engine. Full tables needed | 3 days |
-| 7 | **Product quick view modal** | Keeps customer on listing page → more products seen → more buys | 3 days |
+| 1 | **bKash / Nagad payment** | BD market — 80%+ users prefer mobile banking over COD | 3 days |
+| 2 | **Mini cart drawer** | Biggest UX win. Customer adds item → stays on page → buys more | 2 days |
+| 3 | **Flash sale manager + countdown** | BD shoppers respond strongly to urgency. Full admin control | 3 days |
+| 4 | **Abandoned cart email** | Recovers ~15% of lost carts automatically. Scheduled job | 2 days |
+| 5 | **Product quick view modal** | Keeps customer on listing → more products seen → more buys | 3 days |
+| 6 | **Free shipping threshold** | "Free delivery above ৳500" — huge conversion driver in BD | 1 day |
+| 7 | **SMS order notifications** | BD customers track orders via SMS, not email | 2 days |
 | 8 | **Loyalty points system** | Retention goldmine. Customers come back to spend points | 5 days |
-
-> **Start with 1–2 today** — zero backend work needed.
 
 ---
 
@@ -37,6 +37,10 @@
 | **Product quick view modal** | Click product card → modal with image, price, variant, add-to-cart — stays on listing page | Bootstrap modal + AJAX route `/products/{slug}/quick-view` |
 | **Flash sale countdown timer** | Countdown on sale products with end time | JS `setInterval` + `sale_ends_at` column in products |
 | **"Notify me when in stock"** | Guest/customer subscribes to out-of-stock product — email when restocked | `stock_notifications` table → trigger in InventoryService |
+| **Free shipping threshold** | "Free delivery on orders above ৳500" shown on cart + checkout | `free_shipping_above` in settings table, check in CartService |
+| **COD fee** | Extra ৳30-50 charge for cash on delivery (common BD practice) | `cod_extra_charge` in settings, add to order total when method=cod |
+| **Product bundle deal** | Buy A+B together for X% off — "combo offer" | `bundles` + `bundle_items` tables, shown on product page |
+| **Estimated delivery date** | "Expected delivery: Jun 30 – Jul 2" on product + checkout | Shipping zone `delivery_days` column + date calc |
 
 ### 🔴 Product Discovery
 
@@ -70,17 +74,17 @@
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
 | **Wishlist → share link** | Share wishlist URL with others | Generate token, public route `/wishlist/{token}` |
-| **Wishlist → share link** | Share wishlist URL with others | Generate token, public route `/wishlist/{token}` |
 | **Loyalty points display** | Show earned points in dashboard | `loyalty_points` column on users table |
+| **Customer wallet / store credit** | Refund goes to wallet, customer spends at next order | `wallet_balance` on users, `wallet_transactions` table |
+| **Order note** | Customer adds note during checkout ("leave at gate") | `customer_note` column on orders, textarea in checkout |
 
 ### 🟢 Mobile UX
 
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
 | **PWA support** | Add to home screen, offline page | `manifest.json` + service worker + `offline.blade.php` |
-| **Sticky add-to-cart bar** | Bar appears when product's ATC button scrolls out of view | IntersectionObserver JS |
-| **Swipe gestures on product gallery** | Swipe left/right between images on mobile | Swiper.js (already likely in project) |
-| **Bottom sheet filters** | Mobile filter as bottom drawer (spec mentions this) | Bootstrap offcanvas bottom |
+| **Swipe gestures on product gallery** | Swipe left/right between images on mobile | Swiper.js |
+| **Bottom sheet filters** | Mobile filter as bottom drawer | Bootstrap offcanvas bottom |
 
 ---
 
@@ -116,7 +120,6 @@
 | Feature | What it does | Implementation hint |
 |---------|-------------|---------------------|
 | **Customer segments** | Tag customers: VIP (spent > X), New, At Risk (no order in 60d) | Computed from order history, show in customer list |
-| **Customer lifetime value** | Show total spent, avg order, first/last order date on customer detail | Aggregate from `orders` table |
 | **Block/unblock with reason** | Store reason when blocking customer | `blocked_reason` + `blocked_at` columns on users |
 
 ### 🟡 Marketing Tools
@@ -126,8 +129,8 @@
 | **Flash sale manager** | Create sale with % off, start/end time, specific products/categories | `flash_sales` + `flash_sale_products` tables |
 | **Loyalty points system** | Earn points per ৳ spent, redeem as discount | `loyalty_points` on users, `point_transactions` table, redeem at checkout |
 | **Referral system** | Customer gets unique link, earns credit when referral buys | `referral_code` on users, `referral_conversions` table |
-| **Newsletter campaigns** | Admin composes email, sends to all subscribers | Queue-based bulk mail using `Newsletter` model |
 | **Pop-up / exit-intent offer** | Show coupon popup when user is about to leave | JS `mouseleave` on document + session flag |
+| **Affiliate / influencer panel** | Influencer gets custom link, earns % commission on sales | `affiliates` table, separate dashboard, commission tracking |
 
 ### 🟢 Admin UX
 
@@ -136,6 +139,43 @@
 | **Dark mode for admin** | Toggle dark/light in admin panel | CSS variables + `localStorage` preference |
 | **Admin quick search** | Press `/` anywhere in admin → search orders, products, customers | JS modal + AJAX |
 | **Keyboard shortcuts** | `N` = new product, `O` = orders, `ESC` = close modal | JS `keydown` listener |
+| **Review reply by admin** | Admin replies publicly to customer review on product page | `review_replies` table or `reply` column on reviews |
+| **Admin order note** | Internal note on order visible to staff only | `admin_note` column on orders |
+
+---
+
+## 🇧🇩 BANGLADESH MARKET — Critical Features
+
+### 🔴 Payment Gateways
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **bKash payment** | Bangladesh's #1 mobile banking — huge conversion boost | SSLCommerz integration (covers bKash/Nagad/Rocket/cards) or bKash API direct |
+| **Nagad payment** | Bangladesh Post's mobile banking — growing fast | Via SSLCommerz or Nagad PGW API |
+| **SSLCommerz** | Single gateway covering all BD payment methods + cards | `aamarPay/sslcommerz-laravel` package · `ssl_transactions` table |
+| **Card payment (Visa/Mastercard)** | Credit/debit cards via SSLCommerz | Covered by SSLCommerz integration |
+
+### 🔴 Communication
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **SMS order notifications** | BD customers track orders via SMS not email | `infobip` / `twilio` / local BD gateway (Mim SMS, Banglalink API) · trigger on order status change |
+| **OTP SMS login** | Phone number → OTP → login (no password needed) | SMS gateway + `otp_verifications` table · 5-min expiry |
+| **WhatsApp order alert to admin** | New order → WhatsApp message to shop owner | Twilio WhatsApp API or `360dialog` → webhook trigger |
+
+### 🟡 BD Address System
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Division → District → Upazila selector** | Structured BD address with cascading dropdowns | `bd_divisions`, `bd_districts`, `bd_upazilas` seed tables · AJAX cascade |
+| **Area-based delivery availability** | Mark products not deliverable outside Dhaka / only in specific districts | `product_delivery_zones` table |
+
+### 🟡 Auth & Login
+
+| Feature | What it does | Implementation hint |
+|---------|-------------|---------------------|
+| **Facebook OAuth login** | 1-tap login with Facebook — very common in BD | `laravel/socialite` · `facebook_id` on users |
+| **Google OAuth login** | 1-tap login with Google | `laravel/socialite` · `google_id` on users |
 
 ---
 
@@ -652,6 +692,10 @@ order.status = delivered/cancelled         →  chat CLOSED (auto)
 For above features, new tables required:
 
 ```
+-- Already created ✅
+order_messages       — id, order_id, user_id, sender_role(customer/staff), message, is_read, attachment, attachment_type, attachment_name, attachment_size, created_at
+
+-- Pending
 flash_sales          — id, name, discount_percent, starts_at, ends_at, status
 flash_sale_products  — flash_sale_id, product_id
 stock_notifications  — id, user_id, product_id, notified_at (nullable)
@@ -663,7 +707,17 @@ referral_codes       — column on users: referral_code (unique)
 referral_conversions — id, referrer_id, referee_id, order_id, credit_amount
 purchase_orders      — id, supplier_name, status, expected_at, note, created_by
 purchase_order_items — id, po_id, product_id, variant_id, qty, unit_cost
-order_messages       — id, order_id, user_id, sender_role(customer/staff), message, is_read, created_at
+wallet_transactions  — id, user_id, type(credit/debit), amount, note, order_id, created_at
+ssl_transactions     — id, order_id, tran_id, status, amount, gateway, raw_response, created_at
+otp_verifications    — id, phone, otp, expires_at, used_at
+bundles              — id, name, discount_percent, active
+bundle_items         — id, bundle_id, product_id, variant_id
+bd_divisions         — id, name (8 divisions)
+bd_districts         — id, division_id, name (64 districts)
+bd_upazilas          — id, district_id, name (~500 upazilas)
+affiliates           — id, user_id, code, commission_percent, total_earned, status
+affiliate_clicks     — id, affiliate_id, order_id, commission_amount, created_at
+review_replies       — id, review_id, user_id, reply, created_at
 ```
 
 ---
@@ -689,31 +743,55 @@ order_messages       — id, order_id, user_id, sender_role(customer/staff), mes
 | **Admin order invoice PDF** | `OrderController@invoicePdf` · route `admin.orders.invoice.pdf` |
 | **Social proof badges** | "X viewing now" (seeded JS) + "Y sold in 24h" (real query) · `frontend/products/show.blade.php` |
 | **Sticky add-to-cart bar** | `IntersectionObserver` hides/shows bar when main ATC scrolls out · `frontend/products/show.blade.php` |
+| **Newsletter campaigns** | `NewsletterCampaign` model · `NewsletterController` · bulk send with status tracking · admin routes `admin.php:125-133` |
+| **Customer lifetime value** | `CustomerController@show` calculates `totalSpent` from delivered orders · displayed in `admin.customers.show` |
+| **Order Chat** (Node.js + Socket.io) | `order_messages` table · `ChatController` (token/messages/upload/close/unread) · Node.js service at `chat-service/` · image+file attachment · typing indicator · auto-close on delivered/cancelled |
+| **Admin payment status update** | `OrderController@updatePaymentStatus` · `POST admin/orders/{order}/payment-status` · `order.payment.update` permission · dropdown for permitted roles, readonly badge otherwise |
+| **Mobile customer dashboard nav** | Horizontal scrollable icon+label nav pills (Daraz-style) · `layouts/customer.blade.php` · hidden on desktop, shown on mobile only |
+| **Phone-based login** | Login with phone number OR email · regex detection in `AuthController@login` · phone required on registration · `order.payment.update` added to seeder |
+| **Product YouTube video** | YouTube URL field on products · video shown in product gallery tab · `frontend/products/show.blade.php` |
+| **Star ratings on product cards** | Average rating + review count shown on product cards · `product-card.blade.php` |
 
 ---
 
 ## RECOMMENDED IMPLEMENTATION ORDER
 
 ```
-Phase A (Quick wins — 1-2 days each):
-  1. Reorder button (customer)
-  2. Auto low-stock email — wire LowStockAlertNotification into InventoryService::stockOut()
-  3. Customer invoice download (customer-side route, class already exists)
-  4. Image lazy loading — add loading="lazy" to product-card.blade.php
+Phase A ✅ COMPLETE:
+  ✅ Reorder button
+  ✅ Auto low-stock email
+  ✅ Customer invoice PDF
+  ✅ Image lazy loading
+  ✅ Order chat (Node.js + Socket.io with file/image)
+  ✅ Admin payment status update
+  ✅ Mobile customer dashboard nav
 
-Phase B (Medium effort — 3-5 days each):
-  5. Mini cart drawer (AJAX)
+Phase B — Next up (3-5 days each):
+  1. bKash/SSLCommerz payment gateway  ← BD market priority #1
+  2. Mini cart drawer (AJAX)
+  3. Free shipping threshold + COD fee
+  4. SMS order notifications
+  5. Flash sale manager + countdown timer
   6. Product quick view modal
-  7. Bulk order status update
-  8. Abandoned cart list + email
-  9. Flash sale manager
-  10. AJAX product filters
-  11. CSV product import
+  7. Abandoned cart list + email
+  8. AJAX product filters
+  9. CSV product import
+  10. Facebook / Google OAuth login
 
-Phase C (Bigger features — 1 week+):
-  12. Loyalty points system
-  13. Smart search (Meilisearch)
+Phase C — Medium features (1 week+):
+  11. Loyalty points system
+  12. Customer wallet/store credit
+  13. OTP SMS login
   14. Referral system
-  15. Q&A on product page
-  16. PWA support
+  15. BD Division/District/Upazila address selector
+  16. Smart search (Meilisearch)
+  17. Q&A on product page
+  18. Bulk order status update
+
+Phase D — Bigger features (2+ weeks):
+  19. PWA support
+  20. Affiliate/influencer panel
+  21. Product bundle deals
+  22. Affiliate system
+  23. Multi-vendor (future)
 ```

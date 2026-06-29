@@ -73,15 +73,24 @@ class ProductController extends Controller
             ->sum('quantity');
 
         $canReview = false;
+        $unreviewedOrder = null;
         if (auth()->check()) {
-            $canReview = \App\Models\Order::where('user_id', auth()->id())
+            $reviewedOrderIds = \App\Models\Review::where('user_id', auth()->id())
+                ->where('product_id', $product->id)
+                ->pluck('order_id');
+
+            $unreviewedOrder = \App\Models\Order::where('user_id', auth()->id())
                 ->where('status', 'delivered')
                 ->whereHas('items', function ($query) use ($product) {
                     $query->where('product_id', $product->id);
                 })
-                ->exists();
+                ->whereNotIn('id', $reviewedOrderIds)
+                ->latest()
+                ->first();
+
+            $canReview = $unreviewedOrder !== null;
         }
 
-        return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h', 'canReview'));
+        return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h', 'canReview', 'unreviewedOrder'));
     }
 }

@@ -20,6 +20,15 @@
                 <span class="price-sale">৳{{ number_format($product->regular_price, 0) }}</span>
             @endif
         </div>
+        @php $reviewCount = $product->reviews()->count(); $avgRating = $product->average_rating; @endphp
+        @if($reviewCount > 0)
+            <div class="d-flex align-items-center gap-1 mb-2" style="font-size:.8rem">
+                @for($i = 1; $i <= 5; $i++)
+                    <i class="bi {{ $i <= round($avgRating) ? 'bi-star-fill' : 'bi-star' }}" style="color:#f5a623"></i>
+                @endfor
+                <span class="text-muted">({{ $reviewCount }})</span>
+            </div>
+        @endif
         @if(!$product->isInStock())
             <span class="badge bg-secondary mb-2">Out of Stock</span>
         @elseif($product->isLowStock())

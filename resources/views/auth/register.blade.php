@@ -24,15 +24,16 @@
                             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                   value="{{ old('email') }}" required>
-                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
+                                   value="{{ old('phone') }}" required placeholder="01XXXXXXXXX">
+                            @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Phone Number <span class="text-muted">(optional)</span></label>
-                            <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                                   value="{{ old('phone') }}">
+                            <label class="form-label">Email Address <span class="text-muted">(optional)</span></label>
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                                   value="{{ old('email') }}" placeholder="email@example.com">
+                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>

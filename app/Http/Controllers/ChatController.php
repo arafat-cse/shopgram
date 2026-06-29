@@ -21,7 +21,7 @@ class ChatController extends Controller
             'user_id'   => $user->id,
             'name'      => $user->name,
             'role'      => $user->can('order.chat') ? 'staff' : 'customer',
-            'signature' => hash_hmac('sha256', $user->id, config('app.key')),
+            'signature' => hash_hmac('sha256', (string) $user->id, config('chat.internal_key')),
         ]));
 
         return response()->json(['token' => $token]);
@@ -117,7 +117,7 @@ class ChatController extends Controller
         }
 
         $request->validate([
-            'file' => 'required|file|max:10240', // Max 10MB
+            'file' => 'required|file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx',
         ]);
 
         $file = $request->file('file');
@@ -155,7 +155,7 @@ class ChatController extends Controller
             Http::withHeaders([
                 'X-Internal-Key' => config('chat.internal_key'),
                 'Accept' => 'application/json',
-            ])->post(config('chat.node_url') . '/internal/close-room/' . $order->id);
+            ])->post(config('chat.node_internal_url') . '/internal/close-room/' . $order->id);
         } catch (\Exception $e) {
             // Log error but don't fail the request
             logger()->error('Failed to notify Node.js of chat close: ' . $e->getMessage());
