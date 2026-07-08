@@ -29,6 +29,12 @@ class AuthController extends Controller
 
         $user = User::where($field, $login)->first();
 
+        if ($user && !$user->password) {
+            return back()
+                ->withErrors(['login' => 'This account uses Google sign-in. Please continue with Google.'])
+                ->onlyInput('login');
+        }
+
         if (!$user || !Hash::check($request->password, $user->password)) {
             return back()
                 ->withErrors(['login' => 'These credentials do not match our records.'])

@@ -10,7 +10,7 @@ use App\Http\Controllers\Customer\ReviewController;
 use App\Http\Controllers\Customer\TicketController;
 use App\Http\Controllers\Customer\ReturnController;
 
-Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(function () {
+Route::middleware(['auth', 'phone.complete'])->prefix('customer')->name('customer.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile

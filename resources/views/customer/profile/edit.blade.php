@@ -18,7 +18,8 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Phone</label>
-                <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}">
+                <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', str_starts_with((string) $user->phone, 'gtmp_') ? '' : $user->phone) }}" required>
+                @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="mb-3">
                 <label class="form-label">Avatar</label>

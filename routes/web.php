@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProductController as FrontProductController;
 use App\Http\Controllers\Frontend\CategoryController as FrontCategoryController;
@@ -65,6 +66,10 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Google OAuth
+Route::get('/auth/google',          [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
 // Internal chat API used by the Node.js socket service.
 Route::prefix('api/chat')->group(function () {
     Route::post('orders/{order}/messages', [ChatController::class, 'store'])->name('chat.store');
@@ -89,7 +94,7 @@ Route::middleware('auth')->prefix('api/livechat')->group(function () {
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 
 // Cart routes (auth required)
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'phone.complete'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');

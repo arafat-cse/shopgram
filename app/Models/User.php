@@ -12,7 +12,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasRoles, HasPushSubscriptions;
 
     protected $fillable = [
-        'name', 'email', 'phone', 'avatar', 'password', 'status',
+        'name', 'email', 'phone', 'avatar', 'password', 'status', 'google_id', 'google_avatar',
     ];
 
     protected $hidden = ['password', 'remember_token'];
