@@ -71,7 +71,6 @@ body:has(.lca-wrap) .page-content{padding:1rem 1.5rem 0;overflow:hidden}
 @endpush
 
 @section('content')
-<script>console.log('[lc-admin] section content loaded');</script>
 <div class="lca-wrap">
 
     {{-- ── Chat list sidebar ──────────────────────────────────────────────── --}}
