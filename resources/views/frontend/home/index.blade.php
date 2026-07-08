@@ -4,11 +4,11 @@
 @push('styles')
 <style>
     :root {
-        --sg-orange: #f5821f;
-        --sg-orange-dark: #e56f0d;
-        --sg-soft: #f8f5f1;
-        --sg-ink: #101828;
-        --sg-muted: #667085;
+        --sg-orange:      #6d28d9;
+        --sg-orange-dark: #5b21b6;
+        --sg-soft:        #f7f5ff;
+        --sg-ink:         #101828;
+        --sg-muted:       #667085;
     }
 
     body { background: var(--sg-soft); }
@@ -504,7 +504,7 @@
     }
 
     .home-price {
-        color: #ff7200;
+        color: #6d28d9;
         font-size: 1.22rem;
         font-weight: 600;
     }
@@ -520,8 +520,8 @@
         margin-bottom: 28px;
         padding: 3px 10px;
         border-radius: 999px;
-        background: #a7e126;
-        color: #111;
+        background: #f59e0b;
+        color: #fff;
         font-size: .82rem;
         font-weight: 600;
     }
@@ -555,19 +555,24 @@
         height: 37px;
         padding: 0 15px;
         border-radius: 5px;
-        border: 1px solid var(--sg-orange);
+        border: 1.5px solid var(--sg-orange);
         background: #fff;
-        color: #ff7200;
+        color: var(--sg-orange);
         font-size: .86rem;
         font-weight: 500;
         text-decoration: none;
         white-space: nowrap;
+        transition: background .15s, color .15s;
     }
+
+    .sg-btn:hover { background: var(--sg-orange); color: #fff; }
 
     .sg-btn.primary {
         background: var(--sg-orange);
         color: #fff;
     }
+
+    .sg-btn.primary:hover { background: var(--sg-orange-dark); }
 
     .brands-section { padding: 28px 0 8px; }
     .brand-slider-wrap {
@@ -607,12 +612,24 @@
     }
 
     .see-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         margin-bottom: 12px;
-        color: #ff7200;
+        padding: 7px 18px;
+        background: #6d28d9;
+        color: #fff;
         font-size: .78rem;
         font-weight: 600;
         text-decoration: none;
-        letter-spacing: .02em;
+        letter-spacing: .04em;
+        border-radius: 6px;
+        transition: background .15s, transform .15s;
+    }
+    .see-all:hover {
+        background: #5b21b6;
+        color: #fff;
+        transform: translateY(-1px);
     }
 
     .brand-grid {
