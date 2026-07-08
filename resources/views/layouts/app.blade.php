@@ -9,7 +9,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        :root { --primary: #e91e63; --primary-dark: #c2185b; }
+        :root {
+            --primary:        #6d28d9;
+            --primary-dark:   #5b21b6;
+            --primary-light:  #ede9fe;
+            --accent:         #f59e0b;
+            --accent-dark:    #d97706;
+            --bs-primary:         #6d28d9;
+            --bs-primary-rgb:     109,40,217;
+            --bs-link-color:      #6d28d9;
+            --bs-link-hover-color:#5b21b6;
+        }
         body { font-family: 'Segoe UI', sans-serif; padding-bottom: 70px; }
         @media (min-width: 992px) { body { padding-bottom: 0; } }
         .navbar-brand { font-weight: 700; color: var(--primary) !important; font-size: 1.5rem; }

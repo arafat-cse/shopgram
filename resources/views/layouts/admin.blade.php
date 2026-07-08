@@ -8,7 +8,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        :root { --admin-primary: #2c3e50; --admin-accent: #e91e63; }
+        :root {
+            --admin-primary:  #1e1b3a;
+            --admin-accent:   #a78bfa;
+            --admin-highlight:#6d28d9;
+            --bs-primary:         #6d28d9;
+            --bs-primary-rgb:     109,40,217;
+            --bs-link-color:      #6d28d9;
+        }
         body { background: #f4f6f9; }
         .sidebar { width: 250px; height: 100vh; background: var(--admin-primary); position: fixed; top: 0; left: 0; z-index: 100; transition: transform .3s, width .3s; display: flex; flex-direction: column; overflow: hidden; }
         .sidebar-brand { flex: 0 0 auto; padding: 1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,.1); color: #fff; font-weight: 700; font-size: 1.2rem; text-decoration: none; display: block; white-space: nowrap; }

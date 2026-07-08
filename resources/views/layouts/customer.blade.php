@@ -7,7 +7,7 @@
     color: #475569;
 }
 .cust-nav-pill--active {
-    background: #0d6efd;
+    background: #6d28d9;
     color: #fff;
 }
 .cust-nav-pill:hover:not(.cust-nav-pill--active) {
