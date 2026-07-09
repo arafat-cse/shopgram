@@ -502,6 +502,94 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 @stack('scripts')
 
+{{-- First-visit Facebook follow popup --}}
+<div class="modal fade" id="fbFollowModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
+        <div class="modal-content border-0" style="border-radius:18px; overflow:hidden;">
+            <div class="text-center px-4 pt-4 pb-3">
+                <div style="width:64px; height:64px; margin:0 auto 14px; border-radius:50%;
+                            background:linear-gradient(135deg,#1877f2,#0d5cd6);
+                            display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-facebook" style="font-size:2rem; color:#fff;"></i>
+                </div>
+                <h5 class="fw-bold mb-2">আমাদের Facebook Page ফলো করুন</h5>
+                <p class="text-muted mb-4" style="font-size:.92rem;">
+                    নতুন অফার আর প্রোডাক্ট আপডেট সবার আগে পেতে আমাদের পেজ ফলো করুন।
+                </p>
+                <button id="fbFollowYesBtn" type="button"
+                        style="width:100%; border:0; border-radius:12px; padding:11px;
+                               background:linear-gradient(135deg,#1877f2,#0d5cd6); color:#fff;
+                               font-weight:700; font-size:1rem; margin-bottom:10px;">
+                    <i class="bi bi-facebook me-1"></i> Yes, Follow Now
+                </button>
+                <button id="fbFollowSkipBtn" type="button" data-bs-dismiss="modal"
+                        style="border:0; background:none; color:#94a3b8; font-size:.82rem;">
+                    Skip for now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const FB_PAGE_URL   = 'https://www.facebook.com/arafatcse4';
+    const SEEN_KEY       = 'sg_fb_popup_seen_v1';
+    const PENDING_KEY    = 'sg_fb_follow_pending_v1';
+    const THANKED_KEY    = 'sg_fb_thanked_v1';
+
+    function showThankYouToast() {
+        const container = document.querySelector('.toast-container');
+        if (!container) return;
+        const toastEl = document.createElement('div');
+        toastEl.className = 'toast border-0 shadow-sm mb-2';
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('data-bs-autohide', 'true');
+        toastEl.setAttribute('data-bs-delay', '4200');
+        toastEl.innerHTML = `
+            <div class="toast-header text-bg-success border-0">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong class="me-auto">ধন্যবাদ</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body bg-white text-dark">আমাদের Facebook পেজে ফলো করার জন্য ধন্যবাদ!</div>`;
+        container.appendChild(toastEl);
+        new bootstrap.Toast(toastEl).show();
+    }
+
+    // User is coming back to the tab after following the page
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible'
+            && localStorage.getItem(PENDING_KEY)
+            && !localStorage.getItem(THANKED_KEY)) {
+            localStorage.removeItem(PENDING_KEY);
+            localStorage.setItem(THANKED_KEY, '1');
+            showThankYouToast();
+        }
+    });
+
+    window.sgAfterFbPopup = function () {}; // overridden below once promo popup script loads
+
+    if (localStorage.getItem(SEEN_KEY)) return;
+
+    const modalEl = document.getElementById('fbFollowModal');
+    const modal = new bootstrap.Modal(modalEl, { backdrop: true });
+
+    document.getElementById('fbFollowYesBtn').addEventListener('click', function () {
+        localStorage.setItem(PENDING_KEY, '1');
+        window.open(FB_PAGE_URL, '_blank');
+        modal.hide();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        localStorage.setItem(SEEN_KEY, '1');
+        window.sgAfterFbPopup();
+    }, { once: true });
+
+    modal.show();
+}());
+</script>
+
 {{-- First-visit promotional popup --}}
 <div class="modal fade" id="promoPopupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:860px;">
@@ -653,7 +741,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const STORAGE_KEY = 'sg_promo_seen_v1';
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    let slides = [], current = 0, autoTimer = null, progTimer = null, progVal = 0;
+    let slides = [], current = 0, autoTimer = null, progTimer = null, progVal = 0, started = false;
     const AUTO_MS = 5000;
 
     function fmt(n) { return '৳' + parseFloat(n).toLocaleString('en-BD'); }
@@ -733,21 +821,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.promoGo = function(dir) { resetAuto(); render(current + dir); };
 
-    fetch('/api/promoted-products')
-        .then(r => r.json())
-        .then(data => {
-            if (!data.length) return;
-            slides = data;
-            render(0);
-            resetAuto();
-            const modal = new bootstrap.Modal(document.getElementById('promoPopupModal'), { backdrop: true });
-            modal.show();
-            document.getElementById('promoPopupModal').addEventListener('hidden.bs.modal', () => {
-                clearInterval(autoTimer); clearInterval(progTimer);
-                localStorage.setItem(STORAGE_KEY, '1');
-            });
-        })
-        .catch(() => {});
+    function runPromoPopup() {
+        if (started) return;
+        started = true;
+        fetch('/api/promoted-products')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.length) return;
+                slides = data;
+                render(0);
+                resetAuto();
+                const modal = new bootstrap.Modal(document.getElementById('promoPopupModal'), { backdrop: true });
+                modal.show();
+                document.getElementById('promoPopupModal').addEventListener('hidden.bs.modal', () => {
+                    clearInterval(autoTimer); clearInterval(progTimer);
+                    localStorage.setItem(STORAGE_KEY, '1');
+                });
+            })
+            .catch(() => {});
+    }
+
+    // Wait for the Facebook follow popup to close first (if it's about to show),
+    // otherwise run this popup right away.
+    if (localStorage.getItem('sg_fb_popup_seen_v1')) {
+        runPromoPopup();
+    } else {
+        window.sgAfterFbPopup = runPromoPopup;
+    }
 }());
 </script>
 
