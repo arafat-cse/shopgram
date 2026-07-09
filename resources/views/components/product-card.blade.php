@@ -25,7 +25,7 @@
                 <span class="price-sale">৳{{ number_format($product->regular_price, 0) }}</span>
             @endif
         </div>
-        @if($product->coin_reward > 0)
+        @if(($coinSystemEnabled ?? true) && $product->coin_reward > 0)
             <div class="mb-2" style="font-size:.78rem;">
                 <span class="badge bg-warning text-dark"><i class="bi bi-coin"></i> Earn {{ $product->coin_reward }} coins</span>
             </div>

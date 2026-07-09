@@ -34,9 +34,11 @@ Route::middleware(['auth', 'phone.complete'])->prefix('customer')->name('custome
     // Wishlist
     Route::resource('wishlist', WishlistController::class)->only(['index', 'destroy']);
 
-    // Coin shop
-    Route::get('/coins', [CoinShopController::class, 'index'])->name('coins.index');
-    Route::post('/coins/{product}/redeem', [CoinShopController::class, 'redeem'])->name('coins.redeem');
+    // Coin shop - only available when coin system is enabled
+    if (coin_system_enabled()) {
+        Route::get('/coins', [CoinShopController::class, 'index'])->name('coins.index');
+        Route::post('/coins/{product}/redeem', [CoinShopController::class, 'redeem'])->name('coins.redeem');
+    }
 
     // Reviews
     Route::resource('reviews', ReviewController::class)->only(['store', 'index']);

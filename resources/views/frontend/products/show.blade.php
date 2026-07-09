@@ -250,7 +250,7 @@
                 {{ !$product->isInStock() ? 'Out of Stock' : ($product->isLowStock() ? 'Only '.$product->stock_quantity.' left!' : 'In Stock') }}
             </span>
 
-            @if($product->coin_reward > 0)
+            @if(($coinSystemEnabled ?? true) && $product->coin_reward > 0)
                 <div class="mb-3">
                     <span class="badge bg-warning text-dark fs-6">
                         <i class="bi bi-coin"></i> Earn {{ $product->coin_reward }} coins on this purchase

@@ -1,11 +1,22 @@
 # ShopGram — Project Structure
 
-**Stack:** Laravel 12, Blade, MySQL, Bootstrap 5, jQuery  
-**Last updated:** 2026-06-25 (session 3 — web push notifications)
+**Stack:** Laravel 12, Blade, MySQL, Bootstrap 5, jQuery
+**Last updated:** 2026-07-10 (session 4 — coin system + feature flag)
+
+---
+
+## config/
+
+- `app.php` — Core Laravel config
+- `auth.php` — Authentication configuration
+- `coins.php` — **Coin system feature flag** — reads `COIN_SYSTEM_ENABLED` from env
+- `chat.php` — Chat service configuration (node URL, internal key)
 
 ---
 
 ## app/
+
+- `helpers.php` — **Global helper functions** — `coin_system_enabled()`
 
 ### Http/Controllers/
 
@@ -15,6 +26,8 @@
 - `BannerController.php`
 - `BrandController.php`
 - `CategoryController.php`
+- `CoinController.php` — Coin transaction viewing + manual balance adjustments
+- `CoinProductController.php` — Set/remove coin prices on products
 - `ContactMessageController.php`
 - `CouponController.php`
 - `CourierController.php`
@@ -41,6 +54,7 @@
 
 #### Customer/
 - `AddressController.php`
+- `CoinShopController.php` — Coin shop index + product redemption
 - `DashboardController.php`
 - `OrderController.php`
 - `ProfileController.php`
@@ -66,6 +80,8 @@
 
 ### Http/Middleware/
 - `AdminAccessMiddleware.php`
+- `CoinSystemEnabled.php` — Blocks coin routes when disabled via env
+- `EnsurePhoneComplete.php`
 - `MaintenanceModeMiddleware.php`
 
 ### Http/Requests/
@@ -81,6 +97,7 @@
 - `Brand.php`
 - `CartItem.php`
 - `Category.php`
+- `CoinTransaction.php` — Coin transaction history
 - `ContactMessage.php`
 - `Coupon.php`
 - `CouponUsage.php`
@@ -119,6 +136,7 @@
 ### Services/
 - `ActivityLogService.php`
 - `CartService.php`
+- `CoinService.php` — Coin transactions, redemptions, reversals
 - `CouponService.php`
 - `InventoryService.php`
 - `OrderService.php`
@@ -165,6 +183,11 @@
 - `2026_06_24_100001_create_admin_activity_logs_table.php`
 - `2026_06_25_..._add_is_promoted_to_products_table.php`
 - `2026_06_25_..._create_push_subscriptions_table.php`
+- `2026_07_09_100000_add_coin_fields_to_products_table.php` — `coin_reward`, `is_coin_redeemable`, `coin_price`
+- `2026_07_09_100001_add_coins_balance_to_users_table.php` — `coins_balance` column
+- `2026_07_09_100002_add_coin_fields_to_orders_table.php` — `coins_earned`, `coins_awarded_at`, `coins_reversed_at`, `coins_used`, `is_coin_redemption`
+- `2026_07_09_100003_create_coin_transactions_table.php` — Transaction history
+- `2026_07_09_110000_add_coins_to_orders_payment_method_enum.php` — Adds 'coins' to payment_method enum
 
 ### seeders/
 - `DatabaseSeeder.php`
@@ -219,6 +242,7 @@
 - `search/index.blade.php`
 
 ### customer/
+- `coins/index.blade.php` — Coin shop with redeemable products + transaction history
 - `dashboard.blade.php`
 - `addresses/create.blade.php`
 - `addresses/edit.blade.php`
@@ -249,6 +273,8 @@
 - `categories/create.blade.php`
 - `categories/edit.blade.php`
 - `categories/index.blade.php`
+- `coin-products/index.blade.php` — Manage coin-redeemable products
+- `coins/index.blade.php` — Coin transactions + manual adjustments
 - `contact-messages/index.blade.php`
 - `contact-messages/show.blade.php`
 - `coupons/create.blade.php`
@@ -311,7 +337,46 @@
 
 All spec files implemented. No known gaps.
 
-## Recent Additions — Session 3 (2026-06-25)
+---
+
+## Recent Additions — Session 4 (2026-07-10)
+
+| Item | Type | Purpose |
+|------|------|---------|
+| **Loyalty Coin System** | Feature | Customer loyalty program with earn/redeem coins |
+| `CoinService.php` | Service | Handles coin transactions, redemptions, reversals, and admin adjustments |
+| `CoinTransaction.php` | Model | Tracks all coin transactions (earn, redeem, reversal, admin_adjust) |
+| `coins_balance` column | Migration | Added to `users` table — stores current coin balance |
+| `coin_reward`, `is_coin_redeemable`, `coin_price` | Migration | Added to `products` table — earn rate and redeemability |
+| `CoinShopController.php` | Controller | Customer coin shop + product redemption |
+| `CoinController.php` | Controller | Admin coin transaction viewer + manual balance adjustment |
+| `CoinProductController.php` | Controller | Admin set/remove coin prices on products |
+| `customer/coins/index.blade.php` | View | Customer coin shop — balance, redeemable products, transaction history |
+| `admin/coins/index.blade.php` | View | Admin coin management — filter transactions, credit/debit coins |
+| `admin/coin-products/index.blade.php` | View | Admin coin product manager — set coin prices inline |
+| `COIN_SYSTEM_ENABLED` | Env var | Feature flag — set `false` to hide all coin UI from customers |
+| `config/coins.php` | Config | Reads `COIN_SYSTEM_ENABLED` from env (default: `true`) |
+| `coin_system_enabled()` | Helper | Global helper function — returns `true` if coin system enabled |
+| `CoinSystemEnabled` middleware | Middleware | Protects coin routes — returns 404 when disabled |
+| `$coinSystemEnabled` | View Composer | Available in all blade views for conditional rendering |
+| Conditional coin routes | Routes | Customer coin routes (`/coins`, `/coins/{product}/redeem`) only register when enabled |
+| Coin UI hiding | Views | All coin badges, balance cards, nav items, shop sections hidden when disabled |
+| `POST admin/coins/adjust` | Route | Admin manual credit/debit of customer coin balance |
+| `POST admin/coin-products/{product}/set` | Route | Set product as coin-redeemable with coin price |
+| `POST admin/coin-products/{product}/remove` | Route | Remove coin redeemability from product |
+
+**Coin System Behavior:**
+- **Earning:** Customers earn coins (`coin_reward` per unit) when orders are delivered
+- **Redemption:** Customers can redeem coin-redeemable products using their coin balance
+- **Payment Method:** Redemption orders use `payment_method='coins'` with zero monetary total
+- **Reversal:** Cancelled/refunded orders reverse coin transactions automatically
+- **Admin:** Full control — view transactions, manually adjust balances, manage coin products
+
+**Feature Flag Behavior (when `COIN_SYSTEM_ENABLED=false`):**
+- Customer: No coin UI, `/customer/coins` returns 404, no coin badges or shop sections
+- Admin: Still accessible — admin can manage coin settings even when disabled for customers
+
+---
 
 | Item | Type | Purpose |
 |------|------|---------|

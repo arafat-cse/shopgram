@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission'    => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'phone.complete' => \App\Http\Middleware\EnsurePhoneComplete::class,
+            'coin.enabled'  => \App\Http\Middleware\CoinSystemEnabled::class,
         ]);
 
         $middleware->web(\App\Http\Middleware\MaintenanceModeMiddleware::class);

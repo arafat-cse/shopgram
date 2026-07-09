@@ -34,6 +34,7 @@
 
 <div class="row g-3 mb-4">
     {{-- Coin balance — prominent --}}
+    @if($coinSystemEnabled ?? true)
     <div class="col-12 col-md-6 col-lg-4">
         <a href="{{ route('customer.coins.index') }}" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:14px;">
@@ -50,6 +51,7 @@
             </div>
         </a>
     </div>
+    @endif
 
     {{-- Total spent --}}
     <div class="col-6 col-md-3 col-lg-4">
@@ -124,7 +126,7 @@
                 <tr>
                     <td class="fw-semibold">
                         {{ $order->order_number }}
-                        @if($order->is_coin_redemption)
+                        @if(($coinSystemEnabled ?? true) && $order->is_coin_redemption)
                             <span class="badge bg-warning text-dark ms-1" title="Paid with coins"><i class="bi bi-coin"></i></span>
                         @endif
                     </td>

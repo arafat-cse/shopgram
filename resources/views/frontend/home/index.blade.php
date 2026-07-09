@@ -1148,7 +1148,7 @@
                 </section>
             @endif
 
-            @if($coinShopProducts->count())
+            @if(($coinSystemEnabled ?? true) && $coinShopProducts->count())
                 <section class="mb-5" id="coin-shop">
                     <div class="legacy-head">
                         <h2 class="legacy-title"><i class="bi bi-coin text-warning"></i> Coin Shop <small class="text-muted fw-normal" style="font-size:.8rem;">— pay with coins, no cash needed</small></h2>
@@ -1185,7 +1185,7 @@
                 </section>
             @endif
 
-            @if($coinProducts->count())
+            @if(($coinSystemEnabled ?? true) && $coinProducts->count())
                 <section class="mb-5" id="earn-coins">
                     <div class="legacy-head">
                         <h2 class="legacy-title"><i class="bi bi-coin text-warning"></i> Earn Coins</h2>
