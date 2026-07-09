@@ -10,7 +10,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="d-flex gap-3">
-                        <img src="{{ $review->product->thumbnail ? asset('storage/'.$review->product->thumbnail) : asset('images/no-image.png') }}"
+                        <img src="{{ $review->product->thumbnail_url }}"
                              width="60" height="60" style="object-fit:cover;border-radius:6px" alt="">
                         <div>
                             <a href="{{ route('products.show', $review->product->slug) }}" class="fw-semibold text-dark text-decoration-none">{{ $review->product->name }}</a>

@@ -10,7 +10,7 @@
                     @php
                         $galleryImages = collect();
                         if ($product->thumbnail) {
-                            $galleryImages->push(asset('storage/'.$product->thumbnail));
+                            $galleryImages->push($product->thumbnail_url);
                         }
                         foreach ($product->images as $img) {
                             $galleryImages->push(asset('storage/'.$img->image_path));

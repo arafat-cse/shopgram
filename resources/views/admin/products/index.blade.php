@@ -47,7 +47,7 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}" width="40" height="40" style="object-fit:cover;border-radius:4px">
+                            <img src="{{ $product->thumbnail_url }}" width="40" height="40" style="object-fit:cover;border-radius:4px">
                             <div>
                                 <div class="fw-semibold small">{{ Str::limit($product->name, 35) }}</div>
                                 <small class="text-muted">{{ $product->sku }}</small>

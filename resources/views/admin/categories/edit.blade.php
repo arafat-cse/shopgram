@@ -24,7 +24,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Image</label>
-                @if($category->image)<img src="{{ asset('storage/'.$category->image) }}" height="60" class="d-block mb-2 rounded">@endif
+                @if($category->image)<img src="{{ $category->image_url }}" height="60" class="d-block mb-2 rounded">@endif
                 <input type="file" name="image" class="form-control" accept="image/*">
             </div>
             <div class="mb-3">

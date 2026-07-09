@@ -19,4 +19,14 @@ class Category extends Model
 
     public function scopeActive($query) { return $query->where('status', 'active'); }
     public function scopeParent($query) { return $query->whereNull('parent_id'); }
+
+    public function getImageUrlAttribute(): string {
+        if (!$this->image) {
+            return asset('images/no-image.png');
+        }
+        if (str_starts_with($this->image, 'images/')) {
+            return asset($this->image);
+        }
+        return asset('storage/' . $this->image);
+    }
 }

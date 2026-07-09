@@ -168,7 +168,7 @@
                 $galleryImages = collect();
                 if ($product->thumbnail) {
                     $galleryImages->push([
-                        'url' => asset('storage/'.$product->thumbnail),
+                        'url' => $product->thumbnail_url,
                         'alt' => $product->name,
                     ]);
                 }
@@ -469,7 +469,7 @@
 <div id="stickyAtcBar" aria-hidden="true">
     <div class="container">
         <div class="d-flex align-items-center gap-3">
-            <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
+            <img src="{{ $product->thumbnail_url }}"
                  alt="{{ $product->name }}" class="sticky-thumb">
             <div class="flex-grow-1 min-w-0">
                 <div class="sticky-name">{{ $product->name }}</div>

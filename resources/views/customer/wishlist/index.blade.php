@@ -18,7 +18,7 @@
                 button-style="width:28px;height:28px"
             />
             <a href="{{ route('products.show', $item->product->slug) }}">
-                <img src="{{ $item->product->thumbnail ? asset('storage/'.$item->product->thumbnail) : asset('images/no-image.png') }}"
+                <img src="{{ $item->product->thumbnail_url }}"
                      class="card-img-top" style="height:180px;object-fit:cover" alt="{{ $item->product->name }}">
             </a>
             <div class="card-body p-3">

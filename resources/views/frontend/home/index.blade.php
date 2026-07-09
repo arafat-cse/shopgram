@@ -937,7 +937,7 @@
                             <a class="category-item" href="{{ route('category.show', $cat->slug) }}">
                                 <div class="category-image">
                                     @if($categoryImage)
-                                        <img src="{{ asset('storage/'.$categoryImage) }}" alt="{{ $cat->name }}">
+                                        <img src="{{ str_starts_with($categoryImage, 'images/') ? asset($categoryImage) : asset('storage/'.$categoryImage) }}" alt="{{ $cat->name }}">
                                     @else
                                         <div class="category-icon">
                                             <i class="bi {{ $cat->icon ?: $categoryIcons[$loop->index % count($categoryIcons)] }}"></i>
@@ -964,7 +964,7 @@
                     @foreach($bestSelling as $product)
                         <div class="selling-card">
                             <a class="selling-image" href="{{ route('products.show', $product->slug) }}">
-                                <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}" alt="{{ $product->name }}">
+                                <img src="{{ $product->thumbnail_url }}" alt="{{ $product->name }}">
                             </a>
 
                             <div class="selling-info">

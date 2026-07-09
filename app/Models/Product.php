@@ -62,4 +62,14 @@ class Product extends Model
     public function scopeNewArrivals($query) { return $query->where('is_new_arrival', true); }
     public function scopeBestSelling($query) { return $query->where('is_best_selling', true); }
     public function scopePromoted($query) { return $query->where('is_promoted', true); }
+
+    public function getThumbnailUrlAttribute(): string {
+        if (!$this->thumbnail) {
+            return asset('images/no-image.png');
+        }
+        if (str_starts_with($this->thumbnail, 'images/')) {
+            return asset($this->thumbnail);
+        }
+        return asset('storage/' . $this->thumbnail);
+    }
 }

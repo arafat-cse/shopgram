@@ -131,7 +131,7 @@
                 <div class="card-header bg-white fw-bold">Thumbnail</div>
                 <div class="card-body">
                     @if(isset($sourceProduct) && $sourceProduct?->thumbnail)
-                        <img src="{{ asset('storage/'.$sourceProduct->thumbnail) }}" class="img-fluid rounded mb-2" alt="">
+                        <img src="{{ $sourceProduct->thumbnail_url }}" class="img-fluid rounded mb-2" alt="">
                         <small class="text-muted d-block mb-2">This thumbnail will be copied when you save unless you upload a new one.</small>
                     @endif
                     <input type="file" name="thumbnail" class="form-control product-image-input" accept="image/jpeg,image/png,image/webp">

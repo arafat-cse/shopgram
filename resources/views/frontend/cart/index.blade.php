@@ -19,7 +19,7 @@
                 <div class="card-body">
                     <div class="row align-items-center g-3">
                         <div class="col-3 col-md-2">
-                            <img src="{{ $item->product->thumbnail ? asset('storage/'.$item->product->thumbnail) : asset('images/no-image.png') }}"
+                            <img src="{{ $item->product->thumbnail_url }}"
                                  class="img-fluid rounded" alt="{{ $item->product->name }}" style="max-height:80px;object-fit:cover">
                         </div>
                         <div class="col-9 col-md-5">

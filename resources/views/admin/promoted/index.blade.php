@@ -48,7 +48,7 @@
                 <tr class="{{ $product->is_promoted ? 'table-warning' : '' }}">
                     <td>
                         @if($product->thumbnail)
-                            <img src="{{ asset('storage/'.$product->thumbnail) }}"
+                            <img src="{{ $product->thumbnail_url }}"
                                  width="48" height="48"
                                  style="object-fit:cover;border-radius:6px;border:1px solid #eee">
                         @else

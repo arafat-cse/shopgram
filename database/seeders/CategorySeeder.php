@@ -12,8 +12,8 @@ class CategorySeeder extends Seeder
         $categories = [
             ['name' => 'Oil & Ghee',        'img_seed' => 'photo-1474979266404-7eaacbcd87c5', 'children' => ['Mustard Oil', 'Gawa Ghee', 'Olive Oil', 'Coconut Oil']],
             ['name' => 'Organic',           'img_seed' => 'photo-1540420773420-3366772f4999', 'children' => ['Organic Honey', 'Organic Tea', 'Organic Powder', 'Certified Food']],
-            ['name' => 'Honey',             'img_seed' => 'photo-1587049352846-4a222e784d38', 'children' => ['Sundarban Honey', 'Black Seed Honey', 'Lychee Flower Honey', 'Honeycomb']],
-            ['name' => 'Dates',             'img_seed' => 'photo-1596547609652-9cf5d8d76921', 'children' => ['Safawi Kalmi', 'Medjool', 'Sukkari', 'Ajwa', 'Mabroom']],
+            ['name' => 'Honey',             'img_seed' => 'photo-1587049352851-8d4e89133924', 'children' => ['Sundarban Honey', 'Black Seed Honey', 'Lychee Flower Honey', 'Honeycomb']],
+            ['name' => 'Dates',             'img_seed' => 'photo-1629738601425-494c3d6ba3e2', 'children' => ['Safawi Kalmi', 'Medjool', 'Sukkari', 'Ajwa', 'Mabroom']],
             ['name' => 'Spices',            'img_seed' => 'photo-1596790011460-155490a8a6ec', 'children' => ['Whole Spices', 'Basic Spices', 'Mixed Spices', 'Masala']],
             ['name' => 'Nuts & Seeds',      'img_seed' => 'photo-1597528380839-a9a3b680c057', 'children' => ['Nuts', 'Seeds', 'Cashew Nuts', 'Honey Nuts']],
             ['name' => 'Beverage',          'img_seed' => 'photo-1513558161293-cdaf765ed2fd', 'children' => ['Tea', 'Coffee', 'Juice', 'Health Drinks']],
@@ -38,7 +38,7 @@ class CategorySeeder extends Seeder
             
             $imagePath = null;
             if ($imgSeed) {
-                if (!$existingCategory || !$existingCategory->image || !str_contains($existingCategory->image, $imgSeed)) {
+                if (!$existingCategory || !$existingCategory->image || !file_exists(public_path($existingCategory->image)) || !str_contains($existingCategory->image, $imgSeed)) {
                     $imagePath = $this->downloadImage($imgSeed);
                 } else {
                     $imagePath = $existingCategory->image;
@@ -73,9 +73,13 @@ class CategorySeeder extends Seeder
             }
             $response = \Illuminate\Support\Facades\Http::timeout(10)->get($url);
             if ($response->successful()) {
-                $filename = "categories/{$seed}-" . uniqid() . '.jpg';
-                \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $response->body());
-                return $filename;
+                $dir = public_path('images/categories');
+                if (!file_exists($dir)) {
+                    mkdir($dir, 0777, true);
+                }
+                $filename = "{$seed}-" . uniqid() . '.jpg';
+                file_put_contents("{$dir}/{$filename}", $response->body());
+                return "images/categories/{$filename}";
             }
         } catch (\Exception) {
             // Silently fail

@@ -337,7 +337,7 @@ class ProductSeeder extends Seeder
                 'is_new_arrival' => false,
                 'is_best_selling' => true,
                 'status'         => 'active',
-                'img_seed'       => 'photo-1599940824399-b87987ceb72a',
+                'img_seed'       => 'photo-1592156328697-079f6ee0cfa5',
                 'variants'       => [],
             ],
             [
@@ -359,7 +359,7 @@ class ProductSeeder extends Seeder
                 'variants'       => [],
             ],
 
-            // ── Sports / Fitness (cat 16)
+            // ── Sports / Fitness & Team Sports (cat 16)
             [
                 'name'           => 'Yoga & Exercise Mat 6mm',
                 'category_slug'  => 'sports-fitness',
@@ -381,6 +381,85 @@ class ProductSeeder extends Seeder
                     ['color' => 'Blue',   'extra_price' => 0,  'stock' => 25],
                     ['color' => 'Green',  'extra_price' => 0,  'stock' => 20],
                 ],
+            ],
+            [
+                'name'           => 'Professional Match Leather Football',
+                'category_slug'  => 'sports-team-sports',
+                'brand_id'       => null,
+                'regular_price'  => 2500,
+                'sale_price'     => 1950,
+                'purchase_price' => 1200,
+                'stock_quantity' => 50,
+                'short_description' => 'Official Size 5 Leather Football, Hand-Stitched, All-Weather Play',
+                'description'    => '<p>High-quality hand-stitched professional match leather football. Official Size 5. Features textured casing for superior control and aerodynamic stability. Dual-connection bladder ensures maximum shape and air retention. Perfect for club matches and team training in all weather conditions.</p>',
+                'sku'            => 'FB-LEATHER-PRO',
+                'is_featured'    => true,
+                'is_new_arrival' => true,
+                'is_best_selling' => true,
+                'status'         => 'active',
+                'img_seed'       => 'photo-1579952363873-27f3bade9f55',
+                'variants'       => [],
+            ],
+            [
+                'name'           => 'Adidas Predator Soccer Cleats',
+                'category_slug'  => 'sports-team-sports',
+                'brand_id'       => null,
+                'regular_price'  => 9500,
+                'sale_price'     => 8200,
+                'purchase_price' => 6000,
+                'stock_quantity' => 15,
+                'short_description' => 'Professional Soccer Cleats for Firm Ground, Lightweight & Grip Control',
+                'description'    => '<p>Adidas Predator Soccer Cleats designed for ultimate control and grip on firm ground pitches. Features primeknit upper for comfortable wrap-around support, and specialized strike zones for optimized ball spin and accuracy. Extremely lightweight soleplate for explosive speed.</p>',
+                'sku'            => 'FB-BOOTS-PREDATOR',
+                'is_featured'    => true,
+                'is_new_arrival' => true,
+                'is_best_selling' => false,
+                'status'         => 'active',
+                'img_seed'       => 'photo-1511886929837-354d827aae26',
+                'variants'       => [
+                    ['size' => '40', 'extra_price' => 0, 'stock' => 5],
+                    ['size' => '41', 'extra_price' => 0, 'stock' => 5],
+                    ['size' => '42', 'extra_price' => 0, 'stock' => 5],
+                ],
+            ],
+            [
+                'name'           => 'Agility Training Soccer Jersey',
+                'category_slug'  => 'sports-team-sports',
+                'brand_id'       => null,
+                'regular_price'  => 1200,
+                'sale_price'     => 950,
+                'purchase_price' => 500,
+                'stock_quantity' => 80,
+                'short_description' => 'Breathable Polyester Training Jersey, Moisture-wicking Dry Fit',
+                'description'    => '<p>Keep cool and dry during intense matches or training sessions. Made with high-performance moisture-wicking polyester dry-fit fabric. Breathable mesh side panels for advanced air ventilation. Classic design with comfortable crew neck and regular athletic fit.</p>',
+                'sku'            => 'FB-JERSEY-TRAIN',
+                'is_featured'    => false,
+                'is_new_arrival' => true,
+                'is_best_selling' => true,
+                'status'         => 'active',
+                'img_seed'       => 'photo-1577212017184-80cc0da11082',
+                'variants'       => [
+                    ['size' => 'M',  'color' => 'Red-White', 'extra_price' => 0, 'stock' => 40],
+                    ['size' => 'L',  'color' => 'Red-White', 'extra_price' => 0, 'stock' => 40],
+                ],
+            ],
+            [
+                'name'           => 'Professional Soccer Goal Net',
+                'category_slug'  => 'sports-team-sports',
+                'brand_id'       => null,
+                'regular_price'  => 4500,
+                'sale_price'     => 3800,
+                'purchase_price' => 2500,
+                'stock_quantity' => 10,
+                'short_description' => 'Heavy-duty White Metal Goal Post Net, Full Size All-weather Net',
+                'description'    => '<p>Heavy-duty, weather-resistant soccer goal net. Made of high-grade UV-treated polyethylene twine designed to withstand powerful shots and harsh outdoor conditions. Easy to install and compatible with standard goal frames. Ideal for club pitches and school fields.</p>',
+                'sku'            => 'FB-GOAL-NET',
+                'is_featured'    => false,
+                'is_new_arrival' => false,
+                'is_best_selling' => false,
+                'status'         => 'active',
+                'img_seed'       => 'photo-1590145081676-616176e24471',
+                'variants'       => [],
             ],
 
             // ── Beauty / Skincare (cat 24)
@@ -458,7 +537,7 @@ class ProductSeeder extends Seeder
                 ->orWhere('slug', $data['slug'])
                 ->first();
 
-            if (!$existingProduct || !$existingProduct->thumbnail || !str_contains($existingProduct->thumbnail, $imgSeed)) {
+            if (!$existingProduct || !$existingProduct->thumbnail || !file_exists(public_path($existingProduct->thumbnail)) || !str_contains($existingProduct->thumbnail, $imgSeed)) {
                 $thumbnail = $this->downloadImage($imgSeed);
                 if ($thumbnail) {
                     $data['thumbnail'] = $thumbnail;
@@ -509,9 +588,13 @@ class ProductSeeder extends Seeder
             }
             $response = Http::timeout(10)->get($url);
             if ($response->successful()) {
-                $filename = "products/{$seed}-" . uniqid() . '.jpg';
-                Storage::disk('public')->put($filename, $response->body());
-                return $filename;
+                $dir = public_path('images/products');
+                if (!file_exists($dir)) {
+                    mkdir($dir, 0777, true);
+                }
+                $filename = "{$seed}-" . uniqid() . '.jpg';
+                file_put_contents("{$dir}/{$filename}", $response->body());
+                return "images/products/{$filename}";
             }
         } catch (\Exception) {
             // Silently fail — product will show no-image.png

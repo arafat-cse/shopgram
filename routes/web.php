@@ -45,7 +45,7 @@ Route::get('/api/promoted-products', function () {
         ->map(fn($p) => [
             'name'          => $p->name,
             'url'           => route('products.show', $p->slug),
-            'thumbnail'     => $p->thumbnail ? asset('storage/' . $p->thumbnail) : null,
+            'thumbnail'     => $p->thumbnail_url,
             'regular_price' => $p->regular_price,
             'sale_price'    => $p->sale_price,
         ]);

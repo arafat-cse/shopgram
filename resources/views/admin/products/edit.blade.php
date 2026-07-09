@@ -127,7 +127,7 @@
                 <div class="card-header bg-white fw-bold">Thumbnail</div>
                 <div class="card-body">
                     @if($product->thumbnail)
-                    <img src="{{ asset('storage/'.$product->thumbnail) }}" class="img-fluid rounded mb-2" alt="">
+                    <img src="{{ $product->thumbnail_url }}" class="img-fluid rounded mb-2" alt="">
                     @endif
                     <input type="file" name="thumbnail" class="form-control product-image-input" accept="image/jpeg,image/png,image/webp">
                     <small class="text-muted">Leave blank to keep current</small>
