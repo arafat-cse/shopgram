@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\Category;
 use App\Models\Brand;
+use App\Models\Category;
 use App\Services\RecentlyViewedProductService;
 use Illuminate\Http\Request;
 
@@ -14,32 +14,42 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::active()->with(['category', 'brand']);
+        $this->applyFilters($query, $request);
 
-        if ($request->category) {
-            $selectedCategory = Category::active()
-                ->with('children')
-                ->where('slug', $request->category)
-                ->first();
+        $products = $query->paginate(12)->withQueryString();
 
-            if ($selectedCategory) {
-                $categoryIds = collect([$selectedCategory->id])
-                    ->merge($selectedCategory->children->pluck('id'))
-                    ->all();
+        return view('frontend.products.index', array_merge(
+            compact('products'),
+            $this->filterViewData()
+        ));
+    }
 
+    private function applyFilters($query, Request $request): void
+    {
+        if ($request->filled('category_id')) {
+            $category = Category::find($request->category_id);
+            if ($category) {
+                $categoryIds = $category->parent_id === null
+                    ? collect([$category->id])->merge($category->children->pluck('id'))->all()
+                    : [$category->id];
                 $query->whereIn('category_id', $categoryIds);
             }
         }
 
-        if ($request->brand) {
-            $query->whereHas('brand', fn($q) => $q->where('slug', $request->brand));
+        if ($request->filled('brand')) {
+            $query->whereHas('brand', fn($q) => $q->whereIn('slug', (array) $request->brand));
         }
 
-        if ($request->min_price) {
+        if ($request->filled('min_price')) {
             $query->where('regular_price', '>=', $request->min_price);
         }
 
-        if ($request->max_price) {
+        if ($request->filled('max_price')) {
             $query->where('regular_price', '<=', $request->max_price);
+        }
+
+        if ($request->boolean('in_stock')) {
+            $query->where('stock_quantity', '>', 0);
         }
 
         $sort = $request->sort ?? 'latest';
@@ -49,16 +59,26 @@ class ProductController extends Controller
             'popular'    => $query->orderBy('id', 'desc'),
             default      => $query->latest(),
         };
+    }
 
-        $products   = $query->paginate(12)->withQueryString();
-        $categories = Category::active()
-            ->parent()
-            ->with(['children' => fn($query) => $query->active()->orderBy('name')])
-            ->orderBy('name')
-            ->get();
-        $brands     = Brand::active()->get();
-
-        return view('frontend.products.index', compact('products', 'categories', 'brands'));
+    /**
+     * Shared sidebar filter data (price bounds, brands, category tree) used
+     * by every product listing page that includes the filter partial.
+     */
+    private function filterViewData(): array
+    {
+        return [
+            'brands'      => Brand::active()->get(),
+            'priceBounds' => [
+                'min' => (int) (Product::active()->min('regular_price') ?? 0),
+                'max' => (int) (Product::active()->max('regular_price') ?? 0),
+            ],
+            'categories'  => Category::active()
+                ->parent()
+                ->with(['children' => fn($q) => $q->active()->orderBy('name')])
+                ->orderBy('name')
+                ->get(),
+        ];
     }
 
     public function show(string $slug, RecentlyViewedProductService $recentlyViewed)
@@ -97,55 +117,46 @@ class ProductController extends Controller
     public function bestSellers(Request $request)
     {
         $query = Product::active()->bestSelling()->with(['category', 'brand']);
+        $this->applyFilters($query, $request);
 
-        if ($request->category) {
-            $selectedCategory = Category::active()
-                ->with('children')
-                ->where('slug', $request->category)
-                ->first();
-
-            if ($selectedCategory) {
-                $categoryIds = collect([$selectedCategory->id])
-                    ->merge($selectedCategory->children->pluck('id'))
-                    ->all();
-
-                $query->whereIn('category_id', $categoryIds);
-            }
-        }
-
-        if ($request->brand) {
-            $query->whereHas('brand', fn($q) => $q->where('slug', $request->brand));
-        }
-
-        if ($request->min_price) {
-            $query->where('regular_price', '>=', $request->min_price);
-        }
-
-        if ($request->max_price) {
-            $query->where('regular_price', '<=', $request->max_price);
-        }
-
-        $sort = $request->sort ?? 'latest';
-        match ($sort) {
-            'price_asc'  => $query->orderBy('regular_price', 'asc'),
-            'price_desc' => $query->orderBy('regular_price', 'desc'),
-            'popular'    => $query->orderBy('id', 'desc'),
-            default      => $query->latest(),
-        };
-
-        $products   = $query->paginate(12)->withQueryString();
-        $categories = Category::active()
-            ->parent()
-            ->with(['children' => fn($query) => $query->active()->orderBy('name')])
-            ->orderBy('name')
-            ->get();
-        $brands     = Brand::active()->get();
-
-        $pageTitle = 'Best Sellers';
-        $breadcrumbTitle = 'Best Sellers';
+        $products = $query->paginate(12)->withQueryString();
+        $pageTitle = $breadcrumbTitle = 'Best Sellers';
         $filterActionUrl = route('products.bestsellers');
 
-        return view('frontend.products.index', compact('products', 'categories', 'brands', 'pageTitle', 'breadcrumbTitle', 'filterActionUrl'));
+        return view('frontend.products.index', array_merge(
+            compact('products', 'pageTitle', 'breadcrumbTitle', 'filterActionUrl'),
+            $this->filterViewData()
+        ));
+    }
+
+    public function offers(Request $request)
+    {
+        $query = Product::active()->whereNotNull('sale_price')->with(['category', 'brand']);
+        $this->applyFilters($query, $request);
+
+        $products = $query->paginate(12)->withQueryString();
+        $pageTitle = $breadcrumbTitle = 'Special Offers';
+        $filterActionUrl = route('products.offers');
+
+        return view('frontend.products.index', array_merge(
+            compact('products', 'pageTitle', 'breadcrumbTitle', 'filterActionUrl'),
+            $this->filterViewData()
+        ));
+    }
+
+    public function newArrivals(Request $request)
+    {
+        $query = Product::active()->newArrivals()->with(['category', 'brand']);
+        $this->applyFilters($query, $request);
+
+        $products = $query->paginate(12)->withQueryString();
+        $pageTitle = $breadcrumbTitle = 'New Arrivals';
+        $filterActionUrl = route('products.new-arrivals');
+
+        return view('frontend.products.index', array_merge(
+            compact('products', 'pageTitle', 'breadcrumbTitle', 'filterActionUrl'),
+            $this->filterViewData()
+        ));
     }
 
     public function quickView(string $slug)

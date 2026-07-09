@@ -15,50 +15,7 @@
         {{-- Sidebar Filters (Desktop) --}}
         <div class="col-lg-3 d-none d-lg-block">
             <div class="card border-0 shadow-sm p-3">
-                <h6 class="fw-bold mb-3">Filters</h6>
-                <form method="GET" action="{{ $filterActionUrl ?? route('products.index') }}">
-                    @if(isset($categories))
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold small">Category</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="category" id="cat_all"
-                                   value="" {{ request('category') ? '' : 'checked' }}>
-                            <label class="form-check-label small" for="cat_all">All Categories</label>
-                        </div>
-                        @foreach($categories as $cat)
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="category" id="cat{{ $cat->id }}"
-                                   value="{{ $cat->slug }}" {{ request('category') == $cat->slug ? 'checked' : '' }}>
-                            <label class="form-check-label small" for="cat{{ $cat->id }}">{{ $cat->name }}</label>
-                        </div>
-                            @foreach($cat->children as $child)
-                            <div class="form-check ms-3">
-                                <input class="form-check-input" type="radio" name="category" id="cat{{ $child->id }}"
-                                       value="{{ $child->slug }}" {{ request('category') == $child->slug ? 'checked' : '' }}>
-                                <label class="form-check-label small text-muted" for="cat{{ $child->id }}">{{ $child->name }}</label>
-                            </div>
-                            @endforeach
-                        @endforeach
-                    </div>
-                    @endif
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold small">Price Range</label>
-                        <div class="d-flex gap-2">
-                            <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min" value="{{ request('min_price') }}">
-                            <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max" value="{{ request('max_price') }}">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold small">Sort By</label>
-                        <select name="sort" class="form-select form-select-sm">
-                            <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
-                            <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>
-                            <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Price: High to Low</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm w-100">Apply Filters</button>
-                    <a href="{{ $filterActionUrl ?? route('products.index') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">Clear</a>
-                </form>
+                @include('frontend.products._filters', ['idPrefix' => 'd'])
             </div>
         </div>
 
@@ -95,49 +52,142 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form method="GET" action="{{ $filterActionUrl ?? route('products.index') }}">
-            @if(isset($categories))
-            <div class="mb-3">
-                <label class="form-label fw-semibold small">Category</label>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="category" id="m_cat_all"
-                           value="" {{ request('category') ? '' : 'checked' }}>
-                    <label class="form-check-label small" for="m_cat_all">All Categories</label>
-                </div>
-                @foreach($categories as $cat)
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="category" id="m_cat{{ $cat->id }}"
-                           value="{{ $cat->slug }}" {{ request('category') == $cat->slug ? 'checked' : '' }}>
-                    <label class="form-check-label small" for="m_cat{{ $cat->id }}">{{ $cat->name }}</label>
-                </div>
-                    @foreach($cat->children as $child)
-                    <div class="form-check ms-3">
-                        <input class="form-check-input" type="radio" name="category" id="m_cat{{ $child->id }}"
-                               value="{{ $child->slug }}" {{ request('category') == $child->slug ? 'checked' : '' }}>
-                        <label class="form-check-label small text-muted" for="m_cat{{ $child->id }}">{{ $child->name }}</label>
-                    </div>
-                    @endforeach
-                @endforeach
-            </div>
-            @endif
-            <div class="mb-3">
-                <label class="form-label fw-semibold small">Price Range</label>
-                <div class="d-flex gap-2">
-                    <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min" value="{{ request('min_price') }}">
-                    <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max" value="{{ request('max_price') }}">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold small">Sort By</label>
-                <select name="sort" class="form-select form-select-sm">
-                    <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
-                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>
-                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Price: High to Low</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm w-100 py-2">Apply Filters</button>
-            <a href="{{ $filterActionUrl ?? route('products.index') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2 py-2">Clear All</a>
-        </form>
+        @include('frontend.products._filters', ['idPrefix' => 'm'])
     </div>
 </div>
+
+<style>
+.filter-section-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; border: 0; background: none; padding: 0; cursor: pointer;
+}
+.filter-section-toggle .bi-chevron-up { transition: transform .2s ease; color: #6b7280; }
+.filter-section-toggle.collapsed .bi-chevron-up { transform: rotate(180deg); }
+
+.filter-brand-list { max-height: 220px; overflow-y: auto; padding-right: 4px; }
+
+.filter-price-slider { position: relative; height: 32px; }
+.filter-price-slider .range-track {
+    position: absolute; top: 50%; left: 0; right: 0; height: 4px;
+    background: #e5e7eb; border-radius: 4px; transform: translateY(-50%);
+}
+.filter-price-slider .range-fill {
+    position: absolute; height: 4px; background: var(--primary); border-radius: 4px;
+}
+.filter-price-slider .range-input {
+    position: absolute; top: 50%; left: 0; width: 100%; margin: 0;
+    -webkit-appearance: none; appearance: none; background: none;
+    pointer-events: none; transform: translateY(-50%);
+}
+.filter-price-slider .range-input::-webkit-slider-thumb {
+    -webkit-appearance: none; pointer-events: auto;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--primary); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+.filter-price-slider .range-input::-moz-range-thumb {
+    pointer-events: auto; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--primary); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+.filter-price-slider .range-input::-webkit-slider-runnable-track { background: none; }
+.filter-price-slider .range-input::-moz-range-track { background: none; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.product-filter-form').forEach(function (form) {
+        // Category & subcategory share one query param (category_id) — right
+        // before submit, disable whichever of the two shouldn't be sent so
+        // only the most specific selection wins. Uses requestSubmit() (not
+        // submit()) everywhere below so this listener actually fires.
+        var parentSel = form.querySelector('.category-parent-select');
+        var childSel  = form.querySelector('.category-child-select');
+        form.addEventListener('submit', function () {
+            if (!parentSel || !childSel) return;
+            if (childSel.value) {
+                parentSel.disabled = true;
+            } else {
+                childSel.disabled = true;
+            }
+        });
+
+        // Auto-submit on checkbox / select change (category selects handled separately below)
+        form.querySelectorAll('input[type="checkbox"], select:not(.category-parent-select):not(.category-child-select)').forEach(function (el) {
+            el.addEventListener('change', function () { form.requestSubmit(); });
+        });
+
+        // Cascading category -> subcategory dropdown
+        if (parentSel && childSel) {
+            parentSel.addEventListener('change', function () {
+                var opt = parentSel.selectedOptions[0];
+                var children = (opt && opt.dataset.children) ? JSON.parse(opt.dataset.children) : [];
+
+                childSel.innerHTML = '<option value="">All Subcategories</option>';
+                children.forEach(function (c) {
+                    var o = document.createElement('option');
+                    o.value = c.id;
+                    o.textContent = c.name;
+                    childSel.appendChild(o);
+                });
+
+                childSel.style.display = children.length ? '' : 'none';
+                form.requestSubmit();
+            });
+
+            childSel.addEventListener('change', function () { form.requestSubmit(); });
+        }
+
+        // Dual price range slider
+        var slider = form.querySelector('.filter-price-slider');
+        if (!slider) return;
+
+        var boundMin = parseFloat(slider.dataset.min);
+        var boundMax = parseFloat(slider.dataset.max);
+        var rangeMin = slider.querySelector('.range-min');
+        var rangeMax = slider.querySelector('.range-max');
+        var fill     = slider.querySelector('.range-fill');
+        var numMin   = form.querySelector('.price-num-min');
+        var numMax   = form.querySelector('.price-num-max');
+
+        function updateFill() {
+            var span = (boundMax - boundMin) || 1;
+            var left  = ((parseFloat(rangeMin.value) - boundMin) / span) * 100;
+            var right = ((parseFloat(rangeMax.value) - boundMin) / span) * 100;
+            fill.style.left  = left + '%';
+            fill.style.width = Math.max(right - left, 0) + '%';
+        }
+
+        function syncFromSliders() {
+            if (parseFloat(rangeMin.value) > parseFloat(rangeMax.value)) {
+                rangeMin.value = rangeMax.value;
+            }
+            numMin.value = rangeMin.value;
+            numMax.value = rangeMax.value;
+            updateFill();
+        }
+
+        function syncFromInputs() {
+            var minV = Math.max(boundMin, Math.min(parseFloat(numMin.value) || boundMin, boundMax));
+            var maxV = Math.max(boundMin, Math.min(parseFloat(numMax.value) || boundMax, boundMax));
+            if (minV > maxV) minV = maxV;
+            rangeMin.value = minV;
+            rangeMax.value = maxV;
+            numMin.value = minV;
+            numMax.value = maxV;
+            updateFill();
+        }
+
+        rangeMin.addEventListener('input', syncFromSliders);
+        rangeMax.addEventListener('input', syncFromSliders);
+        rangeMin.addEventListener('change', function () { syncFromSliders(); form.requestSubmit(); });
+        rangeMax.addEventListener('change', function () { syncFromSliders(); form.requestSubmit(); });
+
+        numMin.addEventListener('change', function () { syncFromInputs(); form.requestSubmit(); });
+        numMax.addEventListener('change', function () { syncFromInputs(); form.requestSubmit(); });
+
+        updateFill();
+    });
+});
+</script>
 @endsection
