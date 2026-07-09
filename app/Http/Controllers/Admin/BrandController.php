@@ -28,7 +28,10 @@ class BrandController extends Controller
         $data['slug'] = Str::slug($data['name']);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('brands', 'public');
+            $file = $request->file('logo');
+            $filename = uniqid('logo_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/brands'), $filename);
+            $data['logo'] = "images/brands/{$filename}";
         }
 
         $brand = Brand::create($data);
@@ -48,7 +51,13 @@ class BrandController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('brands', 'public');
+            if ($brand->logo && file_exists(public_path($brand->logo))) {
+                @unlink(public_path($brand->logo));
+            }
+            $file = $request->file('logo');
+            $filename = uniqid('logo_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/brands'), $filename);
+            $data['logo'] = "images/brands/{$filename}";
         }
 
         $brand->update($data);

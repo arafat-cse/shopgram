@@ -647,24 +647,33 @@
     }
 
     .brand-card {
-        flex: 0 0 calc((100% - 66px) / 4);
-        min-height: 80px;
+        flex: 0 0 calc((100% - 100px) / 6);
+        min-height: 116px;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 8px;
         border: 1px solid #e4ded7;
         border-radius: 5px;
         background: #fff;
         color: #1f2937;
         text-decoration: none;
-        font-size: 1.45rem;
-        font-weight: 800;
+        font-size: 0.9rem;
+        font-weight: 700;
         scroll-snap-align: start;
+        padding: 10px 8px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .brand-card:hover {
+        border-color: var(--sg-orange);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .brand-card img {
-        max-width: 150px;
-        max-height: 48px;
+        max-width: 130px;
+        max-height: 52px;
         object-fit: contain;
     }
 
@@ -1033,7 +1042,7 @@
             <div class="home-wrap">
                 <div class="brand-head">
                     <h2 class="brand-title">Our Brands</h2>
-                    <a class="see-all" href="{{ route('products.index') }}">SEE ALL <i class="bi bi-arrow-right"></i></a>
+                    <a class="see-all" href="{{ route('brands.index') }}">SEE ALL <i class="bi bi-arrow-right"></i></a>
                 </div>
                 <div class="brand-slider-wrap">
                     <button class="brand-arrow left" type="button" data-brand-slide="prev" aria-label="Previous brands">
@@ -1043,11 +1052,8 @@
                         <div class="brand-grid" id="brandSlider">
                             @foreach($brands as $brand)
                                 <a class="brand-card" href="{{ route('brand.show', $brand->slug) }}">
-                                    @if($brand->logo)
-                                        <img src="{{ asset('storage/'.$brand->logo) }}" alt="{{ $brand->name }}">
-                                    @else
-                                        {{ $brand->name }}
-                                    @endif
+                                    <img src="{{ $brand->logo_url }}" alt="{{ $brand->name }}">
+                                    <span class="brand-name-text text-muted mt-1">{{ $brand->name }}</span>
                                 </a>
                             @endforeach
                         </div>

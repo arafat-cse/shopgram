@@ -37,7 +37,10 @@ class CategoryController extends Controller
         $data['slug'] = Str::slug($data['name']);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $file = $request->file('image');
+            $filename = uniqid('cat_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/categories'), $filename);
+            $data['image'] = "images/categories/{$filename}";
         }
 
         $category = Category::create($data);
@@ -66,7 +69,13 @@ class CategoryController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            if ($category->image && file_exists(public_path($category->image))) {
+                @unlink(public_path($category->image));
+            }
+            $file = $request->file('image');
+            $filename = uniqid('cat_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/categories'), $filename);
+            $data['image'] = "images/categories/{$filename}";
         }
 
         $category->update($data);

@@ -24,6 +24,7 @@ Route::get('/products', [FrontProductController::class, 'index'])->name('product
 Route::get('/products/{slug}', [FrontProductController::class, 'show'])->name('products.show');
 Route::get('/products/{slug}/quickview', [FrontProductController::class, 'quickView'])->name('products.quickview');
 Route::get('/category/{slug}', [FrontCategoryController::class, 'show'])->name('category.show');
+Route::get('/brands', [FrontBrandController::class, 'index'])->name('brands.index');
 Route::get('/brand/{slug}', [FrontBrandController::class, 'show'])->name('brand.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions');

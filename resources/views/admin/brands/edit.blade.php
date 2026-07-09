@@ -12,7 +12,7 @@
             <div class="mb-3"><label class="form-label">Name *</label>
                 <input type="text" name="name" class="form-control" value="{{ old('name', $brand->name) }}" required></div>
             <div class="mb-3"><label class="form-label">Logo</label>
-                @if($brand->logo)<img src="{{ asset('storage/'.$brand->logo) }}" height="50" class="d-block mb-2">@endif
+                @if($brand->logo)<img src="{{ $brand->logo_url }}" height="50" class="d-block mb-2">@endif
                 <input type="file" name="logo" class="form-control" accept="image/*"></div>
             <div class="mb-3"><label class="form-label">Status</label>
                 <select name="status" class="form-select">

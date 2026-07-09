@@ -352,7 +352,7 @@
                 <a class="nav-link" href="{{ route('home') }}#offers">Offers</a>
                 <a class="nav-link" href="{{ route('home') }}#new-arrivals">New Arrivals</a>
                 <a class="nav-link" href="{{ route('home') }}#best-sellers">Best Sellers</a>
-                <a class="nav-link" href="{{ route('home') }}#brands">Brands</a>
+                <a class="nav-link {{ request()->routeIs('brands.*') ? 'active' : '' }}" href="{{ route('brands.index') }}">Brands</a>
                 <a class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}" href="{{ route('contact.index') }}">Contact</a>
             </div>
         </div>
@@ -363,7 +363,7 @@
             <a class="nav-link" href="{{ route('home') }}#offers">Offers</a>
             <a class="nav-link" href="{{ route('home') }}#new-arrivals">New Arrivals</a>
             <a class="nav-link" href="{{ route('home') }}#best-sellers">Best Sellers</a>
-            <a class="nav-link" href="{{ route('home') }}#brands">Brands</a>
+            <a class="nav-link {{ request()->routeIs('brands.*') ? 'active' : '' }}" href="{{ route('brands.index') }}">Brands</a>
             <a class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}" href="{{ route('contact.index') }}">Contact</a>
             <div class="dropdown">
                 <a class="nav-link dropdown-toggle {{ request()->routeIs('category.*') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">Categories</a>

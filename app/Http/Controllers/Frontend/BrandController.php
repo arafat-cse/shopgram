@@ -7,6 +7,14 @@ use App\Models\Product;
 
 class BrandController extends Controller
 {
+    public function index()
+    {
+        $brands = Brand::active()->withCount(['products' => function($q) {
+            $q->active();
+        }])->get();
+        return view('frontend.brands.index', compact('brands'));
+    }
+
     public function show(string $slug)
     {
         $brand    = Brand::active()->where('slug', $slug)->firstOrFail();

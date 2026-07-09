@@ -12,7 +12,7 @@
             <tbody>
                 @forelse($brands as $brand)
                 <tr>
-                    <td><img src="{{ $brand->logo ? asset('storage/'.$brand->logo) : asset('images/no-image.png') }}" width="40" height="40" style="object-fit:contain"></td>
+                    <td><img src="{{ $brand->logo_url }}" width="40" height="40" style="object-fit:contain"></td>
                     <td>{{ $brand->name }}</td>
                     <td><span class="badge bg-{{ $brand->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($brand->status) }}</span></td>
                     <td>

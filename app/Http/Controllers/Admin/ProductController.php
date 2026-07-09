@@ -112,7 +112,10 @@ class ProductController extends Controller
         $data['is_promoted']     = $request->boolean('is_promoted');
 
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
+            $file = $request->file('thumbnail');
+            $filename = uniqid('prod_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/products'), $filename);
+            $data['thumbnail'] = "images/products/{$filename}";
         } elseif ($sourceProduct) {
             $data['thumbnail'] = $this->copyPublicFile($sourceProduct->thumbnail);
         }
@@ -174,7 +177,13 @@ class ProductController extends Controller
         $data['is_promoted']     = $request->boolean('is_promoted');
 
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('products', 'public');
+            if ($product->thumbnail && file_exists(public_path($product->thumbnail))) {
+                @unlink(public_path($product->thumbnail));
+            }
+            $file = $request->file('thumbnail');
+            $filename = uniqid('prod_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/products'), $filename);
+            $data['thumbnail'] = "images/products/{$filename}";
         }
 
         $product->update($data);
@@ -213,7 +222,11 @@ class ProductController extends Controller
 
     public function deleteImage(ProductImage $image)
     {
-        Storage::disk('public')->delete($image->image_path);
+        if ($image->image_path && file_exists(public_path($image->image_path))) {
+            @unlink(public_path($image->image_path));
+        } else {
+            Storage::disk('public')->delete($image->image_path);
+        }
         $image->delete();
         return back()->with('success', 'Image deleted.');
     }
@@ -229,9 +242,13 @@ class ProductController extends Controller
         $count = $product->images()->count();
 
         foreach ($request->file($field) as $i => $img) {
+            $filename = uniqid('prod_gal_') . '.' . $img->getClientOriginalExtension();
+            $img->move(public_path('images/products'), $filename);
+            $imagePath = "images/products/{$filename}";
+
             ProductImage::create([
                 'product_id' => $product->id,
-                'image_path' => $img->store('products', 'public'),
+                'image_path' => $imagePath,
                 'sort_order' => $count + $i,
                 'is_primary' => $count === 0 && $i === 0,
             ]);
@@ -303,19 +320,28 @@ class ProductController extends Controller
 
     private function copyPublicFile(?string $path): ?string
     {
-        if (!$path || !Storage::disk('public')->exists($path)) {
+        if (!$path) {
             return $path;
         }
 
-        $directory = trim(pathinfo($path, PATHINFO_DIRNAME), '.');
-        $filename = pathinfo($path, PATHINFO_FILENAME);
-        $extension = pathinfo($path, PATHINFO_EXTENSION);
-        $suffix = 'copy-' . Str::random(8);
-        $targetName = $extension ? "{$filename}-{$suffix}.{$extension}" : "{$filename}-{$suffix}";
-        $targetPath = $directory ? "{$directory}/{$targetName}" : $targetName;
+        if (file_exists(public_path($path))) {
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            $filename = uniqid('prod_copy_') . ($extension ? ".{$extension}" : "");
+            copy(public_path($path), public_path("images/products/{$filename}"));
+            return "images/products/{$filename}";
+        }
 
-        Storage::disk('public')->copy($path, $targetPath);
+        if (Storage::disk('public')->exists($path)) {
+            $directory = trim(pathinfo($path, PATHINFO_DIRNAME), '.');
+            $filename = pathinfo($path, PATHINFO_FILENAME);
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            $suffix = 'copy-' . Str::random(8);
+            $targetName = $extension ? "{$filename}-{$suffix}.{$extension}" : "{$filename}-{$suffix}";
+            $targetPath = $directory ? "{$directory}/{$targetName}" : $targetName;
+            Storage::disk('public')->copy($path, $targetPath);
+            return $targetPath;
+        }
 
-        return $targetPath;
+        return $path;
     }
 }
