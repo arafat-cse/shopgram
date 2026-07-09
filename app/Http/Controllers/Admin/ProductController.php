@@ -89,6 +89,9 @@ class ProductController extends Controller
             'is_new_arrival'     => 'boolean',
             'is_best_selling'    => 'boolean',
             'is_promoted'        => 'boolean',
+            'coin_reward'        => 'nullable|integer|min:0',
+            'is_coin_redeemable' => 'boolean',
+            'coin_price'         => 'nullable|integer|min:1|required_if:is_coin_redeemable,1',
             'thumbnail'          => 'nullable|image|max:16384',
             'video_url'          => 'nullable|url|max:255',
             'gallery'            => 'nullable|array|max:8',
@@ -106,10 +109,13 @@ class ProductController extends Controller
         unset($data['duplicate_product_id']);
 
         $data['slug'] = Str::slug($data['name']) . '-' . uniqid();
-        $data['is_featured']     = $request->boolean('is_featured');
-        $data['is_new_arrival']  = $request->boolean('is_new_arrival');
-        $data['is_best_selling'] = $request->boolean('is_best_selling');
-        $data['is_promoted']     = $request->boolean('is_promoted');
+        $data['is_featured']        = $request->boolean('is_featured');
+        $data['is_new_arrival']     = $request->boolean('is_new_arrival');
+        $data['is_best_selling']    = $request->boolean('is_best_selling');
+        $data['is_promoted']        = $request->boolean('is_promoted');
+        $data['coin_reward']        = $data['coin_reward'] ?? 0;
+        $data['is_coin_redeemable'] = $request->boolean('is_coin_redeemable');
+        $data['coin_price']         = $data['is_coin_redeemable'] ? $data['coin_price'] : null;
 
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
@@ -162,6 +168,9 @@ class ProductController extends Controller
             'is_new_arrival'     => 'boolean',
             'is_best_selling'    => 'boolean',
             'is_promoted'        => 'boolean',
+            'coin_reward'        => 'nullable|integer|min:0',
+            'is_coin_redeemable' => 'boolean',
+            'coin_price'         => 'nullable|integer|min:1|required_if:is_coin_redeemable,1',
             'thumbnail'          => 'nullable|image|max:16384',
             'video_url'          => 'nullable|url|max:255',
             'gallery'            => 'nullable|array|max:8',
@@ -171,10 +180,13 @@ class ProductController extends Controller
             'seo_keywords'       => 'nullable|string',
         ]);
 
-        $data['is_featured']     = $request->boolean('is_featured');
-        $data['is_new_arrival']  = $request->boolean('is_new_arrival');
-        $data['is_best_selling'] = $request->boolean('is_best_selling');
-        $data['is_promoted']     = $request->boolean('is_promoted');
+        $data['is_featured']        = $request->boolean('is_featured');
+        $data['is_new_arrival']     = $request->boolean('is_new_arrival');
+        $data['is_best_selling']    = $request->boolean('is_best_selling');
+        $data['is_promoted']        = $request->boolean('is_promoted');
+        $data['coin_reward']        = $data['coin_reward'] ?? 0;
+        $data['is_coin_redeemable'] = $request->boolean('is_coin_redeemable');
+        $data['coin_price']         = $data['is_coin_redeemable'] ? $data['coin_price'] : null;
 
         if ($request->hasFile('thumbnail')) {
             if ($product->thumbnail && file_exists(public_path($product->thumbnail))) {

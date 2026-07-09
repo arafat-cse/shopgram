@@ -127,6 +127,27 @@
                 </div>
             </div>
 
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold"><i class="bi bi-coin text-warning"></i> Loyalty Coins</div>
+                <div class="card-body">
+                    <label class="form-label">Coins earned per unit purchased</label>
+                    <input type="number" name="coin_reward" class="form-control mb-3" min="0" step="1"
+                           value="{{ old('coin_reward', $prefill['coin_reward'] ?? 0) }}">
+
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="isCoinRedeemable" name="is_coin_redeemable" value="1"
+                               {{ old('is_coin_redeemable', $prefill['is_coin_redeemable'] ?? false) ? 'checked' : '' }}
+                               onchange="document.getElementById('coinPriceWrap').classList.toggle('d-none', !this.checked)">
+                        <label class="form-check-label" for="isCoinRedeemable">Redeemable with Coins</label>
+                    </div>
+                    <div id="coinPriceWrap" class="{{ old('is_coin_redeemable', $prefill['is_coin_redeemable'] ?? false) ? '' : 'd-none' }}">
+                        <label class="form-label">Coin price (coins required to redeem)</label>
+                        <input type="number" name="coin_price" class="form-control" min="1" step="1"
+                               value="{{ old('coin_price', $prefill['coin_price'] ?? '') }}">
+                    </div>
+                </div>
+            </div>
+
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white fw-bold">Thumbnail</div>
                 <div class="card-body">

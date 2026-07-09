@@ -44,6 +44,7 @@ class HomeController extends Controller
         $newArrivals  = Product::active()->newArrivals()->with('category')->take(8)->get();
         $bestSelling  = Product::active()->bestSelling()->with(['category', 'brand'])->take(4)->get();
         $discounts    = Product::active()->whereNotNull('sale_price')->with('category')->take(8)->get();
+        $coinProducts = Product::active()->where('coin_reward', '>', 0)->with('category')->take(8)->get();
         $allProducts  = Product::active()->with('category')->latest()->take(12)->get();
         $recentProducts = $recentlyViewed->get();
         $cartSubtotal = auth()->check() ? $cartService->getSubtotal(auth()->user()) : 0;
@@ -57,6 +58,7 @@ class HomeController extends Controller
             'newArrivals',
             'bestSelling',
             'discounts',
+            'coinProducts',
             'allProducts',
             'recentProducts',
             'cartSubtotal'

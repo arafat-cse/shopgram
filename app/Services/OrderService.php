@@ -16,7 +16,8 @@ class OrderService
     public function __construct(
         private CartService   $cartService,
         private CouponService $couponService,
-        private InventoryService $inventoryService
+        private InventoryService $inventoryService,
+        private CoinService $coinService
     ) {}
 
     public function placeOrder(User $user, array $data): Order
@@ -53,6 +54,7 @@ class OrderService
             $shippingCharge = $data['shipping_charge'] ?? 0;
             $taxAmount      = 0;
             $total          = $subtotal - $discount + $shippingCharge + $taxAmount;
+            $coinsEarned    = $cartItems->sum(fn($i) => $i->product->coin_reward * $i->quantity);
 
             $order = Order::create([
                 'order_number'    => Order::generateOrderNumber(),
@@ -72,6 +74,7 @@ class OrderService
                 'order_note'      => $data['order_note'] ?? null,
                 'status'          => 'pending',
                 'placed_at'       => now(),
+                'coins_earned'    => $coinsEarned,
             ]);
 
             foreach ($cartItems as $item) {
@@ -141,6 +144,16 @@ class OrderService
             'note'       => $note,
             'updated_by' => $adminId,
         ]);
+
+        if ($status === 'delivered' && !$order->is_coin_redemption) {
+            $this->coinService->awardForOrder($order);
+        } elseif (in_array($status, ['cancelled', 'returned', 'refunded'])) {
+            if ($order->is_coin_redemption) {
+                $this->coinService->reverseRedeem($order);
+            } else {
+                $this->coinService->reverseForOrder($order);
+            }
+        }
 
         // Close chat when order is delivered or cancelled
         if (in_array($status, ['delivered', 'cancelled'])) {

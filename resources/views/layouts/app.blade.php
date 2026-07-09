@@ -348,10 +348,10 @@
                         </div>
                     </div>
                 </div>
-                <a class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Shop</a>
+                <a class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}" href="{{ route('products.index') }}">Shop</a>
                 <a class="nav-link" href="{{ route('home') }}#offers">Offers</a>
                 <a class="nav-link" href="{{ route('home') }}#new-arrivals">New Arrivals</a>
-                <a class="nav-link" href="{{ route('home') }}#best-sellers">Best Sellers</a>
+                <a class="nav-link {{ request()->routeIs('products.bestsellers') ? 'active' : '' }}" href="{{ route('products.bestsellers') }}">Best Sellers</a>
                 <a class="nav-link {{ request()->routeIs('brands.*') ? 'active' : '' }}" href="{{ route('brands.index') }}">Brands</a>
                 <a class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}" href="{{ route('contact.index') }}">Contact</a>
             </div>
@@ -359,10 +359,10 @@
 
         <div class="collapse shop-mobile-menu" id="shopNavMenu">
             <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Home</a>
-            <a class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Shop</a>
+            <a class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}" href="{{ route('products.index') }}">Shop</a>
             <a class="nav-link" href="{{ route('home') }}#offers">Offers</a>
             <a class="nav-link" href="{{ route('home') }}#new-arrivals">New Arrivals</a>
-            <a class="nav-link" href="{{ route('home') }}#best-sellers">Best Sellers</a>
+            <a class="nav-link {{ request()->routeIs('products.bestsellers') ? 'active' : '' }}" href="{{ route('products.bestsellers') }}">Best Sellers</a>
             <a class="nav-link {{ request()->routeIs('brands.*') ? 'active' : '' }}" href="{{ route('brands.index') }}">Brands</a>
             <a class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}" href="{{ route('contact.index') }}">Contact</a>
             <div class="dropdown">

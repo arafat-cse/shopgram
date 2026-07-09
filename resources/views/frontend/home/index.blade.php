@@ -1148,6 +1148,22 @@
                 </section>
             @endif
 
+            @if($coinProducts->count())
+                <section class="mb-5" id="earn-coins">
+                    <div class="legacy-head">
+                        <h2 class="legacy-title"><i class="bi bi-coin text-warning"></i> Earn Coins</h2>
+                        <a class="see-all" href="{{ route('products.index') }}">SEE ALL <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="row g-3">
+                        @foreach($coinProducts as $product)
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <x-product-card :product="$product" />
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
             @if($allProducts->count())
                 <section class="mb-5">
                     <div class="legacy-head">

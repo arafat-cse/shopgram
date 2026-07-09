@@ -14,6 +14,7 @@ class Product extends Model
         'regular_price', 'sale_price', 'purchase_price',
         'stock_quantity', 'low_stock_threshold', 'thumbnail', 'video_url',
         'status', 'is_featured', 'is_new_arrival', 'is_best_selling', 'is_promoted',
+        'coin_reward', 'is_coin_redeemable', 'coin_price',
         'seo_title', 'seo_description', 'seo_keywords',
     ];
 
@@ -25,6 +26,9 @@ class Product extends Model
         'is_new_arrival' => 'boolean',
         'is_best_selling' => 'boolean',
         'is_promoted'     => 'boolean',
+        'coin_reward'        => 'integer',
+        'is_coin_redeemable' => 'boolean',
+        'coin_price'         => 'integer',
     ];
 
     public function category() { return $this->belongsTo(Category::class); }
@@ -62,6 +66,7 @@ class Product extends Model
     public function scopeNewArrivals($query) { return $query->where('is_new_arrival', true); }
     public function scopeBestSelling($query) { return $query->where('is_best_selling', true); }
     public function scopePromoted($query) { return $query->where('is_promoted', true); }
+    public function scopeCoinRedeemable($query) { return $query->where('is_coin_redeemable', true); }
 
     public function getThumbnailUrlAttribute(): string {
         if (!$this->thumbnail) {

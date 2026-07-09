@@ -250,6 +250,14 @@
                 {{ !$product->isInStock() ? 'Out of Stock' : ($product->isLowStock() ? 'Only '.$product->stock_quantity.' left!' : 'In Stock') }}
             </span>
 
+            @if($product->coin_reward > 0)
+                <div class="mb-3">
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="bi bi-coin"></i> Earn {{ $product->coin_reward }} coins on this purchase
+                    </span>
+                </div>
+            @endif
+
             {{-- Social Proof --}}
             <div class="d-flex flex-wrap gap-2 mb-3" id="socialProofBadges">
                 <span class="badge rounded-pill text-bg-light border px-3 py-2 social-proof-badge">

@@ -13,6 +13,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'phone', 'avatar', 'password', 'status', 'google_id', 'google_avatar',
+        'coins_balance',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -20,6 +21,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'coins_balance' => 'integer',
     ];
 
     public function orders() { return $this->hasMany(Order::class); }
@@ -30,6 +32,7 @@ class User extends Authenticatable
     public function tickets() { return $this->hasMany(SupportTicket::class); }
     public function returns() { return $this->hasMany(ReturnRequest::class); }
     public function stockHistories() { return $this->hasMany(StockHistory::class, 'created_by'); }
+    public function coinTransactions() { return $this->hasMany(CoinTransaction::class)->latest(); }
 
     public function defaultAddress() {
         return $this->hasOne(Address::class)->where('is_default', true);

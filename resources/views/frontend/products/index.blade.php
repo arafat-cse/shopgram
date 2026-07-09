@@ -1,8 +1,8 @@
 @extends('layouts.app')
-@section('title', isset($category) ? $category->name : (isset($brand) ? $brand->name : 'All Products'))
+@section('title', $pageTitle ?? (isset($category) ? $category->name : (isset($brand) ? $brand->name : 'All Products')))
 @section('content')
 <div class="container py-4">
-    <x-breadcrumb :items="[isset($category) ? $category->name : (isset($brand) ? $brand->name : 'Products') => '#']" />
+    <x-breadcrumb :items="[($breadcrumbTitle ?? (isset($category) ? $category->name : (isset($brand) ? $brand->name : 'Products'))) => '#']" />
 
     <div class="row g-4">
         {{-- Mobile Filter Button --}}
@@ -16,7 +16,7 @@
         <div class="col-lg-3 d-none d-lg-block">
             <div class="card border-0 shadow-sm p-3">
                 <h6 class="fw-bold mb-3">Filters</h6>
-                <form method="GET" action="{{ route('products.index') }}">
+                <form method="GET" action="{{ $filterActionUrl ?? route('products.index') }}">
                     @if(isset($categories))
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Category</label>
@@ -57,7 +57,7 @@
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm w-100">Apply Filters</button>
-                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">Clear</a>
+                    <a href="{{ $filterActionUrl ?? route('products.index') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">Clear</a>
                 </form>
             </div>
         </div>
@@ -81,7 +81,7 @@
             <div class="text-center py-5">
                 <i class="bi bi-box-seam text-muted" style="font-size:3rem"></i>
                 <p class="text-muted mt-2">No products found.</p>
-                <a href="{{ route('products.index') }}" class="btn btn-primary btn-sm">Clear Filters</a>
+                <a href="{{ $filterActionUrl ?? route('products.index') }}" class="btn btn-primary btn-sm">Clear Filters</a>
             </div>
             @endif
         </div>
@@ -95,7 +95,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form method="GET" action="{{ route('products.index') }}">
+        <form method="GET" action="{{ $filterActionUrl ?? route('products.index') }}">
             @if(isset($categories))
             <div class="mb-3">
                 <label class="form-label fw-semibold small">Category</label>
@@ -136,7 +136,7 @@
                 </select>
             </div>
             <button type="submit" class="btn btn-primary btn-sm w-100 py-2">Apply Filters</button>
-            <a href="{{ route('products.index') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2 py-2">Clear All</a>
+            <a href="{{ $filterActionUrl ?? route('products.index') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2 py-2">Clear All</a>
         </form>
     </div>
 </div>

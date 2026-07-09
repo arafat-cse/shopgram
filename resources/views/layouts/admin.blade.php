@@ -126,6 +126,9 @@
         <a href="{{ route('admin.promoted.index') }}" class="nav-link {{ request()->routeIs('admin.promoted.*') ? 'active' : '' }}">
             <i class="bi bi-megaphone"></i> <span>Promoted Products</span>
         </a>
+        <a href="{{ route('admin.coins.index') }}" class="nav-link {{ request()->routeIs('admin.coins.*') ? 'active' : '' }}">
+            <i class="bi bi-coin"></i> <span>Loyalty Coins</span>
+        </a>
         <a href="{{ route('admin.pages.index') }}" class="nav-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
             <i class="bi bi-file-text"></i> <span>Footer Pages</span>
         </a>

@@ -42,7 +42,12 @@
             <tbody>
                 @forelse($orders as $order)
                 <tr>
-                    <td class="fw-semibold small">{{ $order->order_number }}</td>
+                    <td class="fw-semibold small">
+                        {{ $order->order_number }}
+                        @if($order->is_coin_redemption)
+                            <span class="badge bg-warning text-dark ms-1" title="Paid with coins"><i class="bi bi-coin"></i></span>
+                        @endif
+                    </td>
                     <td class="small">{{ $order->user->name ?? '-' }}</td>
                     <td class="text-muted small">{{ $order->created_at->format('d M Y') }}</td>
                     <td class="small">৳{{ number_format($order->total, 0) }}</td>

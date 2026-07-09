@@ -25,6 +25,11 @@
                 <span class="price-sale">৳{{ number_format($product->regular_price, 0) }}</span>
             @endif
         </div>
+        @if($product->coin_reward > 0)
+            <div class="mb-2" style="font-size:.78rem;">
+                <span class="badge bg-warning text-dark"><i class="bi bi-coin"></i> Earn {{ $product->coin_reward }} coins</span>
+            </div>
+        @endif
         @php $reviewCount = $product->reviews()->count(); $avgRating = $product->average_rating; @endphp
         @if($reviewCount > 0)
             <div class="d-flex align-items-center gap-1 mb-2" style="font-size:.8rem">

@@ -9,6 +9,7 @@ use App\Http\Controllers\Customer\WishlistController;
 use App\Http\Controllers\Customer\ReviewController;
 use App\Http\Controllers\Customer\TicketController;
 use App\Http\Controllers\Customer\ReturnController;
+use App\Http\Controllers\Customer\CoinShopController;
 
 Route::middleware(['auth', 'phone.complete'])->prefix('customer')->name('customer.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -32,6 +33,10 @@ Route::middleware(['auth', 'phone.complete'])->prefix('customer')->name('custome
 
     // Wishlist
     Route::resource('wishlist', WishlistController::class)->only(['index', 'destroy']);
+
+    // Coin shop
+    Route::get('/coins', [CoinShopController::class, 'index'])->name('coins.index');
+    Route::post('/coins/{product}/redeem', [CoinShopController::class, 'redeem'])->name('coins.redeem');
 
     // Reviews
     Route::resource('reviews', ReviewController::class)->only(['store', 'index']);

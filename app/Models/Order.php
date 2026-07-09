@@ -14,6 +14,7 @@ class Order extends Model
         'shipping_charge', 'tax_amount', 'total', 'payment_method', 'payment_status',
         'delivery_method', 'courier_tracking_number', 'order_note', 'status',
         'placed_at', 'estimated_delivery_date',
+        'coins_earned', 'coins_awarded_at', 'coins_reversed_at', 'coins_used', 'is_coin_redemption',
     ];
 
     protected $casts = [
@@ -26,6 +27,11 @@ class Order extends Model
         'total' => 'decimal:2',
         'placed_at' => 'datetime',
         'estimated_delivery_date' => 'date',
+        'coins_earned' => 'integer',
+        'coins_awarded_at' => 'datetime',
+        'coins_reversed_at' => 'datetime',
+        'coins_used' => 'integer',
+        'is_coin_redemption' => 'boolean',
     ];
 
     public function user() { return $this->belongsTo(User::class); }
@@ -37,6 +43,7 @@ class Order extends Model
     public function payment() { return $this->hasOne(Payment::class); }
     public function returnRequests() { return $this->hasMany(ReturnRequest::class); }
     public function messages() { return $this->hasMany(OrderMessage::class)->orderBy('created_at'); }
+    public function coinTransactions() { return $this->hasMany(CoinTransaction::class); }
     public function latestCustomerMessage()
     {
         return $this->hasOne(OrderMessage::class)

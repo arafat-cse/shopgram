@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\PromotedProductController;
+use App\Http\Controllers\Admin\CoinController;
 use App\Http\Controllers\LiveChatController;
 
 Route::middleware(['auth', 'admin.access'])
@@ -171,6 +172,10 @@ Route::middleware(['auth', 'admin.access'])
     // Promoted Products
     Route::get('promoted-products',              [PromotedProductController::class, 'index'])->name('promoted.index');
     Route::post('promoted-products/{product}/toggle', [PromotedProductController::class, 'toggle'])->name('promoted.toggle');
+
+    // Loyalty Coins
+    Route::get('coins',         [CoinController::class, 'index'])->name('coins.index');
+    Route::post('coins/adjust', [CoinController::class, 'adjust'])->name('coins.adjust');
 
     // Activity Log
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');

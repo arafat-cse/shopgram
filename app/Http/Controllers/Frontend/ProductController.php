@@ -94,6 +94,60 @@ class ProductController extends Controller
         return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h', 'canReview', 'unreviewedOrder'));
     }
 
+    public function bestSellers(Request $request)
+    {
+        $query = Product::active()->bestSelling()->with(['category', 'brand']);
+
+        if ($request->category) {
+            $selectedCategory = Category::active()
+                ->with('children')
+                ->where('slug', $request->category)
+                ->first();
+
+            if ($selectedCategory) {
+                $categoryIds = collect([$selectedCategory->id])
+                    ->merge($selectedCategory->children->pluck('id'))
+                    ->all();
+
+                $query->whereIn('category_id', $categoryIds);
+            }
+        }
+
+        if ($request->brand) {
+            $query->whereHas('brand', fn($q) => $q->where('slug', $request->brand));
+        }
+
+        if ($request->min_price) {
+            $query->where('regular_price', '>=', $request->min_price);
+        }
+
+        if ($request->max_price) {
+            $query->where('regular_price', '<=', $request->max_price);
+        }
+
+        $sort = $request->sort ?? 'latest';
+        match ($sort) {
+            'price_asc'  => $query->orderBy('regular_price', 'asc'),
+            'price_desc' => $query->orderBy('regular_price', 'desc'),
+            'popular'    => $query->orderBy('id', 'desc'),
+            default      => $query->latest(),
+        };
+
+        $products   = $query->paginate(12)->withQueryString();
+        $categories = Category::active()
+            ->parent()
+            ->with(['children' => fn($query) => $query->active()->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+        $brands     = Brand::active()->get();
+
+        $pageTitle = 'Best Sellers';
+        $breadcrumbTitle = 'Best Sellers';
+        $filterActionUrl = route('products.bestsellers');
+
+        return view('frontend.products.index', compact('products', 'categories', 'brands', 'pageTitle', 'breadcrumbTitle', 'filterActionUrl'));
+    }
+
     public function quickView(string $slug)
     {
         $product = Product::active()->where('slug', $slug)->with(['category', 'variants', 'images'])->firstOrFail();
