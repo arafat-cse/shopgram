@@ -145,14 +145,10 @@ class OrderService
             'updated_by' => $adminId,
         ]);
 
-        if ($status === 'delivered' && !$order->is_coin_redemption) {
-            $this->coinService->awardForOrder($order);
+        if ($status === 'delivered') {
+            $this->coinService->settleForOrder($order);
         } elseif (in_array($status, ['cancelled', 'returned', 'refunded'])) {
-            if ($order->is_coin_redemption) {
-                $this->coinService->reverseRedeem($order);
-            } else {
-                $this->coinService->reverseForOrder($order);
-            }
+            $this->coinService->reverseSettlement($order);
         }
 
         // Close chat when order is delivered or cancelled

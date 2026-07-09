@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\PromotedProductController;
 use App\Http\Controllers\Admin\CoinController;
+use App\Http\Controllers\Admin\CoinProductController;
 use App\Http\Controllers\LiveChatController;
 
 Route::middleware(['auth', 'admin.access'])
@@ -176,6 +177,11 @@ Route::middleware(['auth', 'admin.access'])
     // Loyalty Coins
     Route::get('coins',         [CoinController::class, 'index'])->name('coins.index');
     Route::post('coins/adjust', [CoinController::class, 'adjust'])->name('coins.adjust');
+
+    // Coin-redeemable products
+    Route::get('coin-products',                    [CoinProductController::class, 'index'])->name('coin-products.index');
+    Route::post('coin-products/{product}/set',     [CoinProductController::class, 'setPrice'])->name('coin-products.set');
+    Route::post('coin-products/{product}/remove',  [CoinProductController::class, 'remove'])->name('coin-products.remove');
 
     // Activity Log
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');

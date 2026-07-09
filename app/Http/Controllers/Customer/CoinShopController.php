@@ -46,6 +46,6 @@ class CoinShopController extends Controller
         }
 
         return redirect()->route('customer.orders.show', $order)
-            ->with('success', "Redeemed successfully! Order #{$order->order_number} placed.");
+            ->with('success', "Redeemed successfully! {$order->coins_used} coins deducted — Order #{$order->order_number} placed.");
     }
 }

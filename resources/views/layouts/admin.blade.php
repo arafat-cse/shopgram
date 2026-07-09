@@ -129,6 +129,9 @@
         <a href="{{ route('admin.coins.index') }}" class="nav-link {{ request()->routeIs('admin.coins.*') ? 'active' : '' }}">
             <i class="bi bi-coin"></i> <span>Loyalty Coins</span>
         </a>
+        <a href="{{ route('admin.coin-products.index') }}" class="nav-link {{ request()->routeIs('admin.coin-products.*') ? 'active' : '' }}">
+            <i class="bi bi-bag-heart"></i> <span>Coin Products</span>
+        </a>
         <a href="{{ route('admin.pages.index') }}" class="nav-link {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
             <i class="bi bi-file-text"></i> <span>Footer Pages</span>
         </a>

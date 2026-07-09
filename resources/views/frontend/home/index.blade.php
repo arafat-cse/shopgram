@@ -1148,6 +1148,43 @@
                 </section>
             @endif
 
+            @if($coinShopProducts->count())
+                <section class="mb-5" id="coin-shop">
+                    <div class="legacy-head">
+                        <h2 class="legacy-title"><i class="bi bi-coin text-warning"></i> Coin Shop <small class="text-muted fw-normal" style="font-size:.8rem;">— pay with coins, no cash needed</small></h2>
+                        <a class="see-all" href="{{ auth()->check() ? route('customer.coins.index') : route('login') }}">SEE ALL <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="row g-3">
+                        @foreach($coinShopProducts as $product)
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <a href="{{ route('products.show', $product->slug) }}">
+                                        <img src="{{ $product->thumbnail_url }}" class="card-img-top" style="height:180px;object-fit:cover" alt="{{ $product->name }}">
+                                    </a>
+                                    <div class="card-body p-3 d-flex flex-column">
+                                        <h6 class="mb-2 flex-grow-1">
+                                            <a href="{{ route('products.show', $product->slug) }}" class="text-dark text-decoration-none">{{ Str::limit($product->name, 40) }}</a>
+                                        </h6>
+                                        <div class="fw-bold mb-2" style="color:#d97706;">
+                                            <i class="bi bi-coin"></i> {{ number_format($product->coin_price) }} coins
+                                        </div>
+                                        @auth
+                                            <form action="{{ route('customer.coins.redeem', $product) }}" method="POST"
+                                                  onsubmit="return confirm('Redeem {{ $product->coin_price }} coins for {{ $product->name }}?');">
+                                                @csrf
+                                                <button class="btn btn-warning btn-sm w-100 fw-semibold">Redeem Now</button>
+                                            </form>
+                                        @else
+                                            <a href="{{ route('login') }}" class="btn btn-outline-warning btn-sm w-100 fw-semibold">Login to Redeem</a>
+                                        @endauth
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
             @if($coinProducts->count())
                 <section class="mb-5" id="earn-coins">
                     <div class="legacy-head">

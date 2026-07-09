@@ -15,28 +15,36 @@ class CoinService
     public function __construct(private InventoryService $inventoryService) {}
 
     /**
-     * Credit coins for a delivered order. Idempotent — safe to call on every
-     * status transition, only actually credits once per order.
+     * Credit earned coins once an order is delivered. Idempotent — no-ops
+     * for coin-redemption orders since those are settled immediately at
+     * redeem() time, not on delivery.
      */
-    public function awardForOrder(Order $order): void
+    public function settleForOrder(Order $order): void
     {
-        if ($order->coins_awarded_at || $order->coins_earned <= 0 || $order->is_coin_redemption) {
+        if ($order->coins_awarded_at) {
             return;
         }
 
-        DB::transaction(function () use ($order) {
+        $amount = $order->is_coin_redemption ? -$order->coins_used : $order->coins_earned;
+        if ($amount === 0) {
+            return;
+        }
+
+        DB::transaction(function () use ($order, $amount) {
             $user = User::where('id', $order->user_id)->lockForUpdate()->first();
 
-            $balance = $user->coins_balance + $order->coins_earned;
+            $balance = $user->coins_balance + $amount;
             $user->update(['coins_balance' => $balance]);
 
             CoinTransaction::create([
                 'user_id'       => $user->id,
                 'order_id'      => $order->id,
-                'type'          => 'earn',
-                'amount'        => $order->coins_earned,
+                'type'          => $order->is_coin_redemption ? 'redeem' : 'earn',
+                'amount'        => $amount,
                 'balance_after' => $balance,
-                'description'   => "Order #{$order->order_number} delivered — earned {$order->coins_earned} coins",
+                'description'   => $order->is_coin_redemption
+                    ? "Order #{$order->order_number} delivered — redeemed for {$order->coins_used} coins"
+                    : "Order #{$order->order_number} delivered — earned {$order->coins_earned} coins",
             ]);
 
             $order->update(['coins_awarded_at' => now()]);
@@ -44,56 +52,35 @@ class CoinService
     }
 
     /**
-     * Reverse previously-awarded earn coins when a delivered order is later
-     * cancelled/returned/refunded. Idempotent per order.
+     * Refund/reverse a previously-settled order's coin effect when it is
+     * later cancelled/returned/refunded — covers both a redemption order
+     * (coins were deducted at redeem time) and a delivered earn order
+     * (coins were credited at delivery). No-ops if never settled.
      */
-    public function reverseForOrder(Order $order): void
+    public function reverseSettlement(Order $order): void
     {
         if (!$order->coins_awarded_at || $order->coins_reversed_at) {
             return;
         }
 
-        DB::transaction(function () use ($order) {
-            $user = User::where('id', $order->user_id)->lockForUpdate()->first();
-
-            $balance = $user->coins_balance - $order->coins_earned;
-            $user->update(['coins_balance' => $balance]);
-
-            CoinTransaction::create([
-                'user_id'       => $user->id,
-                'order_id'      => $order->id,
-                'type'          => 'reversal_earn',
-                'amount'        => -$order->coins_earned,
-                'balance_after' => $balance,
-                'description'   => "Order #{$order->order_number} {$order->status} — reversed {$order->coins_earned} coins",
-            ]);
-
-            $order->update(['coins_reversed_at' => now()]);
-        });
-    }
-
-    /**
-     * Refund coins spent on a coin-redemption order when it is cancelled/returned.
-     */
-    public function reverseRedeem(Order $order): void
-    {
-        if (!$order->is_coin_redemption || $order->coins_used <= 0 || $order->coins_reversed_at) {
+        $amount = $order->is_coin_redemption ? $order->coins_used : -$order->coins_earned;
+        if ($amount === 0) {
             return;
         }
 
-        DB::transaction(function () use ($order) {
+        DB::transaction(function () use ($order, $amount) {
             $user = User::where('id', $order->user_id)->lockForUpdate()->first();
 
-            $balance = $user->coins_balance + $order->coins_used;
+            $balance = $user->coins_balance + $amount;
             $user->update(['coins_balance' => $balance]);
 
             CoinTransaction::create([
                 'user_id'       => $user->id,
                 'order_id'      => $order->id,
-                'type'          => 'reversal_redeem',
-                'amount'        => $order->coins_used,
+                'type'          => $order->is_coin_redemption ? 'reversal_redeem' : 'reversal_earn',
+                'amount'        => $amount,
                 'balance_after' => $balance,
-                'description'   => "Order #{$order->order_number} {$order->status} — refunded {$order->coins_used} coins",
+                'description'   => "Order #{$order->order_number} {$order->status} — reversed",
             ]);
 
             $order->update(['coins_reversed_at' => now()]);
@@ -101,8 +88,10 @@ class CoinService
     }
 
     /**
-     * Redeem a coin-redeemable product for the given user, creating a
-     * zero-cost order paid entirely with coins.
+     * Redeem a coin-redeemable product for the given user. Balance is checked
+     * and deducted immediately when the order is placed (not on delivery) —
+     * if the order is later cancelled/returned/refunded, reverseSettlement()
+     * refunds the coins back.
      */
     public function redeem(User $user, Product $product, array $address): Order
     {
@@ -166,6 +155,13 @@ class CoinService
                 'amount'   => 0,
             ]);
 
+            OrderStatusHistory::create([
+                'order_id'   => $order->id,
+                'status'     => 'pending',
+                'note'       => 'Order placed via coin redemption.',
+                'updated_by' => $user->id,
+            ]);
+
             $balance = $lockedUser->coins_balance - $lockedProduct->coin_price;
             $lockedUser->update(['coins_balance' => $balance]);
 
@@ -178,19 +174,14 @@ class CoinService
                 'description'   => "Redeemed {$lockedProduct->name} for {$lockedProduct->coin_price} coins",
             ]);
 
-            OrderStatusHistory::create([
-                'order_id'   => $order->id,
-                'status'     => 'pending',
-                'note'       => 'Order placed via coin redemption.',
-                'updated_by' => $user->id,
-            ]);
+            $order->update(['coins_awarded_at' => now()]);
 
             return $order;
         });
     }
 
     /**
-     * Manual admin balance correction/bonus.
+     * Manual admin balance correction/bonus — applied immediately.
      */
     public function adjust(User $user, int $amount, string $reason): void
     {
