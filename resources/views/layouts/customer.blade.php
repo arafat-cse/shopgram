@@ -14,6 +14,11 @@
     background: #e2e8f0;
     color: #1e293b;
 }
+.customer-sidebar-sticky {
+    position: sticky;
+    top: calc(var(--shop-header-height, 72px) + 16px);
+    z-index: 10; /* stay below the site header (z-index 1020) so it never paints over it */
+}
 </style>
 @endpush
 
@@ -106,7 +111,7 @@
 
         {{-- Sidebar — desktop only --}}
         <div class="col-lg-3 d-none d-lg-block">
-            <div class="card border-0 shadow-sm sticky-top" style="top:80px">
+            <div class="card border-0 shadow-sm customer-sidebar-sticky">
                 <div class="card-body text-center py-4">
                     <div class="mb-2">
                         @if(auth()->user()->avatar)
