@@ -449,9 +449,9 @@
     <section class="mt-5">
         <h3 class="section-title">Recently Viewed Products</h3>
         <div class="row g-3">
-            @foreach($recentProducts as $product)
+            @foreach($recentProducts as $recentProduct)
             <div class="col-6 col-md-4 col-lg-2">
-                <x-product-card :product="$product" />
+                <x-product-card :product="$recentProduct" />
             </div>
             @endforeach
         </div>
@@ -463,9 +463,9 @@
     <section class="mt-5">
         <h3 class="section-title">Related Products</h3>
         <div class="row g-3">
-            @foreach($related as $product)
+            @foreach($related as $relatedProduct)
             <div class="col-6 col-md-4 col-lg-2">
-                <x-product-card :product="$product" />
+                <x-product-card :product="$relatedProduct" />
             </div>
             @endforeach
         </div>

@@ -198,8 +198,137 @@
     </div>
 </form>
 
+@php
+    $variantSizeOptions = \App\Enums\VariantSize::values();
+    $variantColorOptions = \App\Enums\VariantColor::values();
+@endphp
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white fw-bold">Variants</div>
+    <div class="card-body">
+        @if($product->variants->count())
+        <div class="mb-4">
+            <div class="row g-2 fw-bold small text-muted d-none d-md-flex mb-1">
+                <div class="col-md-2">Size</div>
+                <div class="col-md-2">Color</div>
+                <div class="col-md-2">Custom Option</div>
+                <div class="col-md-1">Weight</div>
+                <div class="col-md-1">Material</div>
+                <div class="col-md-2">SKU (auto)</div>
+                <div class="col-md-1">Price (৳)</div>
+                <div class="col-md-1">Stock</div>
+            </div>
+            @foreach($product->variants as $variant)
+            <div class="row g-2 align-items-center mb-2">
+                <form action="{{ route('admin.products.variants.update', [$product, $variant]) }}" method="POST" class="row g-2 align-items-center col">
+                    @csrf @method('PUT')
+                    <div class="col-md-2">
+                        <select name="size" class="form-select form-select-sm">
+                            <option value="">—</option>
+                            @foreach($variantSizeOptions as $option)
+                            <option value="{{ $option }}" {{ old('size', $variant->size) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                            @endforeach
+                            @if($variant->size && !in_array($variant->size, $variantSizeOptions))
+                            <option value="{{ $variant->size }}" selected>{{ $variant->size }}</option>
+                            @endif
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="color" class="form-select form-select-sm">
+                            <option value="">—</option>
+                            @foreach($variantColorOptions as $option)
+                            <option value="{{ $option }}" {{ old('color', $variant->color) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                            @endforeach
+                            @if($variant->color && !in_array($variant->color, $variantColorOptions))
+                            <option value="{{ $variant->color }}" selected>{{ $variant->color }}</option>
+                            @endif
+                        </select>
+                    </div>
+                    <div class="col-md-2"><input type="text" name="custom_option" class="form-control form-control-sm" value="{{ old('custom_option', $variant->custom_option) }}"></div>
+                    <div class="col-md-1"><input type="text" name="weight" class="form-control form-control-sm" value="{{ old('weight', $variant->weight) }}"></div>
+                    <div class="col-md-1"><input type="text" name="material" class="form-control form-control-sm" value="{{ old('material', $variant->material) }}"></div>
+                    <div class="col-md-2"><input type="text" class="form-control form-control-sm" value="{{ $variant->sku }}" disabled></div>
+                    <div class="col-md-1"><input type="number" name="price" class="form-control form-control-sm" min="0" step="0.01" value="{{ old('price', $variant->price) }}"></div>
+                    <div class="col-md-1"><input type="number" name="stock_quantity" class="form-control form-control-sm" min="0" required value="{{ old('stock_quantity', $variant->stock_quantity) }}"></div>
+                    <div class="col-md-1 d-flex">
+                        <button type="submit" class="btn btn-sm btn-outline-primary" title="Save"><i class="bi bi-check-lg"></i></button>
+                    </div>
+                </form>
+                <div class="col-auto">
+                    <x-delete-button
+                        :action="route('admin.products.variants.destroy', [$product, $variant])"
+                        message="Delete this variant?"
+                        label=""
+                        icon="bi-trash"
+                        variant="outline-danger"
+                        form-class="d-inline"
+                    />
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        <form action="{{ route('admin.products.variants.store', $product) }}" method="POST" id="variantAddForm">
+            @csrf
+            <div class="table-responsive">
+                <table class="table table-sm align-middle" id="variantAddTable">
+                    <thead>
+                        <tr>
+                            <th>Size</th><th>Color</th><th>Custom Option</th><th>Weight</th><th>Material</th><th>Price (৳)</th><th>Stock</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="addVariantRowBtn"><i class="bi bi-plus-lg"></i> Add Row</button>
+            <button type="submit" class="btn btn-sm btn-primary ms-2">Save New Variants</button>
+        </form>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+(function () {
+    const tbody = document.querySelector('#variantAddTable tbody');
+    const addBtn = document.getElementById('addVariantRowBtn');
+    if (!tbody || !addBtn) return;
+
+    const sizeOptions = @json($variantSizeOptions);
+    const colorOptions = @json($variantColorOptions);
+
+    function buildSelect(name, options) {
+        const opts = ['<option value="">—</option>']
+            .concat(options.map((opt) => `<option value="${opt}">${opt}</option>`));
+        return `<select name="${name}" class="form-select form-select-sm">${opts.join('')}</select>`;
+    }
+
+    let rowIndex = 0;
+
+    function addVariantRow() {
+        const idx = rowIndex++;
+        const tr = document.createElement('tr');
+        let html = '';
+        html += `<td>${buildSelect(`variants[${idx}][size]`, sizeOptions)}</td>`;
+        html += `<td>${buildSelect(`variants[${idx}][color]`, colorOptions)}</td>`;
+        ['custom_option', 'weight', 'material'].forEach((field) => {
+            html += `<td><input type="text" name="variants[${idx}][${field}]" class="form-control form-control-sm"></td>`;
+        });
+        html += `<td><input type="number" name="variants[${idx}][price]" class="form-control form-control-sm" min="0" step="0.01"></td>`;
+        html += `<td><input type="number" name="variants[${idx}][stock_quantity]" class="form-control form-control-sm" min="0" value="0" required></td>`;
+        html += `<td><button type="button" class="btn btn-sm btn-outline-danger remove-variant-row"><i class="bi bi-x"></i></button></td>`;
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    }
+
+    addBtn.addEventListener('click', addVariantRow);
+    tbody.addEventListener('click', (event) => {
+        const btn = event.target.closest('.remove-variant-row');
+        if (btn) btn.closest('tr').remove();
+    });
+
+    addVariantRow();
+})();
+
 document.querySelectorAll('.product-upload-form').forEach((form) => {
     form.addEventListener('submit', function (event) {
         const maxFileSize = 16 * 1024 * 1024;
