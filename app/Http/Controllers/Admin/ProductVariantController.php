@@ -11,16 +11,21 @@ class ProductVariantController extends Controller
     public function store(Request $request, Product $product)
     {
         $data = $request->validate([
-            'variants'                => 'required|array',
-            'variants.*.sku'          => 'nullable|string',
-            'variants.*.size'         => 'nullable|string',
-            'variants.*.color'        => 'nullable|string',
-            'variants.*.weight'       => 'nullable|string',
-            'variants.*.price'        => 'nullable|numeric|min:0',
-            'variants.*.stock_quantity'=> 'required|integer|min:0',
+            'variants'                      => 'required|array',
+            'variants.*.size'               => 'nullable|string',
+            'variants.*.color'              => 'nullable|string',
+            'variants.*.weight'             => 'nullable|string',
+            'variants.*.material'           => 'nullable|string',
+            'variants.*.custom_option'      => 'nullable|string',
+            'variants.*.price'              => 'nullable|numeric|min:0',
+            'variants.*.stock_quantity'     => 'required|integer|min:0',
         ]);
 
         foreach ($data['variants'] as $variantData) {
+            if (empty($variantData['size']) && empty($variantData['color']) && empty($variantData['custom_option'])) {
+                continue;
+            }
+            $variantData['sku'] = ProductVariant::generateSku($product, $variantData);
             $product->variants()->create($variantData);
         }
 
@@ -30,14 +35,16 @@ class ProductVariantController extends Controller
     public function update(Request $request, Product $product, ProductVariant $variant)
     {
         $data = $request->validate([
-            'sku'            => 'nullable|string',
             'size'           => 'nullable|string',
             'color'          => 'nullable|string',
             'weight'         => 'nullable|string',
+            'material'       => 'nullable|string',
+            'custom_option'  => 'nullable|string',
             'price'          => 'nullable|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
         ]);
 
+        $data['sku'] = ProductVariant::generateSku($product, $data, $variant->id);
         $variant->update($data);
         return back()->with('success', 'Variant updated.');
     }

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Services\ActivityLogService;
 use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -100,7 +101,17 @@ class ProductController extends Controller
             'seo_description'    => 'nullable|string',
             'seo_keywords'       => 'nullable|string',
             'duplicate_product_id'=> 'nullable|exists:products,id',
+            'variants'                  => 'nullable|array',
+            'variants.*.size'           => 'nullable|string',
+            'variants.*.color'          => 'nullable|string',
+            'variants.*.weight'         => 'nullable|string',
+            'variants.*.material'       => 'nullable|string',
+            'variants.*.custom_option'  => 'nullable|string',
+            'variants.*.price'          => 'nullable|numeric|min:0',
+            'variants.*.stock_quantity' => 'nullable|integer|min:0',
         ]);
+        $variants = $data['variants'] ?? [];
+        unset($data['variants']);
 
         $sourceProduct = null;
         if (!empty($data['duplicate_product_id'])) {
@@ -131,6 +142,15 @@ class ProductController extends Controller
         if ($sourceProduct) {
             $this->copyGalleryImages($sourceProduct, $product);
             $this->copyVariants($sourceProduct, $product);
+        }
+
+        foreach ($variants as $variantData) {
+            if (empty($variantData['size']) && empty($variantData['color']) && empty($variantData['custom_option'])) {
+                continue;
+            }
+            $variantData['stock_quantity'] = $variantData['stock_quantity'] ?? 0;
+            $variantData['sku'] = ProductVariant::generateSku($product, $variantData);
+            $product->variants()->create($variantData);
         }
 
         $this->storeGalleryImages($request, $product);

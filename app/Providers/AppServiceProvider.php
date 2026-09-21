@@ -65,6 +65,9 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('currencySymbol', '৳');
             }
 
+            // Coin system feature flag
+            $view->with('coinSystemEnabled', coin_system_enabled());
+
             try {
                 $view->with('navCategories', Category::active()
                     ->parent()

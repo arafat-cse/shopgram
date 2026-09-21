@@ -88,6 +88,28 @@
                 </div>
             </div>
 
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold">Variants</div>
+                <div class="card-body">
+                    @php
+                        $variantSizeOptions = \App\Enums\VariantSize::values();
+                        $variantColorOptions = \App\Enums\VariantColor::values();
+                    @endphp
+                    <small class="text-muted d-block mb-2">Optional. Add size/color variants now, or add them later from the edit page.</small>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle" id="variantAddTable">
+                            <thead>
+                                <tr>
+                                    <th>Size</th><th>Color</th><th>Custom Option</th><th>Weight</th><th>Material</th><th>Price (৳)</th><th>Stock</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="addVariantRowBtn"><i class="bi bi-plus-lg"></i> Add Row</button>
+                </div>
+            </div>
+
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white fw-bold">SEO</div>
                 <div class="card-body">
@@ -193,6 +215,45 @@
 </form>
 @push('scripts')
 <script>
+(function () {
+    const tbody = document.querySelector('#variantAddTable tbody');
+    const addBtn = document.getElementById('addVariantRowBtn');
+    if (!tbody || !addBtn) return;
+
+    const sizeOptions = @json($variantSizeOptions);
+    const colorOptions = @json($variantColorOptions);
+
+    function buildSelect(name, options) {
+        const opts = ['<option value="">—</option>']
+            .concat(options.map((opt) => `<option value="${opt}">${opt}</option>`));
+        return `<select name="${name}" class="form-select form-select-sm">${opts.join('')}</select>`;
+    }
+
+    let rowIndex = 0;
+
+    function addVariantRow() {
+        const idx = rowIndex++;
+        const tr = document.createElement('tr');
+        let html = '';
+        html += `<td>${buildSelect(`variants[${idx}][size]`, sizeOptions)}</td>`;
+        html += `<td>${buildSelect(`variants[${idx}][color]`, colorOptions)}</td>`;
+        ['custom_option', 'weight', 'material'].forEach((field) => {
+            html += `<td><input type="text" name="variants[${idx}][${field}]" class="form-control form-control-sm"></td>`;
+        });
+        html += `<td><input type="number" name="variants[${idx}][price]" class="form-control form-control-sm" min="0" step="0.01"></td>`;
+        html += `<td><input type="number" name="variants[${idx}][stock_quantity]" class="form-control form-control-sm" min="0" value="0" required></td>`;
+        html += `<td><button type="button" class="btn btn-sm btn-outline-danger remove-variant-row"><i class="bi bi-x"></i></button></td>`;
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    }
+
+    addBtn.addEventListener('click', addVariantRow);
+    tbody.addEventListener('click', (event) => {
+        const btn = event.target.closest('.remove-variant-row');
+        if (btn) btn.closest('tr').remove();
+    });
+})();
+
 document.querySelectorAll('.product-upload-form').forEach((form) => {
     form.addEventListener('submit', function (event) {
         const maxFileSize = 16 * 1024 * 1024;
