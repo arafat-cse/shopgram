@@ -9,12 +9,11 @@ const { registerSocketHandlers } = require('./socket-handlers');
 function createService() {
     const app = express();
     const server = http.createServer(app);
-    const allowedOrigins = new Set(config.allowedOrigins);
 
     const io = new Server(server, {
         cors: {
             origin: (origin, callback) => {
-                if (!origin || allowedOrigins.has(origin)) {
+                if (!origin || config.isAllowedOrigin(origin)) {
                     return callback(null, true);
                 }
 

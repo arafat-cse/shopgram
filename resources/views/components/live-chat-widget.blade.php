@@ -247,9 +247,33 @@
     };
 
     // ── Socket connection ────────────────────────────────────────────────────
+    function waitForIo(timeoutMs = 6000) {
+        return new Promise((resolve) => {
+            const started = Date.now();
+            (function check() {
+                if (typeof io !== 'undefined') return resolve(true);
+                if (Date.now() - started > timeoutMs) return resolve(false);
+                setTimeout(check, 250);
+            })();
+        });
+    }
+
     async function connectSocket(session) {
         if (socket) { socket.disconnect(); socket = null; }
-        if (typeof io === 'undefined') return;
+
+        const bar = document.getElementById('lc-status-bar');
+        const showBar = (text) => {
+            bar.textContent = text;
+            bar.classList.add('show');
+            setTimeout(() => bar.classList.remove('show'), 4000);
+        };
+        showBar('Connecting to support…');
+
+        const loaded = await waitForIo();
+        if (typeof io === 'undefined') {
+            showBar('Chat is temporarily unavailable.');
+            return;
+        }
 
         try {
             const tokenRes = await fetch('/api/livechat/token', {
@@ -265,12 +289,7 @@
                 reconnectionAttempts: 5,
             });
 
-            socket.on('connect', () => {
-                const bar = document.getElementById('lc-status-bar');
-                bar.textContent = 'Connected to support';
-                bar.classList.add('show');
-                setTimeout(() => bar.classList.remove('show'), 3000);
-            });
+            socket.on('connect', () => showBar('Connected to support'));
 
             socket.on('new_message', (msg) => {
                 const box = document.getElementById('lc-messages');
@@ -449,7 +468,19 @@
         window.__lcSocketLoaded = true;
         const s = document.createElement('script');
         s.src = NODE_URL + '/socket.io/socket.io.js';
-        s.onerror = () => console.warn('[livechat] socket.io not loaded — chat will work without real-time');
+        s.onerror = () => {
+            // Retry against the hostname the page itself was served from —
+            // covers stale CHAT_NODE_URL after a LAN IP change.
+            const fallback = `${location.protocol}//${location.hostname}:3001/socket.io/socket.io.js`;
+            if (s.src !== fallback) {
+                const r = document.createElement('script');
+                r.src = fallback;
+                r.onerror = () => console.warn('[livechat] socket.io not loaded — chat will work without real-time');
+                document.head.appendChild(r);
+            } else {
+                console.warn('[livechat] socket.io not loaded — chat will work without real-time');
+            }
+        };
         document.head.appendChild(s);
     }
 })();
