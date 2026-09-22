@@ -15,6 +15,8 @@ class SearchController extends Controller
             ->where('name', 'like', "%{$q}%")
             ->orWhere('sku', 'like', "%{$q}%")
             ->with('category')
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->paginate(12);
 
         return view('frontend.search.index', compact('products', 'q'));

@@ -30,7 +30,11 @@ class HomeController extends Controller
 
         $categories   = Category::active()
             ->parent()
-            ->with(['products', 'children.products'])
+            ->with([
+                'children:id,parent_id,name,slug',
+                'products:id,category_id,thumbnail',
+                'children.products:id,category_id,thumbnail',
+            ])
             ->orderByRaw(
                 'CASE name ' . collect($featuredCategoryNames)
                     ->map(fn($name, $index) => "WHEN ? THEN {$index}")
@@ -40,13 +44,13 @@ class HomeController extends Controller
             ->orderBy('name')
             ->get();
         $brands       = Brand::active()->take(12)->get();
-        $featured     = Product::active()->featured()->with(['category', 'brand'])->take(8)->get();
-        $newArrivals  = Product::active()->newArrivals()->with('category')->take(8)->get();
-        $bestSelling  = Product::active()->bestSelling()->with(['category', 'brand'])->take(4)->get();
-        $discounts    = Product::active()->whereNotNull('sale_price')->with('category')->take(8)->get();
-        $coinProducts = Product::active()->where('coin_reward', '>', 0)->with('category')->take(8)->get();
-        $coinShopProducts = Product::active()->coinRedeemable()->where('stock_quantity', '>', 0)->take(8)->get();
-        $allProducts  = Product::active()->with('category')->latest()->take(12)->get();
+        $featured     = Product::active()->featured()->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating')->take(8)->get();
+        $newArrivals  = Product::active()->newArrivals()->with('category')->withCount('reviews')->withAvg('reviews', 'rating')->take(8)->get();
+        $bestSelling  = Product::active()->bestSelling()->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating')->take(4)->get();
+        $discounts    = Product::active()->whereNotNull('sale_price')->with('category')->withCount('reviews')->withAvg('reviews', 'rating')->take(8)->get();
+        $coinProducts = Product::active()->where('coin_reward', '>', 0)->with('category')->withCount('reviews')->withAvg('reviews', 'rating')->take(8)->get();
+        $coinShopProducts = Product::active()->coinRedeemable()->where('stock_quantity', '>', 0)->withCount('reviews')->withAvg('reviews', 'rating')->take(8)->get();
+        $allProducts  = Product::active()->with('category')->withCount('reviews')->withAvg('reviews', 'rating')->latest()->take(12)->get();
         $recentProducts = $recentlyViewed->get();
         $cartSubtotal = auth()->check() ? $cartService->getSubtotal(auth()->user()) : 0;
 

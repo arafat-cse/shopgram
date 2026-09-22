@@ -13,7 +13,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::active()->with(['category', 'brand']);
+        $query = Product::active()->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating');
         $this->applyFilters($query, $request);
 
         $products = $query->paginate(12)->withQueryString();
@@ -86,7 +86,7 @@ class ProductController extends Controller
         $product = Product::active()->where('slug', $slug)->with(['category', 'brand', 'images', 'variants', 'reviews.user'])->firstOrFail();
         $recentProducts = $recentlyViewed->get($product);
         $recentlyViewed->record($product);
-        $related = Product::active()->where('category_id', $product->category_id)->where('id', '!=', $product->id)->take(6)->get();
+        $related = Product::active()->where('category_id', $product->category_id)->where('id', '!=', $product->id)->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating')->take(6)->get();
 
         $soldLast24h = OrderItem::where('product_id', $product->id)
             ->where('created_at', '>=', now()->subHours(24))
@@ -116,7 +116,7 @@ class ProductController extends Controller
 
     public function bestSellers(Request $request)
     {
-        $query = Product::active()->bestSelling()->with(['category', 'brand']);
+        $query = Product::active()->bestSelling()->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating');
         $this->applyFilters($query, $request);
 
         $products = $query->paginate(12)->withQueryString();
@@ -131,7 +131,7 @@ class ProductController extends Controller
 
     public function offers(Request $request)
     {
-        $query = Product::active()->whereNotNull('sale_price')->with(['category', 'brand']);
+        $query = Product::active()->whereNotNull('sale_price')->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating');
         $this->applyFilters($query, $request);
 
         $products = $query->paginate(12)->withQueryString();
@@ -146,7 +146,7 @@ class ProductController extends Controller
 
     public function newArrivals(Request $request)
     {
-        $query = Product::active()->newArrivals()->with(['category', 'brand']);
+        $query = Product::active()->newArrivals()->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating');
         $this->applyFilters($query, $request);
 
         $products = $query->paginate(12)->withQueryString();

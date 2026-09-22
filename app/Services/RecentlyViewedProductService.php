@@ -45,6 +45,8 @@ class RecentlyViewedProductService
 
         return Product::active()
             ->with(['category', 'brand'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->whereIn('id', $ids)
             ->get()
             ->sortBy(fn (Product $product) => $ids->search($product->id))

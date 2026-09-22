@@ -990,7 +990,12 @@
                                 @if($product->sale_price && $product->regular_price > $product->sale_price)
                                     <span class="save-badge">Save &#2547;{{ number_format($product->regular_price - $product->sale_price, 0) }}</span>
                                 @endif
-                                @php $reviewCount = $product->reviews()->count(); $avgRating = $product->average_rating; @endphp
+                                @php
+                                    $reviewCount = $product->reviews_count ?? $product->reviews()->count();
+                                    $avgRating = array_key_exists('reviews_avg_rating', $product->getAttributes())
+                                        ? (float) ($product->reviews_avg_rating ?? 0)
+                                        : $product->average_rating;
+                                @endphp
                                 @if($reviewCount > 0)
                                     <div class="d-flex align-items-center gap-1 mb-1" style="font-size:.8rem">
                                         @for($i = 1; $i <= 5; $i++)

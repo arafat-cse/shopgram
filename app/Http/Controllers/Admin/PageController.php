@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use App\Services\ActivityLogService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class PageController extends Controller
@@ -31,6 +32,7 @@ class PageController extends Controller
         $data['show_in_footer'] = $request->boolean('show_in_footer');
         $data['slug'] = Str::slug($data['title']);
         $page = Page::create($data);
+        Cache::forget('footer_pages');
         ActivityLogService::created('Page', $page->id, "Created page \"{$page->title}\"");
 
         return redirect()->route('admin.pages.index')->with('success', 'Page created.');
@@ -51,6 +53,7 @@ class PageController extends Controller
 
         $data['show_in_footer'] = $request->boolean('show_in_footer');
         $page->update($data);
+        Cache::forget('footer_pages');
         ActivityLogService::updated('Page', $page->id, "Updated page \"{$page->title}\"");
         return redirect()->route('admin.pages.index')->with('success', 'Page updated.');
     }
@@ -59,6 +62,7 @@ class PageController extends Controller
     {
         ActivityLogService::deleted('Page', $page->id, "Deleted page \"{$page->title}\"");
         $page->delete();
+        Cache::forget('footer_pages');
         return back()->with('success', 'Page deleted.');
     }
 

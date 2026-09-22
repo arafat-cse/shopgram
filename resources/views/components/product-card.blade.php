@@ -30,7 +30,12 @@
                 <span class="badge bg-warning text-dark"><i class="bi bi-coin"></i> Earn {{ $product->coin_reward }} coins</span>
             </div>
         @endif
-        @php $reviewCount = $product->reviews()->count(); $avgRating = $product->average_rating; @endphp
+        @php
+            $reviewCount = $product->reviews_count ?? $product->reviews()->count();
+            $avgRating = array_key_exists('reviews_avg_rating', $product->getAttributes())
+                ? (float) ($product->reviews_avg_rating ?? 0)
+                : $product->average_rating;
+        @endphp
         @if($reviewCount > 0)
             <div class="d-flex align-items-center gap-1 mb-2" style="font-size:.8rem">
                 @for($i = 1; $i <= 5; $i++)

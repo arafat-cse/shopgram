@@ -12,7 +12,9 @@ class WishlistController extends Controller
 
     public function index()
     {
-        $wishlist = auth()->user()->wishlist()->with('product.category')->paginate(12);
+        $wishlist = auth()->user()->wishlist()
+            ->with(['product' => fn ($q) => $q->with('category')->withCount('reviews')->withAvg('reviews', 'rating')])
+            ->paginate(12);
         return view('customer.wishlist.index', compact('wishlist'));
     }
 

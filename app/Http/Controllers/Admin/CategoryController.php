@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Services\ActivityLogService;
 
@@ -44,6 +45,7 @@ class CategoryController extends Controller
         }
 
         $category = Category::create($data);
+        Cache::forget('nav_categories');
 
         ActivityLogService::created('Category', $category->id, "Created category \"{$category->name}\"");
         return redirect()->route('admin.categories.index')->with('success', 'Category created.');
@@ -79,6 +81,7 @@ class CategoryController extends Controller
         }
 
         $category->update($data);
+        Cache::forget('nav_categories');
 
         ActivityLogService::updated('Category', $category->id, "Updated category \"{$category->name}\"");
         return redirect()->route('admin.categories.index')->with('success', 'Category updated.');
@@ -88,6 +91,7 @@ class CategoryController extends Controller
     {
         ActivityLogService::deleted('Category', $category->id, "Deleted category \"{$category->name}\"");
         $category->delete();
+        Cache::forget('nav_categories');
         return back()->with('success', 'Category deleted.');
     }
 
