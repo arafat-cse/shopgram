@@ -7,6 +7,9 @@
 
     # Proxy live-chat Socket.IO traffic to the Node chat service (same-origin,
     # so it works under HTTPS without a separate port / mixed-content block).
+    # 127.0.0.1 is intentional, not a local-dev leftover: in production the
+    # Node process runs on this same server, so the proxy target stays
+    # 127.0.0.1 regardless of the server's public domain/IP.
     <IfModule mod_proxy.c>
         RewriteCond %{HTTP:Upgrade} =websocket [NC]
         RewriteRule ^socket\.io/(.*)$ ws://127.0.0.1:3001/socket.io/$1 [P,L]

@@ -119,13 +119,13 @@ cPanel → **Cron Jobs** → নিচের দুইটা যোগ করো
 
 ## ৬. Node (Chat Service) — ঠিক যেভাবে এখন আছে সেভাবেই, PM2 দিয়ে
 
-`chat-service/` ফোল্ডারটা লোকালে যেভাবে আছে (সাথে `node_modules/`, `package-lock.json`, `server.js`, `service/`) ঠিক সেভাবেই zip করে আপলোড করো — আলাদা করে npm install করার দরকার নেই। `.env`-ও production মান দিয়ে আগেই বসানো আছে:
+`chat-service/` ফোল্ডারটা লোকালে যেভাবে আছে (সাথে `node_modules/`, `package-lock.json`, `server.js`, `service/`) ঠিক সেভাবেই zip করে আপলোড করো — আলাদা করে npm install করার দরকার নেই।
 
-```env
-PORT=3001
-LARAVEL_URL=https://tech.mysatra.com
-CHAT_INTERNAL_KEY=shopgram_chat_secret_key_2024
-```
+> **গুরুত্বপূর্ণ:** লোকাল মেশিনের `chat-service/.env`-এ `LARAVEL_URL=http://127.0.0.1:8000` আছে — এটা শুধু লোকাল টেস্টিংয়ের জন্য (chat-service তার নিজের মেশিনেই চলা Laravel-কে কল করে)। Zip বানানোর **ঠিক আগে** এটা production মান দিয়ে বদলে নাও:
+> ```bash
+> cp chat-service/.env.production chat-service/.env
+> ```
+> (`chat-service/.env.production`-এ `LARAVEL_URL=https://tech.mysatra.com` আগে থেকেই বসানো আছে)। এটা না করলে Node সার্ভার লোকাল Laravel-কে কল করার চেষ্টা করবে, যেটা production সার্ভারে নেই — মেসেজ সেভ হবে না।
 
 ### আপলোডের পর (Terminal/SSH দিয়ে)
 
