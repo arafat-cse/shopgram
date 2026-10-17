@@ -5,6 +5,15 @@
 
     RewriteEngine On
 
+    # Proxy live-chat Socket.IO traffic to the Node chat service (same-origin,
+    # so it works under HTTPS without a separate port / mixed-content block).
+    <IfModule mod_proxy.c>
+        RewriteCond %{HTTP:Upgrade} =websocket [NC]
+        RewriteRule ^socket\.io/(.*)$ ws://127.0.0.1:3001/socket.io/$1 [P,L]
+        RewriteCond %{HTTP:Upgrade} !=websocket [NC]
+        RewriteRule ^socket\.io/(.*)$ http://127.0.0.1:3001/socket.io/$1 [P,L]
+    </IfModule>
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

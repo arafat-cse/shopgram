@@ -9,8 +9,8 @@
 - **Subdomain**: `tech.mysatra.com` (cPanel → Domains → Create A New Domain/Subdomain)
 - **PHP 8.2+** (cPanel → MultiPHP Manager-এ এই subdomain-এর জন্য select করো)
 - **MySQL Database** (cPanel → MySQL Databases)
-- **Setup Node.js App** অপশন (cPanel → Software, CloudLinux থাকলে এটা থাকবেই)
-- **Terminal** অপশন থাকলে ভালো (cPanel → Advanced → Terminal) — না থাকলে নিচে ছাড়াই করার উপায় দেওয়া আছে
+- **Terminal/SSH access** — chat-service PM2 দিয়ে চালাতে এটা লাগবেই (shared hosting-এ সাধারণত থাকে না, VPS/cPanel+root হলে থাকে)
+- Node.js 18+ ও PM2 সার্ভারে ইনস্টল করার সুবিধা
 
 ---
 
@@ -117,42 +117,64 @@ cPanel → **Cron Jobs** → নিচের দুইটা যোগ করো
 
 ---
 
-## ৬. Node (Chat Service) — cPanel "Setup Node.js App"
+## ৬. Node (Chat Service) — ঠিক যেভাবে এখন আছে সেভাবেই, PM2 দিয়ে
 
-PM2 লাগবে না — cPanel নিজেই Node প্রসেস manage করে (Passenger দিয়ে)।
+`chat-service/` ফোল্ডারটা লোকালে যেভাবে আছে (সাথে `node_modules/`, `package-lock.json`, `server.js`, `service/`) ঠিক সেভাবেই zip করে আপলোড করো — আলাদা করে npm install করার দরকার নেই। `.env`-ও production মান দিয়ে আগেই বসানো আছে:
 
-cPanel → **Software → Setup Node.js App → Create Application**:
+```env
+PORT=3001
+LARAVEL_URL=https://tech.mysatra.com
+CHAT_INTERNAL_KEY=shopgram_chat_secret_key_2024
+```
 
-| ফিল্ড | মান |
-|---|---|
-| Node.js version | সর্বশেষ LTS (18+) |
-| Application mode | Production |
-| Application root | `shopgram/chat-service` |
-| Application URL | `chat.mysatra.com` (আলাদা সাবডোমেইন) **বা** `tech.mysatra.com/chat-socket` |
-| Application startup file | `server.js` |
+### আপলোডের পর (Terminal/SSH দিয়ে)
 
-**Create** করার পর ঐ app-এর পেজেই:
+```bash
+cd ~/shopgram/chat-service
 
-1. **Environment variables** সেকশনে যোগ করো:
-   ```
-   LARAVEL_URL=https://tech.mysatra.com
-   CHAT_INTERNAL_KEY=shopgram_chat_secret_key_2024
-   ```
-   (`PORT` নিজে সেট করবে না — cPanel/Passenger নিজে থেকে একটা পোর্ট assign করে `process.env.PORT`-এ দেয়, `chat-service/service/config.js` ইতিমধ্যে এটা পড়ে)
+# node_modules যদি zip-এ না থাকে (OS আলাদা হলে ভালো) তাহলে একবার
+npm install --production
 
-2. **"Run NPM Install"** বাটনে ক্লিক করো (এটাই composer install-এর Node ভার্সন)
+# PM2 না থাকলে
+npm install -g pm2
 
-3. **Restart** চাপো
+pm2 start server.js --name shopgram-chat
+pm2 save
+pm2 startup   # সার্ভার রিবুটে auto-start
+```
 
-4. Application URL-টাই হবে তোমার `CHAT_NODE_URL` — Laravel-এর `.env`-এ বসাও:
-   ```env
-   CHAT_NODE_URL=https://chat.mysatra.com
-   ```
-   (পোর্ট নম্বর লাগবে না, Passenger সরাসরি HTTPS দিয়েই proxy করে)
+Health check:
+```bash
+curl http://127.0.0.1:3001/health
+# {"status":"ok","service":"shopgram-chat-service"}
+```
 
-> **ওয়েবসকেট নোট:** Socket.io ব্যবহার করে বলে real-time chat কাজ করতে হলে হোস্টের Passenger/Apache-এ WebSocket proxying enabled থাকতে হবে। বেশিরভাগ আধুনিক cPanel/CloudLinux সার্ভারে এটা ডিফল্টভাবেই কাজ করে, কিন্তু চালু করার পর সত্যিকারের ব্রাউজার থেকে একটা মেসেজ পাঠিয়ে টেস্ট করে নিশ্চিত হয়ে নাও (ধাপ ৭ দেখো)। কাজ না করলে হোস্টিং সাপোর্টকে "Node.js WebSocket/Passenger ws proxying" enable করতে বলতে হবে।
+> বিস্তারিত PM2 কমান্ড (restart, logs, dev mode, troubleshooting) — [chat-service/chat-setup.md](chat-service/chat-setup.md)
 
-Code আপডেট করলে: Setup Node.js App পেজে গিয়ে **Restart** চাপলেই হবে।
+### Same-origin reverse proxy (পোর্ট খোলার দরকার নেই)
+
+পোর্ট `3001` সরাসরি বাইরে expose করার বদলে `public/.htaccess`-এ ইতিমধ্যে একটা proxy rule যোগ করে দেওয়া হয়েছে:
+
+```apache
+<IfModule mod_proxy.c>
+    RewriteCond %{HTTP:Upgrade} =websocket [NC]
+    RewriteRule ^socket\.io/(.*)$ ws://127.0.0.1:3001/socket.io/$1 [P,L]
+    RewriteCond %{HTTP:Upgrade} !=websocket [NC]
+    RewriteRule ^socket\.io/(.*)$ http://127.0.0.1:3001/socket.io/$1 [P,L]
+</IfModule>
+```
+
+এর মানে ব্রাউজার `https://tech.mysatra.com/socket.io/...` এ কানেক্ট করবে, Apache সেটা ভেতরে ভেতরে লোকাল পোর্ট `3001`-এ পাঠিয়ে দেবে। তাই:
+- `.env`-এ `CHAT_NODE_URL=https://tech.mysatra.com` (পোর্ট ছাড়া) — আগেই সেট করা আছে
+- `3001` পোর্ট ফায়ারওয়ালে বাইরের জন্য খোলার দরকার নেই, শুধু লোকালহোস্টে (`127.0.0.1`) চললেই হবে
+- HTTPS সাইটে mixed-content ব্লক হবে না, কারণ chat ট্রাফিক একই ডোমেইন দিয়ে যাচ্ছে
+
+> **শর্ত:** সার্ভারের Apache-এ `mod_proxy`, `mod_proxy_http`, `mod_proxy_wstunnel` enable থাকতে হবে। WHM থাকলে *EasyApache 4 → Apache Modules* থেকে চেক/enable করো। শুধু cPanel (WHM access নেই) হলে হোস্টিং সাপোর্টকে এই তিনটা মডিউল enable করতে বলতে হবে।
+
+Code আপডেট করলে:
+```bash
+pm2 restart shopgram-chat
+```
 
 ---
 
@@ -165,7 +187,7 @@ Code আপডেট করলে: Setup Node.js App পেজে গিয়�
 - [ ] Google login কাজ করছে (Google Cloud Console-এ `https://tech.mysatra.com/auth/google/callback` redirect URI যোগ করা আছে কিনা)
 - [ ] SSL সক্রিয় (cPanel → SSL/TLS Status → AutoSSL চালু করো, `SESSION_SECURE_COOKIE=true` থাকায় HTTPS ছাড়া লগইন কাজ করবে না)
 - [ ] cPanel → Cron Jobs-এ দুটো job-ই আছে এবং চলছে
-- [ ] Setup Node.js App পেজে chat app-এর status "Started" দেখাচ্ছে
+- [ ] `pm2 list` এ `shopgram-chat` status `online` দেখাচ্ছে
 
 ---
 
@@ -180,4 +202,8 @@ npm run build
 php artisan config:cache route:cache view:cache
 ```
 
-Node চেঞ্জ হলে → **Setup Node.js App** পেজে গিয়ে **Restart**।
+Node (`chat-service/`) চেঞ্জ হলে:
+```bash
+cd ~/shopgram/chat-service
+pm2 restart shopgram-chat
+```
