@@ -14,7 +14,7 @@ class AdminUserSeeder extends Seeder
             [
                 'name'     => 'Super Admin',
                 'phone'    => '01700000000',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('tech@1234'),
                 'status'   => 'active',
             ]
         );
@@ -25,7 +25,7 @@ class AdminUserSeeder extends Seeder
             [
                 'name'     => 'Arafat',
                 'phone'    => '01700000001',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('tech@1234'),
                 'status'   => 'active',
             ]
         );
