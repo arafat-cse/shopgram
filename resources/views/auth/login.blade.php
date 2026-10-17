@@ -2,146 +2,243 @@
 @section('title', 'Login')
 @push('styles')
 <style>
-    .login-orbit {
-        width: 108px;
-        height: 108px;
-        position: relative;
-        margin: 0 auto 1.25rem;
-        border-radius: 50%;
-        background: radial-gradient(circle at center, rgba(233, 30, 99, .14), rgba(233, 30, 99, .04) 48%, transparent 50%);
+    .auth-wrap {
+        min-height: calc(100vh - 220px);
         display: flex;
         align-items: center;
-        justify-content: center;
+        padding: 2.5rem 0;
     }
 
-    .login-orbit::before,
-    .login-orbit::after {
+    .auth-card {
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(109, 40, 217, .14);
+        background: #fff;
+    }
+
+    .auth-side {
+        background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: #fff;
+        padding: 3rem 2.5rem;
+        position: relative;
+        overflow: hidden;
+        min-height: 100%;
+    }
+
+    .auth-side::before {
         content: "";
         position: absolute;
-        inset: 10px;
+        width: 280px;
+        height: 280px;
         border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: #e91e63;
-        border-right-color: rgba(233, 30, 99, .28);
-        animation: loginSpin 3.2s linear infinite;
+        background: rgba(255, 255, 255, .08);
+        top: -90px;
+        right: -90px;
     }
 
-    .login-orbit::after {
-        inset: 22px;
-        border-top-color: rgba(245, 130, 31, .9);
-        border-right-color: rgba(245, 130, 31, .22);
-        animation-duration: 2.2s;
-        animation-direction: reverse;
+    .auth-side::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .06);
+        bottom: -60px;
+        left: -50px;
     }
 
-    .login-lock {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        background: #fff;
-        color: #e91e63;
-        box-shadow: 0 12px 30px rgba(233, 30, 99, .18);
+    .auth-side-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .16);
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-bottom: 1.5rem;
+        position: relative;
         z-index: 1;
-        animation: loginFloat 2.4s ease-in-out infinite;
     }
 
-    .login-spark {
+    .auth-side h3, .auth-side p, .auth-feature { position: relative; z-index: 1; }
+
+    .auth-feature {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: 1.1rem;
+    }
+
+    .auth-feature .feat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, .15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: .95rem;
+    }
+
+    .auth-form-side {
+        padding: 3rem 2.5rem;
+    }
+
+    .input-icon-group {
+        position: relative;
+    }
+
+    .input-icon-group .field-icon {
         position: absolute;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #f5821f;
-        box-shadow: 0 0 0 6px rgba(245, 130, 31, .12);
-        animation: loginPulse 1.8s ease-in-out infinite;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        z-index: 3;
+        pointer-events: none;
     }
 
-    .login-spark.one { top: 14px; right: 24px; }
-    .login-spark.two { left: 18px; bottom: 24px; animation-delay: .45s; background: #e91e63; }
-
-    @keyframes loginSpin {
-        to { transform: rotate(360deg); }
+    .input-icon-group .form-control {
+        padding-left: 40px;
     }
 
-    @keyframes loginFloat {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 1.4rem 0;
+        color: #94a3b8;
+        font-size: .82rem;
     }
 
-    @keyframes loginPulse {
-        0%, 100% { transform: scale(.85); opacity: .65; }
-        50% { transform: scale(1.15); opacity: 1; }
+    .auth-divider hr { flex-grow: 1; margin: 0; }
+
+    .btn-google {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: .9rem;
+        padding: 10px;
+        transition: border-color .15s, background .15s;
+    }
+
+    .btn-google:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    .auth-submit-btn {
+        border-radius: 12px;
+        padding: 11px;
+        font-weight: 700;
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .auth-submit-btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+    @media (max-width: 767.98px) {
+        .auth-side { display: none; }
+        .auth-form-side { padding: 2rem 1.5rem; }
     }
 </style>
 @endpush
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <div class="login-orbit" aria-hidden="true">
-                        <span class="login-spark one"></span>
-                        <span class="login-spark two"></span>
-                        <span class="login-lock"><i class="bi bi-shield-lock fs-3"></i></span>
-                    </div>
+<div class="container">
+    <div class="auth-wrap">
+        <div class="row justify-content-center w-100">
+            <div class="col-lg-9 col-xl-8">
+                <div class="auth-card row g-0">
+                    <div class="col-md-5 auth-side">
+                        <div class="auth-side-icon"><i class="bi bi-shield-lock-fill fs-3"></i></div>
+                        <h3 class="fw-bold mb-2">Welcome back</h3>
+                        <p class="mb-4" style="opacity:.85;font-size:.92rem">
+                            Login to track orders, manage your wishlist, and check out faster.
+                        </p>
 
-                    @if(session('info'))
-                        <div class="alert alert-info">{{ session('info') }}</div>
-                    @endif
-
-                    <x-alert />
-
-                    <form method="POST" action="{{ route('login.post') }}">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Phone Number or Email</label>
-                            <input type="text" name="login" class="form-control @error('login') is-invalid @enderror"
-                                   value="{{ old('login') }}" required autofocus
-                                   placeholder="01XXXXXXXXX or email@example.com">
-                            @error('login')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label d-flex justify-content-between">
-                                Password
-                                <a href="{{ route('password.request') }}" class="small">Forgot password?</a>
-                            </label>
-                            <div class="input-group">
-                                <input type="password" name="password" id="login-password" class="form-control @error('password') is-invalid @enderror" required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('login-password', this)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="auth-feature">
+                            <span class="feat-icon"><i class="bi bi-truck"></i></span>
+                            <div>
+                                <div class="fw-semibold small">Order Tracking</div>
+                                <div class="small" style="opacity:.75">Real-time status on every order</div>
                             </div>
                         </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" name="remember" id="remember">
-                            <label class="form-check-label" for="remember">Remember me</label>
+                        <div class="auth-feature">
+                            <span class="feat-icon"><i class="bi bi-heart"></i></span>
+                            <div>
+                                <div class="fw-semibold small">Saved Wishlist</div>
+                                <div class="small" style="opacity:.75">Pick up right where you left off</div>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                    </form>
-
-                    <div class="my-3 d-flex align-items-center gap-2">
-                        <hr class="flex-grow-1 m-0">
-                        <span class="text-muted small px-1">or continue with</span>
-                        <hr class="flex-grow-1 m-0">
+                        <div class="auth-feature">
+                            <span class="feat-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+                            <div>
+                                <div class="fw-semibold small">Faster Checkout</div>
+                                <div class="small" style="opacity:.75">Your details, saved securely</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <a href="{{ route('auth.google') }}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2" style="border-radius:10px;font-weight:600;font-size:.9rem;padding:10px">
-                        <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                            <path fill="none" d="M0 0h48v48H0z"/>
-                        </svg>
-                        Continue with Google
-                    </a>
+                    <div class="col-md-7 auth-form-side">
+                        <h4 class="fw-bold mb-1">Login to your account</h4>
+                        <p class="text-muted small mb-4">Enter your details to continue</p>
 
-                    <hr class="mt-3">
-                    <p class="text-center mb-0 small">Don't have an account? <a href="{{ route('register') }}">Register here</a></p>
+                        @if(session('info'))
+                            <div class="alert alert-info">{{ session('info') }}</div>
+                        @endif
+
+                        <x-alert />
+
+                        <form method="POST" action="{{ route('login.post') }}">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number or Email</label>
+                                <div class="input-icon-group">
+                                    <i class="bi bi-person field-icon"></i>
+                                    <input type="text" name="login" class="form-control @error('login') is-invalid @enderror"
+                                           value="{{ old('login') }}" required autofocus
+                                           placeholder="01XXXXXXXXX or email@example.com">
+                                </div>
+                                @error('login')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label d-flex justify-content-between">
+                                    Password
+                                    <a href="{{ route('password.request') }}" class="small">Forgot password?</a>
+                                </label>
+                                <div class="input-icon-group">
+                                    <i class="bi bi-lock field-icon"></i>
+                                    <div class="input-group">
+                                        <input type="password" name="password" id="login-password" class="form-control @error('password') is-invalid @enderror" required>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('login-password', this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                @error('password')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" name="remember" id="remember">
+                                <label class="form-check-label small" for="remember">Remember me</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 auth-submit-btn">Login</button>
+                        </form>
+
+                        <div class="auth-divider">
+                            <hr><span>or continue with</span><hr>
+                        </div>
+
+                        <a href="{{ route('auth.google') }}" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2">
+                            <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                                <path fill="none" d="M0 0h48v48H0z"/>
+                            </svg>
+                            Continue with Google
+                        </a>
+
+                        <p class="text-center mt-4 mb-0 small">Don't have an account? <a href="{{ route('register') }}" class="fw-semibold">Register here</a></p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -519,20 +519,34 @@
 
 @push('scripts')
 <script>
-// Seeded "viewing now" — deterministic from product_id so it's consistent per product
+// Real "viewing now" count — each browser pings a heartbeat endpoint that
+// tracks live presence per product; the server returns the actual count.
 (function() {
-    const seed = {{ $product->id }};
-    const base = ((seed * 1103515245 + 12345) >>> 0) % 23 + 6; // 6–28
-    let current = base;
     const el = document.getElementById('viewingCount');
-    if (el) {
-        el.textContent = current;
-        setInterval(function() {
-            const delta = Math.random() < 0.5 ? 1 : -1;
-            current = Math.max(3, Math.min(38, current + delta));
-            el.textContent = current;
-        }, 8000);
+    if (!el) return;
+
+    let visitorKey = localStorage.getItem('tech_visitor_key');
+    if (!visitorKey) {
+        visitorKey = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random()));
+        localStorage.setItem('tech_visitor_key', visitorKey);
     }
+
+    const url = '{{ route("products.heartbeat", $product->id) }}';
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    function ping() {
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+            body: JSON.stringify({ visitor_key: visitorKey }),
+        })
+            .then(r => r.json())
+            .then(d => { if (typeof d.count === 'number') el.textContent = d.count; })
+            .catch(() => {});
+    }
+
+    ping();
+    setInterval(ping, 20000);
 })();
 
 const qtyInput = document.getElementById('qtyInput');

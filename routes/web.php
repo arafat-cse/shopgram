@@ -24,6 +24,7 @@ Route::get('/offers', [FrontProductController::class, 'offers'])->name('products
 Route::get('/new-arrivals', [FrontProductController::class, 'newArrivals'])->name('products.new-arrivals');
 Route::get('/products/{slug}', [FrontProductController::class, 'show'])->name('products.show');
 Route::get('/products/{slug}/quickview', [FrontProductController::class, 'quickView'])->name('products.quickview');
+Route::post('/products/{product}/heartbeat', [FrontProductController::class, 'heartbeat'])->name('products.heartbeat');
 Route::get('/category/{slug}', [FrontCategoryController::class, 'show'])->name('category.show');
 Route::get('/brands', [FrontBrandController::class, 'index'])->name('brands.index');
 Route::get('/brand/{slug}', [FrontBrandController::class, 'show'])->name('brand.show');

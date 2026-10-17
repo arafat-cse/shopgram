@@ -114,6 +114,32 @@ class ProductController extends Controller
         return view('frontend.products.show', compact('product', 'related', 'recentProducts', 'soldLast24h', 'canReview', 'unreviewedOrder'));
     }
 
+    public function heartbeat(Request $request, Product $product)
+    {
+        $visitorKey = (string) $request->string('visitor_key');
+        abort_if($visitorKey === '', 422);
+
+        $now = now();
+
+        \Illuminate\Support\Facades\DB::table('product_live_views')->updateOrInsert(
+            ['product_id' => $product->id, 'visitor_key' => $visitorKey],
+            ['last_seen_at' => $now]
+        );
+
+        // Opportunistically prune stale presence rows for this product.
+        \Illuminate\Support\Facades\DB::table('product_live_views')
+            ->where('product_id', $product->id)
+            ->where('last_seen_at', '<', $now->copy()->subSeconds(45))
+            ->delete();
+
+        $count = \Illuminate\Support\Facades\DB::table('product_live_views')
+            ->where('product_id', $product->id)
+            ->where('last_seen_at', '>=', $now->copy()->subSeconds(45))
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
     public function bestSellers(Request $request)
     {
         $query = Product::active()->bestSelling()->with(['category', 'brand'])->withCount('reviews')->withAvg('reviews', 'rating');
