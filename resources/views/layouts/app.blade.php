@@ -268,7 +268,16 @@
 {{-- Top Navigation --}}
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">{{ $siteName ?? 'Tech' }}</a>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('home') }}">
+            @if($siteLogo ?? null)
+                <img src="{{ asset('storage/'.$siteLogo) }}" alt="{{ $siteName ?? 'Tech' }}" style="height:36px;width:auto;object-fit:contain;">
+            @else
+                <span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width:34px;height:34px;background:var(--primary);color:#fff;">
+                    <i class="bi bi-cpu-fill" style="font-size:1.1rem;"></i>
+                </span>
+                <span>{{ $siteName ?? 'Tech' }}</span>
+            @endif
+        </a>
 
         {{-- Search --}}
         <form class="d-flex flex-grow-1 mx-2 mx-lg-4" action="{{ route('search.index') }}" method="GET">

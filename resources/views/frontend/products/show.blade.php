@@ -394,8 +394,11 @@
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">Reviews ({{ $product->reviews->count() }})</button></li>
         </ul>
         <div class="tab-content border border-top-0 p-4 rounded-bottom">
-            <div class="tab-pane fade show active" id="desc">{!! nl2br(e($product->description)) !!}</div>
-            @if($product->specification)<div class="tab-pane fade" id="spec">{!! nl2br(e($product->specification)) !!}</div>@endif
+            @php
+                $isHtml = fn ($text) => $text && strip_tags($text) !== $text;
+            @endphp
+            <div class="tab-pane fade show active" id="desc">{!! $isHtml($product->description) ? $product->description : nl2br(e($product->description)) !!}</div>
+            @if($product->specification)<div class="tab-pane fade" id="spec">{!! $isHtml($product->specification) ? $product->specification : nl2br(e($product->specification)) !!}</div>@endif
             <div class="tab-pane fade" id="reviews">
                 @forelse($product->reviews as $review)
                 <div class="border-bottom pb-3 mb-3">
