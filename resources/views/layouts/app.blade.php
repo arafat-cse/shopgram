@@ -503,6 +503,7 @@ document.addEventListener('DOMContentLoaded', function () {
 @stack('scripts')
 
 {{-- First-visit Facebook follow popup --}}
+@if($facebookUrl ?? null)
 <div class="modal fade" id="fbFollowModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
         <div class="modal-content border-0" style="border-radius:18px; overflow:hidden;">
@@ -533,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script>
 (function () {
-    const FB_PAGE_URL   = 'https://www.facebook.com/arafatcse4';
+    const FB_PAGE_URL   = @json($facebookUrl);
     const SEEN_KEY       = 'sg_fb_popup_seen_v1';
     const PENDING_KEY    = 'sg_fb_follow_pending_v1';
     const THANKED_KEY    = 'sg_fb_thanked_v1';
@@ -589,6 +590,7 @@ document.addEventListener('DOMContentLoaded', function () {
     modal.show();
 }());
 </script>
+@endif
 
 {{-- First-visit promotional popup --}}
 <div class="modal fade" id="promoPopupModal" tabindex="-1" aria-hidden="true">
@@ -842,8 +844,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Wait for the Facebook follow popup to close first (if it's about to show),
-    // otherwise run this popup right away.
-    if (localStorage.getItem('sg_fb_popup_seen_v1')) {
+    // otherwise run this popup right away. The fb popup element is absent
+    // entirely when no Facebook URL is configured in admin settings.
+    if (!document.getElementById('fbFollowModal') || localStorage.getItem('sg_fb_popup_seen_v1')) {
         runPromoPopup();
     } else {
         window.sgAfterFbPopup = runPromoPopup;

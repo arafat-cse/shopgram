@@ -57,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
                 'navCategories'     => collect(),
                 'footerPages'       => collect(),
                 'whatsappNumber'    => null,
+                'facebookUrl'       => null,
             ];
 
             if ($user = auth()->user()) {
@@ -69,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
                 $data['siteLogo'] = Setting::get('site_logo');
                 $data['currencySymbol'] = Setting::get('currency_symbol', '৳');
                 $data['whatsappNumber'] = Setting::get('whatsapp');
+                $data['facebookUrl'] = Setting::get('facebook');
             } catch (\Exception $e) {
             }
 
