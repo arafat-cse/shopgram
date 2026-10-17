@@ -68,7 +68,12 @@
                         </span>
                     </td>
                     <td class="fw-semibold small">৳{{ number_format($payment->amount, 0) }}</td>
-                    <td class="small font-monospace text-muted">{{ $payment->transaction_id ?: '—' }}</td>
+                    <td class="small font-monospace text-muted">
+                        {{ $payment->transaction_id ?: '—' }}
+                        @if($payment->payer_number)
+                            <div class="text-dark">{{ $payment->payer_number }}</div>
+                        @endif
+                    </td>
                     <td>
                         <span class="badge bg-{{ $payment->status === 'paid' ? 'success' : ($payment->status === 'failed' ? 'danger' : ($payment->status === 'refunded' ? 'warning text-dark' : 'secondary')) }}">
                             {{ ucfirst($payment->status) }}

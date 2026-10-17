@@ -45,7 +45,7 @@ class Order extends Model
     public function coinTransactions() { return $this->hasMany(CoinTransaction::class); }
 
     public static function generateOrderNumber(): string {
-        return 'SG-' . strtoupper(uniqid());
+        return 'TC-' . strtoupper(uniqid());
     }
 
     public function getStatusLabelAttribute(): string {

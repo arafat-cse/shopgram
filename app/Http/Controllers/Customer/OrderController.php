@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Services\CartService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -26,7 +27,15 @@ class OrderController extends Controller
     {
         abort_if($order->user_id !== auth()->id(), 403);
         $order->load(['items.product', 'items.variant', 'payment', 'courier']);
-        $pdf = Pdf::loadView('admin.orders.invoice', compact('order'));
+        $logo = Setting::get('site_logo');
+        $sender = [
+            'name'    => Setting::get('site_name', 'Tech'),
+            'logo'    => $logo ? public_path('storage/'.$logo) : null,
+            'phone'   => Setting::get('contact_phone'),
+            'email'   => Setting::get('contact_email'),
+            'address' => Setting::get('address'),
+        ];
+        $pdf = Pdf::loadView('admin.orders.invoice', compact('order', 'sender'));
         return $pdf->download("invoice-{$order->order_number}.pdf");
     }
 

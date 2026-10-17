@@ -37,7 +37,7 @@
         body.sidebar-collapsed .sidebar { width: 74px; }
         body.sidebar-collapsed .main-content { margin-left: 74px; }
         body.sidebar-collapsed .sidebar-brand { padding-left: .8rem; padding-right: .8rem; font-size: 0; text-align: center; }
-        body.sidebar-collapsed .sidebar-brand::before { content: 'SG'; font-size: 1.1rem; color: #fff; }
+        body.sidebar-collapsed .sidebar-brand::before { content: 'T'; font-size: 1.1rem; color: #fff; }
         body.sidebar-collapsed .sidebar .nav-link { justify-content: center; padding-left: .75rem; padding-right: .75rem; }
         body.sidebar-collapsed .sidebar .nav-link span,
         body.sidebar-collapsed .sidebar .nav-section { display: none; }
@@ -64,8 +64,8 @@
 
 {{-- Sidebar --}}
 <aside class="sidebar" id="sidebar">
-    <a class="sidebar-brand" href="{{ route('admin.dashboard') }}">Shop<span>Gram</span> Admin</a>
-    <nav class="sidebar-nav py-2">
+    <a class="sidebar-brand" href="{{ route('admin.dashboard') }}">{{ $siteName ?? 'Tech' }}<span> Admin</span></a>
+    <nav class="sidebar-nav py-2" id="sidebarNav">
         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
         </a>
@@ -92,6 +92,9 @@
         <div class="nav-section">Sales</div>
         <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
             <i class="bi bi-cart3"></i> <span>Orders</span>
+        </a>
+        <a href="{{ route('admin.invoice-labels.index') }}" class="nav-link {{ request()->routeIs('admin.invoice-labels.*') ? 'active' : '' }}">
+            <i class="bi bi-receipt"></i> <span>Invoice &amp; Labels</span>
         </a>
         <a href="{{ route('admin.payments.index') }}" class="nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
             <i class="bi bi-credit-card"></i> <span>Payments</span>
@@ -291,6 +294,16 @@ window.addEventListener('resize', function () {
         closeMobileSidebar();
     }
 });
+
+// Keep the active sidebar link in view across full page loads — without
+// this, every navigation scrolls the sidebar back to the top.
+(function () {
+    const nav = document.getElementById('sidebarNav');
+    const active = nav?.querySelector('.nav-link.active');
+    if (active) {
+        active.scrollIntoView({ block: 'center' });
+    }
+})();
 </script>
 <script>
 // ── Notification Bell + Chat Polling ──────────────────────────

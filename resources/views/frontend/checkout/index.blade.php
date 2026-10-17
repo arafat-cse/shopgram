@@ -90,15 +90,19 @@
                             <label class="form-check-label" for="payCod"><i class="bi bi-cash-coin me-1"></i>Cash on Delivery</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="payment_method" value="bank" id="payBank">
-                            <label class="form-check-label" for="payBank"><i class="bi bi-bank me-1"></i>Bank Transfer</label>
-                        </div>
-                        <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="payment_method" value="mobile" id="payMobile">
                             <label class="form-check-label" for="payMobile"><i class="bi bi-phone me-1"></i>Mobile Banking</label>
                         </div>
                         <div id="paymentScreenshotSection" style="display:none">
-                            <label class="form-label mt-2">Payment Screenshot</label>
+                            <div class="mb-2">
+                                <label class="form-label mt-2">Mobile Number <span class="text-muted">(the number you paid from)</span></label>
+                                <input type="text" name="payer_number" class="form-control" placeholder="01XXXXXXXXX">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Transaction ID <span class="text-muted">(optional)</span></label>
+                                <input type="text" name="transaction_id" class="form-control" placeholder="e.g. 8N7A2B3C4D">
+                            </div>
+                            <label class="form-label">Payment Screenshot</label>
                             <input type="file" name="payment_screenshot" class="form-control" accept="image/*">
                         </div>
                     </div>
@@ -141,7 +145,9 @@
 <script>
 document.querySelectorAll('input[name="payment_method"]').forEach(r => {
     r.addEventListener('change', function() {
-        document.getElementById('paymentScreenshotSection').style.display = (this.value === 'bank' || this.value === 'mobile') ? 'block' : 'none';
+        const show = this.value === 'mobile';
+        document.getElementById('paymentScreenshotSection').style.display = show ? 'block' : 'none';
+        document.querySelector('input[name="payer_number"]').required = show;
     });
 });
 

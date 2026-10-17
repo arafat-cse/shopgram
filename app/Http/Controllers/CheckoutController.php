@@ -82,6 +82,8 @@ class CheckoutController extends Controller
             'order_note'         => $request->order_note,
             'coupon_id'          => $coupon?->id,
             'payment_screenshot' => $screenshot,
+            'payer_number'       => $request->payer_number,
+            'transaction_id'     => $request->transaction_id,
         ]);
 
         session()->forget(['cart_coupon', 'cart_discount']);

@@ -303,7 +303,7 @@ class ProductController extends Controller
 
     private function uniqueSku(?string $sku): string
     {
-        $base = Str::upper(Str::slug($sku ?: 'SG-COPY-' . Str::random(6), '-'));
+        $base = Str::upper(Str::slug($sku ?: 'TC-COPY-' . Str::random(6), '-'));
         $candidate = "{$base}-COPY";
         $counter = 2;
 

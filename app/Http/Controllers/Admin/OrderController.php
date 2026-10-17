@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Courier;
+use App\Models\Setting;
 use App\Services\ActivityLogService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -99,16 +100,54 @@ class OrderController extends Controller
         return back()->with('success', 'Payment status updated.');
     }
 
+    public function invoiceLabels(Request $request)
+    {
+        $query = Order::with(['user', 'payment'])->whereNotIn('status', ['pending', 'cancelled']);
+
+        if ($request->status) $query->where('status', $request->status);
+        if ($request->search) {
+            $query->where('order_number', 'like', "%{$request->search}%")
+                  ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%{$request->search}%"));
+        }
+
+        $orders = $query->latest()->paginate(20)->withQueryString();
+        return view('admin.orders.invoice-labels', compact('orders'));
+    }
+
     public function invoice(Order $order)
     {
         $order->load(['user', 'items.product', 'payment']);
-        return view('admin.orders.invoice', compact('order'));
+        $sender = $this->senderInfo(forPdf: false);
+        return view('admin.orders.invoice', compact('order', 'sender'));
     }
 
     public function invoicePdf(Order $order)
     {
         $order->load(['user', 'items.product', 'payment']);
-        $pdf = Pdf::loadView('admin.orders.invoice', compact('order'));
+        $sender = $this->senderInfo(forPdf: true);
+        $pdf = Pdf::loadView('admin.orders.invoice', compact('order', 'sender'));
         return $pdf->download("invoice-{$order->order_number}.pdf");
+    }
+
+    public function shippingLabel(Order $order)
+    {
+        $order->load('courier');
+        $sender = $this->senderInfo(forPdf: false);
+        return view('admin.orders.shipping-label', compact('order', 'sender'));
+    }
+
+    private function senderInfo(bool $forPdf): array
+    {
+        $logo = Setting::get('site_logo');
+
+        return [
+            'name'    => Setting::get('site_name', 'Tech'),
+            // dompdf needs a local filesystem path; a browser-rendered HTML
+            // view needs a normal public URL.
+            'logo'    => $logo ? ($forPdf ? public_path('storage/'.$logo) : asset('storage/'.$logo)) : null,
+            'phone'   => Setting::get('contact_phone'),
+            'email'   => Setting::get('contact_email'),
+            'address' => Setting::get('address'),
+        ];
     }
 }

@@ -11,7 +11,7 @@
             <div class="row g-2">
                 <div class="col-md-8">
                     <input type="text" name="order_number" class="form-control @error('order_number') is-invalid @enderror"
-                           placeholder="Enter Order Number (e.g. SG-ABC123)" value="{{ old('order_number') }}" required>
+                           placeholder="Enter Order Number (e.g. TC-ABC123)" value="{{ old('order_number') }}" required>
                     @error('order_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">

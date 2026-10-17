@@ -6,6 +6,7 @@
     <div class="d-flex gap-2">
         <a href="{{ route('admin.orders.invoice', $order) }}" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="bi bi-printer"></i> Invoice</a>
         <a href="{{ route('admin.orders.invoice.pdf', $order) }}" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-pdf"></i> PDF</a>
+        <a href="{{ route('admin.orders.shipping-label', $order) }}" class="btn btn-outline-primary btn-sm" target="_blank"><i class="bi bi-box-seam"></i> Shipping Label</a>
     </div>
 </div>
 

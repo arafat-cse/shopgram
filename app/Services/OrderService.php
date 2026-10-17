@@ -106,11 +106,13 @@ class OrderService
 
             // Create payment record
             Payment::create([
-                'order_id'   => $order->id,
-                'method'     => $data['payment_method'],
-                'status'     => 'pending',
-                'amount'     => $total,
-                'screenshot' => $data['payment_screenshot'] ?? null,
+                'order_id'       => $order->id,
+                'method'         => $data['payment_method'],
+                'status'         => 'pending',
+                'amount'         => $total,
+                'screenshot'     => $data['payment_screenshot'] ?? null,
+                'payer_number'   => $data['payer_number'] ?? null,
+                'transaction_id' => $data['transaction_id'] ?? null,
             ]);
 
             // Record coupon usage
