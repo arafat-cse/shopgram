@@ -50,12 +50,13 @@ class AppServiceProvider extends ServiceProvider
             $data = [
                 'cartCount'         => 0,
                 'wishlistCount'     => 0,
-                'siteName'          => 'ShopGram',
+                'siteName'          => 'Tech',
                 'siteLogo'          => null,
                 'currencySymbol'    => '৳',
                 'coinSystemEnabled' => coin_system_enabled(),
                 'navCategories'     => collect(),
                 'footerPages'       => collect(),
+                'whatsappNumber'    => null,
             ];
 
             if ($user = auth()->user()) {
@@ -64,9 +65,10 @@ class AppServiceProvider extends ServiceProvider
             }
 
             try {
-                $data['siteName'] = Setting::get('site_name', 'ShopGram');
+                $data['siteName'] = Setting::get('site_name', 'Tech');
                 $data['siteLogo'] = Setting::get('site_logo');
                 $data['currencySymbol'] = Setting::get('currency_symbol', '৳');
+                $data['whatsappNumber'] = Setting::get('whatsapp');
             } catch (\Exception $e) {
             }
 

@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h1>ShopGram Analytics Report</h1>
+    <h1>Tech Analytics Report</h1>
     <p>{{ $range['from']->format('d M Y') }} - {{ $range['to']->format('d M Y') }}</p>
     @include('admin.analytics.partials.export-summary')
 </body>

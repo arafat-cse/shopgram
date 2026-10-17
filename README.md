@@ -1,4 +1,4 @@
-# ShopGram — Laravel eCommerce
+# Tech — Laravel eCommerce
 
 Full-featured eCommerce platform built with Laravel 12, Bootstrap 5, and MySQL.
 
@@ -62,7 +62,7 @@ Starts Laravel + Vite + Queue worker + Pail log viewer concurrently.
 
 | Role | Email | Password |
 |------|-------|----------|
-| Super Admin | admin@shopgram.com | password |
+| Super Admin | admin@tech.mysatra.com | tech@1234 |
 
 ---
 

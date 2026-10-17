@@ -46,7 +46,7 @@ class OrderStatusUpdatedNotification extends Notification implements ShouldQueue
 
         return $mail
             ->action('Track Order', url('/customer/order-tracking'))
-            ->line('Thank you for shopping with ShopGram!');
+            ->line('Thank you for shopping with Tech!');
     }
 
     public function toArray(object $notifiable): array

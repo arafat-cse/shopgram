@@ -7,7 +7,7 @@
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
                     <h4 class="fw-bold mb-1 text-center">Create Account</h4>
-                    <p class="text-muted text-center small mb-4">Join ShopGram today</p>
+                    <p class="text-muted text-center small mb-4">Join Tech today</p>
 
                     @if(session('info'))
                         <div class="alert alert-info">{{ session('info') }}</div>

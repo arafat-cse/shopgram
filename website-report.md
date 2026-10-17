@@ -1,4 +1,4 @@
-# Shopgram — Production Readiness Report
+# Tech — Production Readiness Report
 
 **Date:** 2026-09-22 · **Scope:** full-stack review (security, deployment, performance, code quality)
 **Verdict:** The core architecture is solid (routes protected, order totals computed server-side, coin values from DB, no mass-assignment holes). But there are **6 issues that will cause real problems if deployed as-is**, plus a performance profile that will not survive real traffic, and a hardening/feature roadmap for going live properly.

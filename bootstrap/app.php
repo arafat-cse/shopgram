@@ -22,10 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(\App\Http\Middleware\MaintenanceModeMiddleware::class);
-        $middleware->validateCsrfTokens(except: [
-            'api/chat/*',
-            'api/livechat/*',
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

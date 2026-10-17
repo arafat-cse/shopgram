@@ -1,4 +1,4 @@
-# ShopGram — Project Structure
+# Tech — Project Structure
 
 **Stack:** Laravel 12, Blade, MySQL, Bootstrap 5, jQuery
 **Last updated:** 2026-07-10 (session 4 — coin system + feature flag)

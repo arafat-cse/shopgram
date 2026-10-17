@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') - {{ $siteName ?? 'ShopGram' }} Admin</title>
+    <title>@yield('title', 'Admin') - {{ $siteName ?? 'Tech' }} Admin</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -140,13 +140,6 @@
         </a>
 
         <div class="nav-section">Support</div>
-        @can('order.chat')
-        <a href="{{ route('admin.live-chat.index') }}" class="nav-link {{ request()->routeIs('admin.live-chat.*') ? 'active' : '' }}" id="admin-lc-nav-link">
-            <i class="bi bi-chat-dots"></i>
-            <span>Customer Support</span>
-            <span id="admin-lc-nav-badge" class="badge bg-danger ms-auto" style="display:none;font-size:.65rem;padding:2px 5px"></span>
-        </a>
-        @endcan
         <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
             <i class="bi bi-star"></i> <span>Reviews</span>
         </a>
@@ -480,24 +473,6 @@ setInterval(fetchCounts, 60000);
 })();
 </script>
 @stack('scripts')
-@can('order.chat')
-<script>
-(function () {
-    function pollLcUnread() {
-        fetch('/admin/live-chat/unread', { headers: { Accept: 'application/json' } })
-            .then(r => r.json())
-            .then(d => {
-                const b = document.getElementById('admin-lc-nav-badge');
-                if (!b) return;
-                if (d.count > 0) { b.textContent = d.count > 99 ? '99+' : d.count; b.style.display = 'inline-flex'; }
-                else b.style.display = 'none';
-            }).catch(() => {});
-        setTimeout(pollLcUnread, 30000);
-    }
-    pollLcUnread();
-})();
-</script>
-@endcan
 <script>
 window.showToast = function(message, type = 'danger') {
     let container = document.querySelector('.toast-container');

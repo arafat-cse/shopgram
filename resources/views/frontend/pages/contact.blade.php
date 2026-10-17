@@ -79,7 +79,7 @@
                     <span class="contact-icon"><i class="bi bi-envelope"></i></span>
                     <div>
                         <div class="fw-semibold">Email</div>
-                        <div class="text-muted">{{ $contactEmail ?: 'support@shopgram.test' }}</div>
+                        <div class="text-muted">{{ $contactEmail ?: 'support@tech.mysatra.com' }}</div>
                     </div>
                 </div>
 

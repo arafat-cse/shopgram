@@ -38,7 +38,8 @@
                     <div class="mb-3"><label class="form-label">Instagram</label>
                         <input type="url" name="instagram" class="form-control" value="{{ $settings['instagram'] ?? '' }}"></div>
                     <div class="mb-3"><label class="form-label">WhatsApp</label>
-                        <input type="text" name="whatsapp" class="form-control" value="{{ $settings['whatsapp'] ?? '' }}"></div>
+                        <input type="text" name="whatsapp" class="form-control" value="{{ $settings['whatsapp'] ?? '' }}" placeholder="8801XXXXXXXXX">
+                        <small class="text-muted">Country code সহ শুধু নম্বর দাও (যেমন 8801XXXXXXXXX) — এটাই হোমপেজের WhatsApp চ্যাট বাটনে ব্যবহার হয়।</small></div>
                 </div>
             </div>
 

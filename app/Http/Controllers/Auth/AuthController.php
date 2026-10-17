@@ -100,12 +100,12 @@ class AuthController extends Controller
                 'add_to_cart'      => '🎉 Welcome! Product added to your cart.',
                 'buy_now'          => '🎉 Welcome! Taking you to checkout.',
                 'add_to_wishlist'  => '🎉 Welcome! Product added to your wishlist.',
-                default            => '🎉 Welcome to ShopGram!',
+                default            => '🎉 Welcome to Tech!',
             };
             return redirect($redirectTo)->with('success', $msg);
         }
 
-        return redirect()->route('customer.dashboard')->with('success', 'Welcome to ShopGram!');
+        return redirect()->route('customer.dashboard')->with('success', 'Welcome to Tech!');
     }
 
     public function logout(Request $request)

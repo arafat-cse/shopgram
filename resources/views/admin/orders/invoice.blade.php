@@ -15,7 +15,7 @@
         <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-secondary ms-2">Back</a>
     </div>
     <div class="row mb-4">
-        <div class="col-6"><h4 class="fw-bold">ShopGram</h4><small class="text-muted">Invoice</small></div>
+        <div class="col-6"><h4 class="fw-bold">Tech</h4><small class="text-muted">Invoice</small></div>
         <div class="col-6 text-end">
             <strong>Invoice #{{ $order->order_number }}</strong><br>
             <small>{{ $order->created_at->format('d M Y') }}</small>
@@ -49,6 +49,6 @@
             <tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>৳{{ number_format($order->total, 0) }}</td></tr>
         </tfoot>
     </table>
-    <div class="mt-4 text-muted small text-center">Thank you for shopping with ShopGram!</div>
+    <div class="mt-4 text-muted small text-center">Thank you for shopping with Tech!</div>
 </body>
 </html>

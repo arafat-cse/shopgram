@@ -47,7 +47,7 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Sender Name</label>
-                            <input type="text" name="from_name" value="{{ old('from_name', $editingCampaign->from_name ?? $defaultFromName) }}" class="form-control @error('from_name') is-invalid @enderror" placeholder="ShopGram">
+                            <input type="text" name="from_name" value="{{ old('from_name', $editingCampaign->from_name ?? $defaultFromName) }}" class="form-control @error('from_name') is-invalid @enderror" placeholder="Tech">
                             @error('from_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">

@@ -1,4 +1,4 @@
-# ShopGram — cPanel Deployment Guide
+# Tech — cPanel Deployment Guide
 
 ডোমেইন ধরা হয়েছে: `https://tech.mysatra.com` (এটা `tech` সাবডোমেইন)। অন্য ডোমেইন হলে সব জায়গায় বদলে নাও।
 
@@ -9,8 +9,7 @@
 - **Subdomain**: `tech.mysatra.com` (cPanel → Domains → Create A New Domain/Subdomain)
 - **PHP 8.2+** (cPanel → MultiPHP Manager-এ এই subdomain-এর জন্য select করো)
 - **MySQL Database** (cPanel → MySQL Databases)
-- **Terminal/SSH access** — chat-service PM2 দিয়ে চালাতে এটা লাগবেই (shared hosting-এ সাধারণত থাকে না, VPS/cPanel+root হলে থাকে)
-- Node.js 18+ ও PM2 সার্ভারে ইনস্টল করার সুবিধা
+- **Terminal** থাকলে ভালো (cPanel → Advanced → Terminal) — না থাকলে নিচে ছাড়াই করার উপায় দেওয়া আছে
 
 ---
 
@@ -43,7 +42,7 @@ cPanel → **File Manager** → `/home/<cpanel_user>/` এ গিয়ে:
 
 cPanel → **MySQL Databases**:
 
-1. নতুন database বানাও, যেমন `cpaneluser_shopgram`
+1. নতুন database বানাও, যেমন `cpaneluser_tech`
 2. নতুন database user বানাও, পাসওয়ার্ড দাও
 3. User-কে database-এ **All Privileges** দিয়ে add করো
 
@@ -68,11 +67,11 @@ nano .env   # অথবা File Manager-এর Code Editor দিয়ে এ�
 
 `.env`-এ বদলাও:
 ```env
-DB_DATABASE=cpaneluser_shopgram
+DB_DATABASE=cpaneluser_tech
 DB_USERNAME=cpaneluser_dbuser
 DB_PASSWORD=তোমার_db_password
 ```
-(`APP_URL`, `CHAT_NODE_URL`, `GOOGLE_REDIRECT_URI` আগেই `tech.mysatra.com` দিয়ে সেট করা আছে)
+(`APP_URL`, `GOOGLE_REDIRECT_URI` আগেই `tech.mysatra.com` দিয়ে সেট করা আছে)
 
 ```bash
 php artisan key:generate --force
@@ -117,93 +116,24 @@ cPanel → **Cron Jobs** → নিচের দুইটা যোগ করো
 
 ---
 
-## ৬. Node (Chat Service) — ঠিক যেভাবে এখন আছে সেভাবেই, PM2 দিয়ে
-
-`chat-service/` ফোল্ডারটা লোকালে যেভাবে আছে (সাথে `node_modules/`, `package-lock.json`, `server.js`, `service/`) ঠিক সেভাবেই zip করে আপলোড করো — আলাদা করে npm install করার দরকার নেই।
-
-> **গুরুত্বপূর্ণ:** লোকাল মেশিনের `chat-service/.env`-এ `LARAVEL_URL=http://127.0.0.1:8000` আছে — এটা শুধু লোকাল টেস্টিংয়ের জন্য (chat-service তার নিজের মেশিনেই চলা Laravel-কে কল করে)। Zip বানানোর **ঠিক আগে** এটা production মান দিয়ে বদলে নাও:
-> ```bash
-> cp chat-service/.env.production chat-service/.env
-> ```
-> (`chat-service/.env.production`-এ `LARAVEL_URL=https://tech.mysatra.com` আগে থেকেই বসানো আছে)। এটা না করলে Node সার্ভার লোকাল Laravel-কে কল করার চেষ্টা করবে, যেটা production সার্ভারে নেই — মেসেজ সেভ হবে না।
-
-### আপলোডের পর (Terminal/SSH দিয়ে)
-
-```bash
-cd ~/shopgram/chat-service
-
-# node_modules যদি zip-এ না থাকে (OS আলাদা হলে ভালো) তাহলে একবার
-npm install --production
-
-# PM2 না থাকলে
-npm install -g pm2
-
-pm2 start server.js --name shopgram-chat
-pm2 save
-pm2 startup   # সার্ভার রিবুটে auto-start
-```
-
-Health check:
-```bash
-curl http://127.0.0.1:3001/health
-# {"status":"ok","service":"shopgram-chat-service"}
-```
-
-> বিস্তারিত PM2 কমান্ড (restart, logs, dev mode, troubleshooting) — [chat-service/chat-setup.md](chat-service/chat-setup.md)
-
-### Same-origin reverse proxy (পোর্ট খোলার দরকার নেই)
-
-পোর্ট `3001` সরাসরি বাইরে expose করার বদলে `public/.htaccess`-এ ইতিমধ্যে একটা proxy rule যোগ করে দেওয়া হয়েছে:
-
-```apache
-<IfModule mod_proxy.c>
-    RewriteCond %{HTTP:Upgrade} =websocket [NC]
-    RewriteRule ^socket\.io/(.*)$ ws://127.0.0.1:3001/socket.io/$1 [P,L]
-    RewriteCond %{HTTP:Upgrade} !=websocket [NC]
-    RewriteRule ^socket\.io/(.*)$ http://127.0.0.1:3001/socket.io/$1 [P,L]
-</IfModule>
-```
-
-এর মানে ব্রাউজার `https://tech.mysatra.com/socket.io/...` এ কানেক্ট করবে, Apache সেটা ভেতরে ভেতরে লোকাল পোর্ট `3001`-এ পাঠিয়ে দেবে। তাই:
-- `.env`-এ `CHAT_NODE_URL=https://tech.mysatra.com` (পোর্ট ছাড়া) — আগেই সেট করা আছে
-- `3001` পোর্ট ফায়ারওয়ালে বাইরের জন্য খোলার দরকার নেই, শুধু লোকালহোস্টে (`127.0.0.1`) চললেই হবে
-- HTTPS সাইটে mixed-content ব্লক হবে না, কারণ chat ট্রাফিক একই ডোমেইন দিয়ে যাচ্ছে
-
-> **শর্ত:** সার্ভারের Apache-এ `mod_proxy`, `mod_proxy_http`, `mod_proxy_wstunnel` enable থাকতে হবে। WHM থাকলে *EasyApache 4 → Apache Modules* থেকে চেক/enable করো। শুধু cPanel (WHM access নেই) হলে হোস্টিং সাপোর্টকে এই তিনটা মডিউল enable করতে বলতে হবে।
-
-Code আপডেট করলে:
-```bash
-pm2 restart shopgram-chat
-```
-
----
-
-## ৭. Deploy-পরবর্তী চেকলিস্ট
+## ৬. Deploy-পরবর্তী চেকলিস্ট
 
 - [ ] `https://tech.mysatra.com/` হোমপেজ লোড হচ্ছে
 - [ ] ভুল URL দিয়ে 404 ট্রিগার করে দেখো — stack trace/`APP_DEBUG` leak দেখা যাবে না (`APP_DEBUG=false`)
-- [ ] Admin লগইন (`admin@shopgram.com` / `tech@1234`) — লগইনের পরপরই পাসওয়ার্ড বদলাও
-- [ ] Live chat widget থেকে মেসেজ পাঠিয়ে admin প্যানেলে আসছে কিনা (socket connect হচ্ছে কিনা browser console-এ চেক করো)
+- [ ] Admin লগইন (`admin@tech.mysatra.com` / `tech@1234`) — লগইনের পরপরই পাসওয়ার্ড বদলাও
+- [ ] হোমপেজের WhatsApp বাটনে ক্লিক করলে সঠিক নম্বর দিয়ে WhatsApp চ্যাট খুলছে কিনা (অ্যাডমিন সেটিংসে নম্বর বসানো থাকতে হবে)
 - [ ] Google login কাজ করছে (Google Cloud Console-এ `https://tech.mysatra.com/auth/google/callback` redirect URI যোগ করা আছে কিনা)
 - [ ] SSL সক্রিয় (cPanel → SSL/TLS Status → AutoSSL চালু করো, `SESSION_SECURE_COOKIE=true` থাকায় HTTPS ছাড়া লগইন কাজ করবে না)
 - [ ] cPanel → Cron Jobs-এ দুটো job-ই আছে এবং চলছে
-- [ ] `pm2 list` এ `shopgram-chat` status `online` দেখাচ্ছে
 
 ---
 
 ## পরে কোড আপডেট করলে
 
 ```bash
-# Laravel (Terminal দিয়ে)
 cd ~/shopgram
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 npm run build
 php artisan config:cache route:cache view:cache
-```
-
-Node (`chat-service/`) চেঞ্জ হলে:
-```bash
-cd ~/shopgram/chat-service
-pm2 restart shopgram-chat
 ```

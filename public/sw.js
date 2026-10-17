@@ -4,7 +4,7 @@ self.addEventListener('push', function (event) {
     const data = event.data.json();
 
     event.waitUntil(
-        self.registration.showNotification(data.title || 'ShopGram', {
+        self.registration.showNotification(data.title || 'Tech', {
             body:    data.body    || '',
             icon:    data.icon   || '/images/logo.png',
             badge:   '/images/logo.png',

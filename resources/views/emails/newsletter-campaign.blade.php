@@ -9,7 +9,7 @@
     <div style="max-width:640px;margin:0 auto;padding:24px 14px;">
         <div style="background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
             <div style="padding:22px 24px;border-bottom:1px solid #e5e7eb;">
-                <div style="font-size:22px;font-weight:700;color:#2c3e50;">{{ config('app.name', 'ShopGram') }}</div>
+                <div style="font-size:22px;font-weight:700;color:#2c3e50;">{{ config('app.name', 'Tech') }}</div>
                 @if($campaign->preview_text)
                     <div style="margin-top:8px;font-size:14px;color:#6b7280;">{{ $campaign->preview_text }}</div>
                 @endif
@@ -26,7 +26,7 @@
             </div>
 
             <div style="padding:18px 24px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;line-height:1.6;">
-                You are receiving this email because you subscribed to {{ config('app.name', 'ShopGram') }} newsletters.
+                You are receiving this email because you subscribed to {{ config('app.name', 'Tech') }} newsletters.
                 <br>
                 <a href="{{ URL::signedRoute('newsletter.unsubscribe', $subscriber) }}" style="color:#6b7280;text-decoration:underline;">Unsubscribe</a>
             </div>

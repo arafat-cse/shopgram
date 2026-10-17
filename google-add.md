@@ -1,4 +1,4 @@
-# Google OAuth Setup — ShopGram
+# Google OAuth Setup — Tech
 
 Login "Sign in with Google" kaj korar jonno Google Cloud Console theke OAuth client banate hobe, tarpor `.env` e boshate hobe.
 
@@ -11,7 +11,7 @@ Login "Sign in with Google" kaj korar jonno Google Cloud Console theke OAuth cli
 
 1. Top bar e project dropdown (naam er pashe) click koro.
 2. **New Project** click koro.
-3. Project name dao (e.g. `ShopGram`).
+3. Project name dao (e.g. `Tech`).
 4. **Create** click koro. Kisukhon wait koro project ready hote.
 5. Notun project select kore neo (top dropdown theke).
 
@@ -20,7 +20,7 @@ Login "Sign in with Google" kaj korar jonno Google Cloud Console theke OAuth cli
 1. Left sidebar → **APIs & Services** → **OAuth consent screen**.
 2. User type: **External** select koro → **Create**.
 3. App information:
-   - App name: `ShopGram` (ba jekono)
+   - App name: `Tech` (ba jekono)
    - User support email: nijer gmail
    - Developer contact email: nijer gmail
 4. **Save and Continue** (Scopes step skip kora jai — **Save and Continue**).
@@ -32,7 +32,7 @@ Login "Sign in with Google" kaj korar jonno Google Cloud Console theke OAuth cli
 1. Left sidebar → **APIs & Services** → **Credentials**.
 2. Top e **+ Create Credentials** → **OAuth client ID**.
 3. Application type: **Web application**.
-4. Name: `ShopGram Web` (ba jekono).
+4. Name: `Tech Web` (ba jekono).
 5. **Authorized redirect URIs** → **+ Add URI**:
    ```
    http://localhost:8000/auth/google/callback

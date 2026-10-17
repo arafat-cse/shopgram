@@ -1,4 +1,4 @@
-# ShopGram — Feature Update Roadmap
+# Tech — Feature Update Roadmap
 
 **Goal:** Smarter UX, higher conversion, better admin control  
 **Last updated:** 2026-06-28 (session 2)

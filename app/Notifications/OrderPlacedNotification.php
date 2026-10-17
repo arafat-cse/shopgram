@@ -37,7 +37,7 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
             ->line('**Total:** ৳' . number_format($this->order->total, 2))
             ->line('**Payment Method:** ' . strtoupper($this->order->payment_method))
             ->action('View Order', url('/customer/orders/' . $this->order->id))
-            ->line('Thank you for shopping with ShopGram!');
+            ->line('Thank you for shopping with Tech!');
     }
 
     public function toArray(object $notifiable): array

@@ -14,7 +14,7 @@ class PageSeeder extends Seeder
                 'title'   => 'Privacy Policy',
                 'content' => "<h2>Privacy Policy</h2>
 <p>Last updated: " . now()->format('d F Y') . "</p>
-<p>ShopGram is committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information.</p>
+<p>Tech is committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information.</p>
 
 <h3>Information We Collect</h3>
 <ul>
@@ -84,7 +84,7 @@ class PageSeeder extends Seeder
                 'title'   => 'Terms & Conditions',
                 'content' => "<h2>Terms & Conditions</h2>
 <p>Last updated: " . now()->format('d F Y') . "</p>
-<p>By using ShopGram, you agree to these terms and conditions. Please read them carefully.</p>
+<p>By using Tech, you agree to these terms and conditions. Please read them carefully.</p>
 
 <h3>Use of Website</h3>
 <ul>
@@ -109,7 +109,7 @@ class PageSeeder extends Seeder
 </ul>
 
 <h3>Limitation of Liability</h3>
-<p>ShopGram shall not be liable for any indirect, incidental, or consequential damages arising from the use of our services.</p>
+<p>Tech shall not be liable for any indirect, incidental, or consequential damages arising from the use of our services.</p>
 
 <h3>Contact Us</h3>
 <p>For any queries regarding these terms, please contact us through our Contact page.</p>",

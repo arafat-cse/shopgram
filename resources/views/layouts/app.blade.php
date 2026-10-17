@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', $siteName ?? 'ShopGram')</title>
-    <meta name="description" content="@yield('meta_description', 'ShopGram - Best Online Shopping')">
+    <title>@yield('title', $siteName ?? 'Tech')</title>
+    <meta name="description" content="@yield('meta_description', 'Tech - Best Online Shopping')">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -268,7 +268,7 @@
 {{-- Top Navigation --}}
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">{{ $siteName ?? 'ShopGram' }}</a>
+        <a class="navbar-brand" href="{{ route('home') }}">{{ $siteName ?? 'Tech' }}</a>
 
         {{-- Search --}}
         <form class="d-flex flex-grow-1 mx-2 mx-lg-4" action="{{ route('search.index') }}" method="GET">
@@ -401,7 +401,7 @@
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-3">
-                <h5 class="fw-bold">{{ $siteName ?? 'ShopGram' }}</h5>
+                <h5 class="fw-bold">{{ $siteName ?? 'Tech' }}</h5>
                 <p class="text-muted small">Your trusted online shopping destination in Bangladesh.</p>
             </div>
             <div class="col-lg-3">
@@ -434,7 +434,7 @@
             </div>
         </div>
         <hr class="border-secondary">
-        <p class="text-center text-muted small mb-0">&copy; {{ date('Y') }} {{ $siteName ?? 'ShopGram' }}. All rights reserved.</p>
+        <p class="text-center text-muted small mb-0">&copy; {{ date('Y') }} {{ $siteName ?? 'Tech' }}. All rights reserved.</p>
     </div>
 </footer>
 
@@ -979,7 +979,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<x-live-chat-widget />
+<x-whatsapp-widget />
 
 {{-- Global Quick View Modal --}}
 <div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">

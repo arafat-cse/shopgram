@@ -13,8 +13,6 @@ use App\Http\Controllers\Frontend\PageController as FrontPageController;
 use App\Http\Controllers\Frontend\ContactController;
 use App\Http\Controllers\Frontend\NewsletterController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\LiveChatController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 
@@ -74,27 +72,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/auth/google',          [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
-// Internal chat API used by the Node.js socket service.
-Route::prefix('api/chat')->group(function () {
-    Route::post('orders/{order}/messages', [ChatController::class, 'store'])->name('chat.store');
-    Route::post('orders/{order}/close', [ChatController::class, 'close'])->name('chat.close');
-});
-
-// Live chat — guest public endpoints
-Route::prefix('api/livechat')->group(function () {
-    Route::post('start',                           [LiveChatController::class, 'start'])->name('livechat.start');
-    Route::get('token',                            [LiveChatController::class, 'guestToken'])->name('livechat.guest.token');
-    Route::get('{chat}/messages',                  [LiveChatController::class, 'messages'])->name('livechat.messages');
-    Route::post('{chat}/messages',                 [LiveChatController::class, 'store'])->name('livechat.store');
-    Route::post('{chat}/upload',                   [LiveChatController::class, 'upload'])->name('livechat.upload');
-    Route::get('unread',                           [LiveChatController::class, 'unreadCount'])->name('livechat.unread');
-});
-
-// Live chat — staff endpoints (auth required)
-Route::middleware('auth')->prefix('api/livechat')->group(function () {
-    Route::get('staff-token',                      [LiveChatController::class, 'staffToken'])->name('livechat.staff.token');
-});
-
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 
 // Cart routes (auth required)
@@ -108,15 +85,6 @@ Route::middleware(['auth', 'phone.complete'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place-order');
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
-
-    // Chat API — used by Node.js server and browser
-    Route::prefix('api/chat')->group(function () {
-        Route::get('token', [ChatController::class, 'token'])->name('chat.token');
-        Route::get('total-unread', [ChatController::class, 'totalUnreadCount'])->name('chat.total-unread');
-        Route::get('orders/{order}/messages', [ChatController::class, 'messages'])->name('chat.messages');
-        Route::post('orders/{order}/upload', [ChatController::class, 'upload'])->name('chat.upload');
-        Route::get('orders/{order}/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread-count');
-    });
 });
 
 // Customer dashboard routes

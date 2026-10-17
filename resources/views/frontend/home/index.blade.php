@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'ShopGram - Online Shopping Bangladesh')
+@section('title', 'Tech - Online Shopping Bangladesh')
 
 @push('styles')
 <style>
@@ -841,7 +841,7 @@
                         @php $fb = $fbSlides[$index % 3]; @endphp
                         <div class="carousel-item h-100 {{ $index === 0 ? 'active' : '' }}">
                             @if($banner && $banner->image)
-                                <img src="{{ asset('storage/'.$banner->image) }}" alt="{{ $banner->title ?? 'ShopGram offer' }}">
+                                <img src="{{ asset('storage/'.$banner->image) }}" alt="{{ $banner->title ?? 'Tech offer' }}">
                                 <div class="hero-overlay" style="pointer-events:none;">
                                     <div class="hero-copy">
                                         <div class="eyebrow">{{ $banner->subtitle }}</div>
